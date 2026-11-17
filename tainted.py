@@ -35,7 +35,7 @@ KEYWORDS = {
     "forgive", "leave", "wait", "mark", "return", "if", "else", "while",
     "first", "time", "goodbye", "and", "or", "not", "trust", "intimacy",
     "passion", "commitment", "bond", "with", "scars", "scar", "of", "runs",
-    "afraid",
+    "afraid", "world", "recall", "length", "part",
 }
 
 
@@ -210,6 +210,14 @@ class Cursor:
                 return ('scar', idx, self.name())
             if val == 'runs':
                 return ('runs',)
+            if val == 'length':
+                self.expect_word('of')
+                return ('length', self.unary())
+            if val == 'part':
+                a = self.unary()
+                b = self.unary()
+                self.expect_word('of')
+                return ('part', a, b, self.unary())
             if val not in KEYWORDS:
                 return ('var', val)
         self.fail(f"unexpected '{val}'")
@@ -283,7 +291,12 @@ class Parser:
             who = c.name()
             st = (head, n, who, c.expr())
         elif head == 'hear':
-            who = None if c.word('anyone') else c.name()
+            if c.word('anyone'):
+                who = None
+            elif c.word('world'):
+                who = 'world'
+            else:
+                who = c.name()
             c.expect_word('into')
             st = ('hear', n, who, c.name())
         elif head in ('warm', 'cool'):
@@ -297,6 +310,11 @@ class Parser:
             st = (head, n, c.name())
         elif head == 'wait':
             st = ('wait', n)
+        elif head == 'recall':
+            names = [c.name()]
+            while c.peek()[0] is not None:
+                names.append(c.name())
+            st = ('recall', n, names)
         elif head == 'goodbye':
             st = ('goodbye', n)
         elif head == 'mark':
@@ -381,6 +399,117 @@ def compile_soul(name, body):
     return code
 
 
+def compile_program(source):
+    return [(n, compile_soul(n, b)) for n, b in Parser(source).parse()]
+
+
+# ------------------------------------------------------- tainted assembly
+#
+# Tainted assembly is what compiler.tainted produces: the same statements,
+# with if, while, first time, mark and return lowered into labels and jumps.
+#   NAME:            a label
+#   jz LABEL expr    jump to LABEL when expr is false
+#   jmp LABEL
+#   first LABEL      jump to LABEL unless this is the first run
+
+LABEL = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*):$')
+
+
+def to_tas(source):
+    """The reference compiler. compiler.tainted must produce the same output."""
+    out, stack, blocks = ["# compiled by tainted.py"], [], 0
+    for raw in source.splitlines():
+        text = raw.lstrip(' ')
+        word = text.split(' ', 1)[0]
+        rest = text[len(word) + 1:]
+        if not word or word.startswith('#'):
+            continue
+        if word == 'soul':
+            out.append(text)
+        elif word in ('end', 'else'):
+            if not stack:
+                out.append('end')
+                continue
+            kind, num = stack.pop()
+            if word == 'else':
+                out += [f"    jmp L{num}x", f"    L{num}e:"]
+                stack.append(('e', num))
+                continue
+            if kind == 'w':
+                out.append(f"    jmp W{num}")
+            out.append(f"    L{num}{'x' if kind == 'e' else 'e'}:")
+        elif word == 'if':
+            blocks += 1
+            out.append(f"    jz L{blocks}e {rest}")
+            stack.append(('i', blocks))
+        elif word == 'while':
+            blocks += 1
+            out += [f"    W{blocks}:", f"    jz L{blocks}e {rest}"]
+            stack.append(('w', blocks))
+        elif word == 'first':
+            blocks += 1
+            out.append(f"    first L{blocks}e")
+            stack.append(('f', blocks))
+        elif word == 'mark':
+            out.append(f"    M_{rest}:")
+        elif word == 'return':
+            out.append(f"    jmp M_{rest[3:]}")
+        else:
+            out.append("    " + text)
+    return "\n".join(out) + "\n"
+
+
+def load_tas(text):
+    program, soul = [], None
+    for n, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith('#'):
+            continue
+        if soul is None:
+            c = Cursor(tokenize(line, n), n)
+            c.expect_word('soul')
+            soul = (c.name(), [], {})
+            c.done()
+            continue
+        name, code, labels = soul
+        if line == 'end':
+            for ins in code:
+                slot = {'jz': 3, 'jmp': 2, 'first': 2}.get(ins[0])
+                if slot is not None:
+                    if ins[slot] not in labels:
+                        raise TaintedError(f"line {ins[1]}: no label {ins[slot]}")
+                    ins[slot] = labels[ins[slot]]
+            program.append((name, code))
+            soul = None
+            continue
+        m = LABEL.match(line)
+        if m:
+            if m.group(1) in labels:
+                raise TaintedError(f"line {n}: label {m.group(1)} appears twice")
+            labels[m.group(1)] = len(code)
+            continue
+        word, _, rest = line.partition(' ')
+        if word == 'jz':
+            label, _, cond = rest.partition(' ')
+            c = Cursor(tokenize(cond, n), n)
+            e = c.expr()
+            c.done()
+            code.append(['jz', n, e, label])
+        elif word in ('jmp', 'first'):
+            code.append([word, n, rest.strip()])
+        else:
+            p = Parser(line)
+            st = p.statement()
+            if st[0] in ('if', 'while', 'first', 'mark', 'return'):
+                raise TaintedError(f"line {n}: '{st[0]}' has no place in assembly")
+            code.append([st[0], n] + list(st[2:]))
+    if soul is not None:
+        raise TaintedError("the assembly ends inside a soul")
+    if not program:
+        raise TaintedError("a program needs at least one soul")
+    return program
+
+
 # -------------------------------------------------------------- runtime
 
 class Rel:
@@ -434,9 +563,9 @@ def show(v):
 
 
 class World:
-    def __init__(self, souls, runs=0, out=sys.stdout, patience=DEFAULT_PATIENCE,
-                 err=None):
-        self.order = [Soul(n, compile_soul(n, b)) for n, b in souls]
+    def __init__(self, program, runs=0, out=sys.stdout, patience=DEFAULT_PATIENCE,
+                 err=None, inp=None):
+        self.order = [Soul(n, code) for n, code in program]
         self.souls = {s.name: s for s in self.order}
         k = runs % len(self.order)
         self.order = self.order[k:] + self.order[:k]
@@ -444,6 +573,7 @@ class World:
         self.out = out
         self.patience = patience
         self.err = err or sys.stderr
+        self.input = inp or sys.stdin
         self.rels = {}
         self.round = 0
 
@@ -518,6 +648,16 @@ class World:
             if not isinstance(idx, int) or not 1 <= idx <= len(scars):
                 raise TaintedError(f"{s.name} has no scar number {idx} from {e[2]}")
             return scars[idx - 1]
+        if k == 'length':
+            v = self.ev(s, e[1])
+            if not isinstance(v, str):
+                raise TaintedError("only words have a length")
+            return len(v)
+        if k == 'part':
+            a, b, v = self.ev(s, e[1]), self.ev(s, e[2]), self.ev(s, e[3])
+            if not (isinstance(a, int) and isinstance(b, int) and isinstance(v, str)):
+                raise TaintedError("part takes two numbers and a word")
+            return v[max(a, 1) - 1:max(b, 0)]
         if k == 'bin':
             return self.binary(e[1], self.ev(s, e[2]), self.ev(s, e[3]))
         raise TaintedError(f"unknown expression {k}")
@@ -637,6 +777,12 @@ class World:
                 raise TaintedError(
                     f"{s.name} can confide only in someone they gave their heart to")
             return self.try_transfer(s, b)
+        elif op == 'recall':
+            for name in ins[2]:
+                self.read(s, name)
+        elif op == 'hear' and ins[2] == 'world':
+            line = self.input.readline()
+            s.mem[ins[3]] = (line.rstrip('\r\n') if line else 0, s.step)
         elif op == 'hear':
             if ins[2] is not None:
                 b = self.other(s, ins[2])
@@ -776,11 +922,11 @@ def remember_run(source):
 
 
 def run_source(source, out=sys.stdout, patience=DEFAULT_PATIENCE, feelings=False,
-               runs=None):
-    souls = Parser(source).parse()
+               runs=None, assembly=False):
+    program = load_tas(source) if assembly else compile_program(source)
     if runs is None:
         runs = remember_run(source)
-    world = World(souls, runs=runs, out=out, patience=patience)
+    world = World(program, runs=runs, out=out, patience=patience)
     try:
         code = world.run()
     except TaintedError as err:
@@ -795,20 +941,25 @@ def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     flags = [a for a in argv if a.startswith("--")]
     if len(args) != 1:
-        print("usage: tainted.py [--feelings] [--patience=N] program.tainted",
+        print("usage: tainted.py [--feelings] [--patience=N] [--compile] program.tainted|program.tas",
               file=sys.stderr)
         return 64
     patience = DEFAULT_PATIENCE
     for f in flags:
         if f.startswith("--patience="):
             patience = int(f.split("=", 1)[1])
-        elif f != "--feelings":
+        elif f not in ("--feelings", "--compile"):
             print(f"unknown flag {f}", file=sys.stderr)
             return 64
     with open(args[0], encoding="utf-8") as f:
         source = f.read()
     try:
-        return run_source(source, patience=patience, feelings="--feelings" in flags)
+        if "--compile" in flags:
+            compile_program(source)
+            sys.stdout.write(to_tas(source))
+            return 0
+        return run_source(source, patience=patience, feelings="--feelings" in flags,
+                          assembly=args[0].endswith(".tas"))
     except TaintedError as err:
         print(f"tainted: {err}", file=sys.stderr)
         return 1

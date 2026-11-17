@@ -11,13 +11,14 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import minsky  # noqa: E402
+import taintednetes  # noqa: E402
 import tainted  # noqa: E402
 
 
 def run(source, runs=0):
     out = io.StringIO()
-    souls = tainted.Parser(source).parse()
-    world = tainted.World(souls, runs=runs, out=out, err=io.StringIO())
+    world = tainted.World(tainted.compile_program(source), runs=runs, out=out,
+                          err=io.StringIO())
     code = world.run()
     return code, out.getvalue().splitlines(), world
 
@@ -140,6 +141,78 @@ class TuringCompleteness(unittest.TestCase):
             _, lines, _ = run(minsky.compile_machine(*machine))
             self.assertEqual(lines, [f"{c} = {v}" for c, v in expected.items()])
             checked += 1
+
+
+def run_tas(tas, source, runs=0):
+    out = io.StringIO()
+    world = tainted.World(tainted.load_tas(tas), runs=runs, out=out,
+                          err=io.StringIO(), inp=io.StringIO(source))
+    code = world.run()
+    return code, out.getvalue()
+
+
+def body(tas):
+    return [line for line in tas.splitlines() if not line.startswith("#")]
+
+
+class SelfHosting(unittest.TestCase):
+    def setUp(self):
+        with open(os.path.join(ROOT, "compiler.tainted")) as f:
+            self.compiler = f.read()
+
+    def test_bootstrap_reaches_a_fixed_point_in_code(self):
+        c1 = tainted.to_tas(self.compiler)
+        code, c2 = run_tas(c1, self.compiler)
+        self.assertEqual(code, 0)
+        _, c3 = run_tas(c2, self.compiler)
+        self.assertEqual(body(c1), body(c2))
+        self.assertEqual(c2, c3)
+
+    def test_but_never_in_memory(self):
+        c2 = run_tas(tainted.to_tas(self.compiler), self.compiler)[1]
+        again = run_tas(c2, self.compiler, runs=1)[1]
+        self.assertEqual(body(c2), body(again))
+        self.assertNotEqual(c2.splitlines()[0], again.splitlines()[0])
+
+    def test_compiles_every_example_like_the_reference(self):
+        c2 = run_tas(tainted.to_tas(self.compiler), self.compiler)[1]
+        for name in sorted(os.listdir(os.path.join(ROOT, "examples"))):
+            if not name.endswith(".tainted"):
+                continue
+            src = example(name)
+            self.assertEqual(body(run_tas(c2, src)[1]), body(tainted.to_tas(src)), name)
+            direct = run(src)
+            via = tainted.World(tainted.load_tas(tainted.to_tas(src)), out=io.StringIO(),
+                                err=io.StringIO())
+            self.assertEqual(via.run(), direct[0], name)
+            self.assertEqual(via.out.getvalue().splitlines(), direct[1], name)
+
+    def test_without_recall_the_compiler_forgets(self):
+        forgetful = "\n".join(line for line in self.compiler.splitlines()
+                              if "recall stack blocks" not in line)
+        _, out = run_tas(tainted.to_tas(forgetful), self.compiler)
+        self.assertNotEqual(body(out), body(tainted.to_tas(self.compiler)))
+
+
+class Taintednetes(unittest.TestCase):
+    def test_example_cluster(self):
+        with open(os.path.join(ROOT, "examples", "cluster.taintednetes")) as f:
+            pods, nodes = taintednetes.parse(f.read())
+        placement, _, world = taintednetes.settle(pods, nodes)
+        self.assertEqual(placement, {"web": "beta", "db": "alpha", "cache": "gamma"})
+        self.assertEqual(world.rel("cache", "beta").scars, ["wounded by beta"])
+
+    def test_random_clusters_settle_into_stable_matchings(self):
+        rng = random.Random(83)
+        for _ in range(40):
+            pod_names = [f"p{i}" for i in range(rng.randint(1, 5))]
+            node_names = [f"n{i}" for i in range(rng.randint(1, 5))]
+            pods = {p: rng.sample(node_names, rng.randint(0, len(node_names)))
+                    for p in pod_names}
+            nodes = {n: rng.sample(pod_names, rng.randint(0, len(pod_names)))
+                     for n in node_names}
+            placement, _, _ = taintednetes.settle(pods, nodes)
+            self.assertEqual(placement, taintednetes.gale_shapley(pods, nodes))
 
 
 if __name__ == "__main__":

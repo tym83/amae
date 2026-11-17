@@ -56,6 +56,8 @@ written; the starting soul shifts with every past run of the program.
 | `mark name`, `return to name` | name a moment and return to it later |
 | `first time` … `end` | runs only on the very first run of the program |
 | `wait` | let a step pass |
+| `recall x y …` | think of these memories again so they do not fade further |
+| `hear world into x` | read a line from standard input; at the end of input `x` becomes `0` |
 | `goodbye` | end this soul |
 
 ### Words between two souls
@@ -78,7 +80,8 @@ written; the starting soul shifts with every past run of the program.
 Numbers, strings, `+ - * / %`, comparisons, `and`, `or`, `not`, and what a soul
 knows about its relationships: `trust b`, `intimacy b`, `passion b`,
 `commitment b`, `afraid of b`, `bond with b`, `scars of b`, `scar n of b`, and
-`runs`, the number of earlier runs of this program.
+`runs`, the number of earlier runs of this program. Words have `length of x`
+and `part i j of x`, the letters from `i` to `j`, counting from 1.
 
 ## How feelings work
 
@@ -128,6 +131,64 @@ simulator.
 ```
 python3 tools/minsky.py examples/multiply.minsky > examples/multiply.tainted
 python3 tainted.py examples/multiply.tainted     # c = 42
+```
+
+## The compiler written in Tainted
+
+`compiler.tainted` hears a Tainted program from standard input and lowers
+`if`, `while`, `first time`, `mark` and `return` into Tainted assembly, a flat
+list of statements, labels and jumps that `tainted.py` runs directly when the
+file ends in `.tas`. `tainted.py --compile` is the reference compiler in Python.
+
+```
+python3 tainted.py --compile compiler.tainted > c1.tas    # stage 0, Python
+python3 tainted.py c1.tas < compiler.tainted > c2.tas     # the compiler compiles itself
+python3 tainted.py c2.tas < compiler.tainted > c3.tas     # and once more
+```
+
+The code reaches a fixed point at the second generation. The first line of the
+output never does: in it the compiler says how many times it has run before,
+so running the same compiler on the same program never gives the same file
+twice.
+
+The compiler's memory fades like anyone's. Reading a long line takes more than
+fifty steps, and a compiler that does not keep recalling its stack of open
+blocks and its block counter loses digits from them and emits wrong labels.
+The test suite checks this too: remove the `recall` lines and the bootstrap
+breaks.
+
+## Taintednetes
+
+`tools/taintednetes.py` turns a cluster into a Tainted program in which every
+pod and every node is a soul. A pod proposes to the nodes it likes, best first.
+A node keeps the best pod that has asked so far, says no to the others and,
+when someone better comes, tells its current pod to go and wounds it in
+parting. A pod gives its heart to the node that takes it, so the wound leaves a
+scar but does not close the pod to the next node.
+
+Nobody compares the cluster with a desired state. The cluster settles when
+every soul is waiting for someone and nobody has anything left to say, and
+that silence is a stable matching: no pod and node would both rather be with
+each other than where they are. The tests run random clusters and compare the
+result with the Gale–Shapley algorithm.
+
+```
+python3 tools/taintednetes.py examples/cluster.taintednetes
+python3 tools/taintednetes.py --emit examples/cluster.taintednetes   # print the program
+```
+
+```
+web settles on alpha
+cache settles on beta
+db settles on alpha
+web is sent away from alpha
+web settles on beta
+cache is sent away from beta
+cache settles on gamma
+
+web lives on beta; sent away 1 time(s)
+db lives on alpha; sent away 0 time(s)
+cache lives on gamma; sent away 1 time(s)
 ```
 
 ## Examples
