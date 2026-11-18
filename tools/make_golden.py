@@ -75,6 +75,10 @@ INLINE = {
                       " say pain\n end\n endure\n say 1 / 0\n when it hurts as pain\n say pain\n end\n"
                       " say [1][3]\nend\n"),
     "syntax-list": "soul s\n say [1, 2\nend\n",
+    "styles-anxious-avoidant": ("soul a is anxious\n meet b\n hear b into x\n say x\nend\n"
+                                "soul b is avoidant and storge\n meet a\n let i = 0\n while i < 10\n"
+                                "  i = i + 1\n end\n tell a \"late\"\nend\n"),
+    "syntax-style": "soul a is shy\nend\n",
     "consent-needed": ("soul a\n meet b\n consent to b\n together with b\n say \"never\"\n end\nend\n"
                        "soul b\n meet a\n together with a\n say \"never\"\n end\nend\n"),
     "syntax-map": "soul s\n say {\"a\" 1}\nend\n",
@@ -175,7 +179,8 @@ def main():
         shutil.rmtree(GOLDEN)
     os.makedirs(GOLDEN)
     for folder, prefix in (("examples", "examples-"), ("examples/classics", "classics-"),
-                           ("examples/feelings", "feelings-"), ("examples/consent", "consent-")):
+                           ("examples/feelings", "feelings-"), ("examples/consent", "consent-"),
+                           ("examples/styles", "styles-")):
         for name in sorted(os.listdir(os.path.join(ROOT, folder))):
             if name.endswith(".tainted"):
                 key = prefix + name[:-len(".tainted")]

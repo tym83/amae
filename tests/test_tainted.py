@@ -447,6 +447,21 @@ class Consent(unittest.TestCase):
         self.assertIn("cal: ana keeps fear behind a boundary cal may not cross", lines)
 
 
+class Styles(unittest.TestCase):
+    def test_ways_of_loving(self):
+        self.assertEqual(run(example("styles/ways.tainted")).lines, [
+            "erin at first sight: passion 5", "luca promised twice: commitment 0",
+            "erin promised: commitment 1", "stella warmed four times and cooled once: trust 2",
+            "prue gives its heart only where it trusts, and trusts stella only 1",
+            "stella, wounded, still trusts prue 1 and resents it: 1",
+            "aga, wounded, still hears: and you, resentment 0"])
+
+    def test_there_is_no_such_way(self):
+        life = run("soul a is shy\nend\n")
+        self.assertEqual(life.code, 1)
+        self.assertIn("there is no such way to love: shy", life.err)
+
+
 class TuringCompleteness(unittest.TestCase):
     """Random two-counter machines give the same answer in Tainted."""
 
