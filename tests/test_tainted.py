@@ -117,6 +117,17 @@ class Rituals(unittest.TestCase):
 
 
 class Rules(unittest.TestCase):
+    def test_passion_cools_while_apart(self):
+        """Two strangers meet at first sight (passion 3), then live apart:
+        one degree is lost every fifty steps of each one's own life."""
+        src = ("soul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
+               " say passion b\nend\nsoul b\n meet a\nend\n")
+        code, lines, _ = run(src)
+        self.assertEqual(code, 0)
+        self.assertEqual(lines, ["0"])
+        src = src.replace("i < 60", "i < 20")
+        self.assertEqual(run(src)[1], ["2"])
+
     def test_cannot_tell_a_stranger(self):
         with self.assertRaisesRegex(tainted.TaintedError, "never met"):
             run("soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n")
