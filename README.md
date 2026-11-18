@@ -335,23 +335,26 @@ bin/tc taintednetes.tainted
 KUBE_CONTEXT=<ctx> TAINTEDNETES_LOOKS=1 ./taintednetes   # one look; without LOOKS it keeps looking
 ```
 
-On a cluster with three workers limited to two seats each, seven pods compete
-for six places:
+On the workshop stand, three workers of 900m CPU each: one advertises two
+`tainted.io/gpu`, each carries a `zone` label. Two pods want the same host port,
+one needs zone `west`, three want a GPU while both GPUs are already taken:
 
 ```
-scarcity/cache settles on 9bwmk
-scarcity/db settles on cw2gd
-scarcity/web settles on 9bwmk
-scarcity/crowd-5bb975f679-7ldmw is sent away from 9bwmk
-scarcity/crowd-5bb975f679-7ldmw settles on qtrkn
-scarcity/crowd-5bb975f679-srctc is sent away from qtrkn
-scarcity/crowd-5bb975f679-srctc has nowhere to live
-...
-the cluster is at rest
+kube-e2e-2/train-1 has nowhere to live
+kube-e2e-2/train-2 has nowhere to live
+kube-e2e-2/train-3 has nowhere to live
+kube-e2e-2/port-a settles on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b settles on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/zonal settles on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b is sent away from kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b settles on kubernetes-stand-md0-9g8nq-qtrkn
+kube-e2e-2/port-a lives on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b lives on kubernetes-stand-md0-9g8nq-qtrkn
+kube-e2e-2/zonal lives on kubernetes-stand-md0-9g8nq-cw2gd
 ```
 
-The six who found a home are running; the seventh stays pending until a seat
-opens.
+The bound pods are running; the GPU pods stay pending until a GPU is free.
+The scheduler spends about 50m of CPU between looks.
 
 ### Inside the cluster
 

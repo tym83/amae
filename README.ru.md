@@ -355,23 +355,26 @@ bin/tc taintednetes.tainted
 KUBE_CONTEXT=<ctx> TAINTEDNETES_LOOKS=1 ./taintednetes   # one look; without LOOKS it keeps looking
 ```
 
-В кластере из трёх рабочих нод, у каждой из которых всего по два места, семь
-подов спорят за шесть мест:
+На стенде в кластере воркшопов три рабочие ноды по 900m CPU: одна объявляет
+два `tainted.io/gpu`, у каждой есть метка `zone`. Двум подам нужен один и тот же
+порт хоста, одному нужна зона `west`, трём нужен GPU, а оба GPU уже заняты:
 
 ```
-scarcity/cache settles on 9bwmk
-scarcity/db settles on cw2gd
-scarcity/web settles on 9bwmk
-scarcity/crowd-5bb975f679-7ldmw is sent away from 9bwmk
-scarcity/crowd-5bb975f679-7ldmw settles on qtrkn
-scarcity/crowd-5bb975f679-srctc is sent away from qtrkn
-scarcity/crowd-5bb975f679-srctc has nowhere to live
-...
-the cluster is at rest
+kube-e2e-2/train-1 has nowhere to live
+kube-e2e-2/train-2 has nowhere to live
+kube-e2e-2/train-3 has nowhere to live
+kube-e2e-2/port-a settles on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b settles on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/zonal settles on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b is sent away from kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b settles on kubernetes-stand-md0-9g8nq-qtrkn
+kube-e2e-2/port-a lives on kubernetes-stand-md0-9g8nq-cw2gd
+kube-e2e-2/port-b lives on kubernetes-stand-md0-9g8nq-qtrkn
+kube-e2e-2/zonal lives on kubernetes-stand-md0-9g8nq-cw2gd
 ```
 
-Шестеро нашедших дом работают; седьмой остаётся в ожидании, пока не
-освободится место.
+Привязанные поды работают; поды, которым нужен GPU, ждут, пока он
+освободится. Между взглядами на кластер планировщик тратит около 50m CPU.
 
 ### Внутри кластера
 
