@@ -1,0 +1,10 @@
+# c = a * b, with t as scratch.
+counters a b c t
+init a=6 b=7
+loop:  dec a  body done
+body:  dec b  give back
+give:  inc c  keep
+keep:  inc t  body
+back:  dec t  restore loop
+restore: inc b back
+done:  halt

@@ -1,0 +1,97 @@
+# The Tainted compiler, written in Tainted.
+#
+# It hears a program from the world, line by line, and lowers if, while,
+# first time, mark and return into Tainted assembly: labels and jumps.
+# Its own memory fades like anyone's, so while it reads it keeps
+# recalling the two things it must not forget: the open blocks and
+# how many blocks it has seen.
+soul compiler
+    say "# compiled by a compiler that had already run " + runs + " times"
+    let stack = ""
+    let blocks = 0
+    hear world into line
+    while line != 0
+        recall stack blocks
+        let size = length of line
+        let i = 1
+        while i <= size and part i i of line == " "
+            recall stack blocks
+            i = i + 1
+        end
+        let text = part i size of line
+        let n = length of text
+        let j = 1
+        while j <= n and part j j of text != " "
+            recall stack blocks
+            j = j + 1
+        end
+        let word = part 1 (j - 1) of text
+        let rest = part (j + 1) n of text
+        if word == "" or part 1 1 of word == "#"
+            return to next
+        end
+        if word == "soul"
+            say text
+            return to next
+        end
+        if word == "end" or word == "else"
+            if stack == ""
+                say "end"
+                return to next
+            end
+            let k = length of stack
+            while part k k of stack != ";"
+                k = k - 1
+            end
+            let top = part (k + 1) (length of stack) of stack
+            stack = part 1 (k - 1) of stack
+            let kind = part 1 1 of top
+            let num = part 2 (length of top) of top
+            if word == "else"
+                say "    jmp L" + num + "x"
+                say "    L" + num + "e:"
+                stack = stack + ";e" + num
+                return to next
+            end
+            if kind == "w"
+                say "    jmp W" + num
+            end
+            if kind == "e"
+                say "    L" + num + "x:"
+            else
+                say "    L" + num + "e:"
+            end
+            return to next
+        end
+        if word == "if"
+            blocks = blocks + 1
+            say "    jz L" + blocks + "e " + rest
+            stack = stack + ";i" + blocks
+            return to next
+        end
+        if word == "while"
+            blocks = blocks + 1
+            say "    W" + blocks + ":"
+            say "    jz L" + blocks + "e " + rest
+            stack = stack + ";w" + blocks
+            return to next
+        end
+        if word == "first"
+            blocks = blocks + 1
+            say "    first L" + blocks + "e"
+            stack = stack + ";f" + blocks
+            return to next
+        end
+        if word == "mark"
+            say "    M_" + rest + ":"
+            return to next
+        end
+        if word == "return"
+            say "    jmp M_" + part 4 (length of rest) of rest
+            return to next
+        end
+        say "    " + text
+        mark next
+        hear world into line
+    end
+end
