@@ -53,12 +53,34 @@ def memory(q):
 
 
 def requests(pod):
-    c = m = 0
-    for container in pod["spec"].get("containers", []):
+    """What the kubelet will hold for the pod, counted the way the kubelet
+    counts it: app containers and sidecars run together, every other init
+    container runs alone next to the sidecars started before it, the pod
+    takes the larger of the two, and the runtime's overhead comes on top.
+    Resources set for the pod as a whole replace the containers' own."""
+    spec = pod["spec"]
+
+    def own(container):
         req = container.get("resources", {}).get("requests", {})
-        c += cpu(req.get("cpu", 0))
-        m += memory(req.get("memory", 0))
-    return c, m
+        return cpu(req.get("cpu", 0)), memory(req.get("memory", 0))
+
+    pod_level = spec.get("resources", {}).get("requests")
+    if pod_level:
+        c, m = cpu(pod_level.get("cpu", 0)), memory(pod_level.get("memory", 0))
+    else:
+        side_c = side_m = peak_c = peak_m = 0
+        for init in spec.get("initContainers", []):
+            ic, im = own(init)
+            if init.get("restartPolicy") == "Always":
+                side_c, side_m = side_c + ic, side_m + im
+                peak_c, peak_m = max(peak_c, side_c), max(peak_m, side_m)
+            else:
+                peak_c, peak_m = max(peak_c, side_c + ic), max(peak_m, side_m + im)
+        app = [own(x) for x in spec.get("containers", [])]
+        c = max(peak_c, side_c + sum(x[0] for x in app))
+        m = max(peak_m, side_m + sum(x[1] for x in app))
+    overhead = spec.get("overhead", {})
+    return c + cpu(overhead.get("cpu", 0)), m + memory(overhead.get("memory", 0))
 
 
 def tolerates(pod, taint):

@@ -455,6 +455,23 @@ class Bridge(unittest.TestCase):
         self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
         self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
 
+    def test_requests_count_init_containers_like_the_kubelet(self):
+        def box(cpu, always=False):
+            c = {"resources": {"requests": {"cpu": cpu}}}
+            if always:
+                c["restartPolicy"] = "Always"
+            return c
+        pod = {"spec": {"initContainers": [box("500m")], "containers": [box("100m")]}}
+        self.assertEqual(bridge.requests(pod)[0], 500)
+        pod["spec"]["initContainers"] = [box("200m", always=True), box("400m")]
+        self.assertEqual(bridge.requests(pod)[0], 600)
+        pod["spec"]["containers"] = [box("500m")]
+        self.assertEqual(bridge.requests(pod)[0], 700)
+        pod["spec"]["overhead"] = {"cpu": "50m"}
+        self.assertEqual(bridge.requests(pod)[0], 750)
+        pod["spec"]["resources"] = {"requests": {"cpu": "1"}}
+        self.assertEqual(bridge.requests(pod)[0], 1050)
+
     def test_binding_needs_no_more_rights_than_binding(self):
         """kubectl create -f validates against the CRD list, which a scheduler
         running with least privilege may not read; the binding subresource
