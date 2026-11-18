@@ -4,8 +4,8 @@ soul ping
     let n = 0
     while n < 5
         tell pong "ping " + n
-        hear pong into back
-        say back
+        hear pong into reply
+        say reply
         n = n + 1
     end
     say "ping and pong: " + bond with pong

@@ -2,13 +2,13 @@
 soul mirror
     hear world into line
     while line != 0
-        let back = ""
+        let mirrored = ""
         let i = length of line
         while i > 0
-            back = back + part i i of line
+            mirrored = mirrored + part i i of line
             i = i - 1
         end
-        say back
+        say mirrored
         hear world into line
     end
 end
