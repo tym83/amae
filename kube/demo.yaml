@@ -1,13 +1,13 @@
-# Pods for taintednetes to place. Apply, then run:
+# Pods for taintednetes to place. NODE_A and NODE_B stand for two of your nodes:
 #   kubectl --context <ctx> create namespace <ns>
-#   kubectl --context <ctx> -n <ns> apply -f kube/demo.yaml
-#   python3 kube/bridge.py --context <ctx> --once
+#   sed -e s/NODE_A/<node>/ -e s/NODE_B/<node>/ kube/demo.yaml \
+#     | kubectl --context <ctx> -n <ns> apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
   name: web
   annotations:
-    taintednetes.io/likes: "taintednetes-worker taintednetes-worker2"
+    taintednetes.io/likes: "NODE_A NODE_B"
 spec:
   schedulerName: taintednetes
   containers:
@@ -21,7 +21,7 @@ kind: Pod
 metadata:
   name: db
   annotations:
-    taintednetes.io/likes: "taintednetes-worker"
+    taintednetes.io/likes: "NODE_A"
 spec:
   schedulerName: taintednetes
   containers:
@@ -35,7 +35,7 @@ kind: Pod
 metadata:
   name: cache
   annotations:
-    taintednetes.io/likes: "taintednetes-worker2 taintednetes-worker"
+    taintednetes.io/likes: "NODE_B NODE_A"
 spec:
   schedulerName: taintednetes
   containers:

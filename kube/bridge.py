@@ -187,7 +187,9 @@ class Bridge:
                    "metadata": {"name": pod["metadata"]["name"],
                                 "namespace": pod["metadata"]["namespace"]},
                    "target": {"apiVersion": "v1", "kind": "Node", "name": node}}
-        self.kubectl("create", "-f", "-", stdin=json.dumps(binding))
+        ns, name = pod["metadata"]["namespace"], pod["metadata"]["name"]
+        self.kubectl("create", "--raw", f"/api/v1/namespaces/{ns}/pods/{name}/binding",
+                     "-f", "-", stdin=json.dumps(binding))
 
     def once(self):
         text, pid = self.describe()
