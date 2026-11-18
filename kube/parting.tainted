@@ -78,6 +78,7 @@ end
 # An eviction can be refused, by a disruption budget for one; a pod that is
 # still working where it was after a while is asked again.
 ritual calm
+    note "why" = ""
     if note "let go" == ""
         give back 1
     end
@@ -89,13 +90,18 @@ ritual calm
             say "evict " + note "let go"
             say "log " + note "let go" + " has not gone yet; asking again"
         end
+        note "why" = "waits for " + note "let go" + " to be let go"
         give back 0
     end
     if here == 1
         give back 0
     end
     perform waiting_of with note "owner" into now
-    give back now <= note "before"
+    if now > note "before"
+        note "why" = "waits for " + note "owner" + " to bring a replacement up"
+        give back 0
+    end
+    give back 1
 end
 
 ritual pods n
@@ -145,6 +151,11 @@ ritual reconcile
                 perform pods with note ("let go " + name) into many
                 say "log " + name + " has left; it let go of " + many
             else
+                if sent == 0 and not calm and note "why" != ""
+                    if note "let go from" == name
+                        perform complain with name, name + " " + note "why"
+                    end
+                end
                 if sent == 0 and calm
                     perform first_pod_to_let_go with name into pod
                     if pod == ""

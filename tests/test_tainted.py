@@ -535,6 +535,8 @@ class Parting(unittest.TestCase):
         evictions = [i for i, h in enumerate(history) if any(c.startswith("evict") for c in h)]
         self.assertEqual(len(evictions), 2)
         self.assertGreaterEqual(evictions[1] - evictions[0], 2)
+        waiting = [l for l in self.logs if "replacement" in l]
+        self.assertEqual(waiting, ["log w2 waits for a/RS/x to bring a replacement up"])
 
     def test_a_crowded_cluster_does_not_make_it_forget(self):
         nodes = {"w1": ["ready", "schedulable", "staying"],
