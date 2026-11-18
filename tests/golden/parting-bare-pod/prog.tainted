@@ -169,8 +169,8 @@ ritual reconcile
                         note "let go from" = name
                         note "refused" = 0
                         note "owner" = word 4 of pod
-                        perform waiting_of with word 4 of pod into before
-                        note "before" = before
+                        perform waiting_of with word 4 of pod into waiting_before
+                        note "before" = waiting_before
                         say "evict " + word 1 of pod
                         say "log " + name + " lets " + word 1 of pod + " go"
                         perform farewell with name, 1

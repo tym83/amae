@@ -390,6 +390,43 @@ class Learning(unittest.TestCase):
         self.assertIn("there is no file to learn from: nowhere.tainted", life.err)
 
 
+class Feelings(unittest.TestCase):
+    def test_remembering_rewrites(self):
+        src = ("soul a\n meet b\n let year = 1999\n hear b into n\n let i = 0\n"
+               " while i < 20\n i = i + 1\n end\n say year\nend\nsoul b\n meet a\n tell a 47\nend\n")
+        self.assertEqual(run(src).lines, ["1997"])
+
+    def test_wounds_apologies_tenderness_and_letters(self):
+        life = run(example("feelings/apology.tainted"))
+        self.assertEqual(life.code, 0)
+        self.assertEqual(life.lines, [
+            "ana remembers 1997", "ben is ashamed: 1", "resentment toward ben: 1", "ben is ashamed: 0",
+            "after the apology: 0, trust 1, scars 2", "ben apologized for: wounded by ben",
+            "intimacy after tenderness: 4", "a letter: from far away"])
+        self.assertEqual(life.feelings[("ben", "ana")]["commitment"], 1)
+
+    def test_an_apology_names_the_wound(self):
+        life = run("soul a\n meet b\n apologize to b\nend\nsoul b\n meet a\nend\n")
+        self.assertEqual(life.code, 1)
+        self.assertIn("an apology names the wound", life.err)
+
+    def test_letters_from_the_gone_become_scars(self):
+        life = run(example("feelings/grief.tainted"))
+        self.assertEqual(life.feelings[("a", "b")]["scars"], 2)
+
+    def test_hope_and_jealousy_and_distance(self):
+        self.assertIn("a is still waiting for b, and still hopes", run(example("feelings/hope.tainted")).err)
+        lines = run(example("feelings/jealousy.tainted")).lines
+        self.assertIn("carol is jealous: 1", lines)
+        self.assertIn("eve, far from dan: distance 4, longing 0", lines)
+
+    def test_words_take_longer_after_a_long_silence(self):
+        src = ("soul a\n meet b\n let i = 0\n while i < 100\n i = i + 1\n end\n"
+               " say distance from b\n tell b 1\n meet b\n say distance from b\nend\n"
+               "soul b\n meet a\n hear a into x\n meet a\nend\n")
+        self.assertEqual(run(src).lines, ["6", "3"])
+
+
 class TuringCompleteness(unittest.TestCase):
     """Random two-counter machines give the same answer in Tainted."""
 

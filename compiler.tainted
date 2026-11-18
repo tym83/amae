@@ -291,7 +291,7 @@ ritual peek_value
     give back note ("tv " + note "cj" + " " + note "ck")
 end
 
-ritual take
+ritual take_token
     if note "ck" > note "cn"
         perform fail with "the line ends too early"
     end
@@ -344,7 +344,7 @@ ritual expect_word w
 end
 
 ritual a_name
-    perform take into k
+    perform take_token into k
     perform kind_of with k into kd
     perform value_of with k into v
     perform reserved with v into taken
@@ -396,7 +396,7 @@ ritual e_target
 end
 
 ritual e_primary
-    perform take into k
+    perform take_token into k
     perform kind_of with k into kd
     perform value_of with k into v
     if kd == "num"
@@ -534,6 +534,16 @@ ritual e_primary
     end
     if v == "runs"
         perform tmp with "t_runs(w)" into t
+        give back t
+    end
+    let feelings = "distance resentment hoping jealous ashamed longing letters"
+    let joins = "from toward for of before for from"
+    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS"
+    let at = place of v in feelings
+    if at > 0
+        perform expect_word with word at of joins
+        perform e_target into who
+        perform tmp with "t_feeling(w, s, " + word at of kinds + ", " + who + ")" into t
         give back t
     end
     if v == "now"
@@ -929,7 +939,7 @@ ritual statement
         perform line_done
         give back 0
     end
-    perform take into skipped
+    perform take_token into skipped
     perform statement_of with head, j
 end
 
@@ -979,7 +989,8 @@ ritual statement_of head, j
         if head == "confide"
             op = "OP_CONFIDE"
         end
-        perform add_ins with op, ", .mode=TO_NAMED, .target=" + t + ", .a=" + e + note "none", "return t_tell(w, s, " + at + ");"
+        perform is_word with "tenderly" into gently
+        perform add_ins with op, ", .mode=TO_NAMED, .target=" + t + ", .a=" + e + ", .tender=" + gently + note "none", "return t_tell(w, s, " + at + ");"
         perform line_done
         give back 0
     end
@@ -1280,6 +1291,80 @@ ritual statement_of_world head, j
         perform line_done
         give back 0
     end
+    if head == "send"
+        perform target_fn into t
+        perform expr_fn into e
+        perform here into at
+        perform add_ins with "OP_SEND", ", .mode=TO_NAMED, .target=" + t + ", .a=" + e + note "none", "return t_send(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "receive"
+        let mode = "TO_NAMED"
+        let t = "0"
+        perform is_word with "anyone" into stranger
+        if stranger
+            mode = "TO_ANYONE"
+        else
+            perform expect_word with "from"
+            perform target_fn into t
+        end
+        perform expect_word with "into"
+        perform a_name into name
+        perform slot_of with name into slot
+        let writer = -1
+        if stranger
+            perform is_word with "from" into asks
+            if asks
+                perform a_name into who
+                perform slot_of with who into writer
+            end
+        end
+        perform here into at
+        perform add_ins with "OP_RECEIVE", ", .mode=" + mode + ", .target=" + t + ", .var=" + slot + ", .var2=" + writer + ", .unit=-1", "return t_receive(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "thank"
+        perform feeling with "OP_THANK"
+        perform line_done
+        give back 0
+    end
+    if head == "hope"
+        perform expect_word with "for"
+        perform feeling with "OP_HOPE"
+        perform line_done
+        give back 0
+    end
+    if head == "admit"
+        perform expect_word with "resentment"
+        perform expect_word with "toward"
+        perform feeling with "OP_ADMIT"
+        perform line_done
+        give back 0
+    end
+    if head == "take"
+        perform expect_word with "back"
+        perform expect_word with "heart"
+        perform expect_word with "from"
+        perform feeling with "OP_TAKE_BACK"
+        perform line_done
+        give back 0
+    end
+    if head == "apologize"
+        perform expect_word with "to"
+        perform target_fn into t
+        perform is_word with "for" into naming
+        if not naming
+            perform fail with "an apology names the wound it is for: apologize to someone for scar n"
+        end
+        perform expect_word with "scar"
+        perform expr_fn into e
+        perform here into at
+        perform add_ins with "OP_APOLOGIZE", ", .mode=TO_NAMED, .target=" + t + ", .a=" + e + note "none", "{ Value n = " + e + "(w, s); return t_apologize(w, s, " + at + ", n); }"
+        perform line_done
+        give back 0
+    end
     if head == "endure"
         perform line_done
         let line = j
@@ -1392,7 +1477,7 @@ ritual declaration
     note "hl" = note ("ln " + j)
     perform is_word with "learn" into learning
     if learning
-        perform take into k
+        perform take_token into k
         perform kind_of with k into kd
         if kd != "str"
             perform fail with "learn needs the name of a file, in quotes"
@@ -1544,7 +1629,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0

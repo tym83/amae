@@ -19,6 +19,7 @@ and how every feeling is counted.
 - [Memory](#memory)
 - [Runs](#runs)
 - [The world](#the-world)
+- [Letters and grief](#letters-and-grief)
 - [Enduring](#enduring)
 - [Learning](#learning)
 - [How a program ends](#how-a-program-ends)
@@ -73,7 +74,9 @@ leave length let mark me meet named not note number of or part passion
 perform place promise recall return ritual runs say scar scars silence
 soul tell time to trust wait warm while with word words world wound cry
 ask telling listen read write append file seconds endure when hurts learn
-keys json meaning whole fate now put remove lines
+keys json meaning whole fate now put remove lines send receive letters thank
+hope hoping resentment toward apologize tenderly take distance jealous ashamed
+before longing admit
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -149,6 +152,13 @@ A name standing alone reads a variable from the soul's memory, which may have
 | `afraid of S` | `1` while this soul is afraid of `S`, else `0` |
 | `scars of S` | how many scars this soul carries from `S` |
 | `scar n of S` | the n-th scar, counted from 1; an error if there is no such scar |
+| `distance from S` | how far apart they have grown ([Distance](#distance-and-attention)) |
+| `longing for S` | `1` while they are far apart (distance 2 or more) and passion is left |
+| `resentment toward S` | `1` while this soul resents a wound `S` gave it |
+| `ashamed before S` | `1` after wounding `S`, who had given this soul its heart, until it apologizes |
+| `jealous of S` | `1` once `S`, who has this soul's heart, confided in someone else |
+| `hoping for S` | `1` while this soul hopes for `S` |
+| `letters from S` | how many letters from `S` have arrived and are not yet read |
 
 All of them describe how this soul sees `S`; relationships are not symmetric.
 A soul that has never met `S` sees nothing: zeros, `nothing yet`, no scars.
@@ -200,6 +210,7 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `meet S` | [meets](#meeting) `S` | until `S` meets back |
 | `meet anyone as x` | meets whoever is looking for this soul; their name goes to `x` | until someone does |
 | `tell S e` | [tells](#speaking-and-hearing) `S` the value of `e` | until `S` hears |
+| `tell S e tenderly` | the same, gently: it puts no pressure on `S` and brings `S` closer | until `S` hears |
 | `confide S e` | tells `S` a secret; only to a soul this one gave its heart to | until `S` hears |
 | `hear S into x` | hears from `S` into `x` | until `S` tells |
 | `hear anyone into x` | hears from whoever speaks to this soul first | until someone does |
@@ -211,6 +222,14 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `give heart to S` | gives `S` this soul's heart | no |
 | `wound S` | wounds `S` ([Wounds](#wounds)) | no |
 | `forgive S` | opens this soul to `S` again after a wound | no |
+| `apologize to S for scar n` | apologizes for the wound that is `S`'s scar `n` ([Apologies](#apologies)) | no |
+| `admit resentment toward S` | names this soul's resentment, which lets it go | no |
+| `thank S` | gratitude: commitment to `S` grows, and `S` feels closer | no |
+| `hope for S` | this soul hopes: its passion for `S` no longer cools | no |
+| `take back heart from S` | takes back the heart given to `S` | no |
+| `send S e` | sends `S` a letter, which arrives in its own time ([Letters](#letters-and-grief)) | no |
+| `receive from S into x` | reads a letter from `S` | until one has arrived |
+| `receive anyone into x from y` | reads the first letter that has arrived, and who wrote it | until one has arrived |
 | `leave S` | leaves `S` for good ([Leaving](#leaving)) | no |
 | `note k = e` | writes `e` down under the key `k` ([Notes](#notes)) | no |
 | `recall a b …` | reads the variables, which keeps them from fading | no |
@@ -417,11 +436,47 @@ For every 50 of its own steps since the last meeting, a soul's passion for
 another cools by one, down to zero. Meeting again starts the count again.
 Passion for a soul one has left does not change any more.
 
+### Distance and attention
+
+Two souls drift apart while nothing passes between them. For every 50 of its
+own steps without a word, a letter or a meeting, a soul's distance from the
+other grows by one; words from far away take that many rounds on their way
+before they can be heard, and a letter arrives that many rounds after it was
+sent. Words in flight are time passing, not a deadlock. Each meeting halves the
+distance, so closeness comes back gradually.
+
+Intimacy needs attention: it falls by one for every 100 steps without contact,
+or every 50 while there is resentment. Trust does not fade; it is what the
+language computes with.
+
+### Feelings
+
+Feelings happen in a relationship and change it.
+
+| Feeling | Comes | Does | Goes |
+|---|---|---|---|
+| resentment | with a wound | answers no longer bring the two closer, and intimacy fades twice as fast | when it is admitted, or the wound apologized for |
+| shame | after wounding someone who gave this soul their heart | `ashamed before` | with an apology |
+| jealousy | when the one who has this soul's heart confides in another | passion grows by one, intimacy falls by one | stays |
+| longing | while far apart with passion left | `longing for` | when they are close again |
+| gratitude | `thank S` | commitment grows, and `S` feels closer | stays |
+| hope | `hope for S` | passion for `S` no longer cools; a lament says that it still hopes | stays |
+| tenderness | `tell S e tenderly` | the word puts no pressure on `S` and brings `S` closer | — |
+
+### Apologies
+
+An apology names the wound it is for: `apologize to S for scar n`, where `n`
+is the number of the scar `"wounded by <this soul>"` among `S`'s scars from this
+soul. An apology without `for` does not compile, and one for a scar that is not
+a wound this soul gave is an error. `S`'s resentment goes, this soul's shame
+goes, `S`'s trust grows by one, and `S` keeps one more scar:
+`"<this soul> apologized for: wounded by <this soul>"`. The wound stays.
+
 ### Wounds
 
 `wound S` changes how `S` sees this soul: `S`'s trust drops to zero, its
-intimacy is halved (rounded down), and it keeps the scar
-`"wounded by <name>"`. If `S` had not given its heart to this soul, `S` is
+intimacy is halved (rounded down), it keeps the scar
+`"wounded by <name>"` and it resents the wound. If `S` had not given its heart to this soul, `S` is
 also closed: it will not hear this soul and will not meet it until it
 forgives. If it had, it stays open: the heart given is what lets a
 relationship survive a wound.
@@ -454,6 +509,15 @@ the loop does not use fades while it runs.
 
 Parameters of a ritual are fresh when the ritual starts, and the variables of
 the soul that performs it are held while the ritual lasts.
+
+### Remembering rewrites
+
+A memory cannot be read without being rewritten. When a soul reads a variable
+that has faded, what was lost is filled in from the end of what the soul heard
+last, if that was the same kind of thing: a number's lost digits from the last
+digits of the number it heard, a string's lost letters from the end of the
+string it heard. A soul that remembered the year 1999 and last heard 47 recalls
+1997; one that heard nothing, or heard words, recalls 1990.
 
 ### Notes
 
@@ -506,6 +570,15 @@ first.
 This is how a Tainted program knows that a computation spread over many souls
 has settled: the scheduler in `taintednetes.tainted` waits for silence and then
 asks every pod where it lives.
+
+## Letters and grief
+
+`send S e` writes `S` a letter and goes on at once; it does not wait for `S`. The
+letter arrives after as many rounds as the two are far apart, and waits until
+`S` reads it with `receive from` or `receive anyone`. Letters are kept even after
+the one who wrote them is gone: they cannot be stopped, only read. Whatever a
+soul has not read of the letters from souls that are gone, it keeps as scars
+when it ends.
 
 ## Enduring
 

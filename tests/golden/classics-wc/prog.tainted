@@ -1,14 +1,14 @@
-# Counts lines, words and letters, like wc.
+# Counts lines, words and characters, like wc.
 soul counter
     let count = 0
     let all = 0
-    let letters = 0
+    let characters = 0
     hear world into line
     while line != 0
         count = count + 1
         all = all + words of line
-        letters = letters + length of line + 1
+        characters = characters + length of line + 1
         hear world into line
     end
-    say count + " " + all + " " + letters
+    say count + " " + all + " " + characters
 end

@@ -1,0 +1,40 @@
+soul carol
+    meet dan
+    give heart to dan
+    tell dan "I am yours"
+    hear dan into ok
+    wait
+    wait
+    wait
+    say "carol is jealous: " + jealous of dan
+end
+
+soul dan
+    meet carol
+    meet eve
+    give heart to eve
+    hear carol into mine
+    tell carol "I know"
+    confide eve "only you"
+end
+
+soul eve
+    meet dan
+    hear dan into secret
+    let i = 0
+    while i < 70
+        i = i + 1
+    end
+    say "eve, far from dan: distance " + distance from dan + ", longing " + longing for dan
+    meet zoe
+    receive from zoe into one
+    say "eve read: " + one
+end
+
+soul zoe
+    meet eve
+    send eve "first"
+    send eve "second"
+    send eve "third"
+    goodbye
+end

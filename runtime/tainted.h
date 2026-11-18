@@ -37,7 +37,8 @@ enum {
     OP_RECALL, OP_GOODBYE, OP_NOTE, OP_BRING, OP_PERFORM, OP_GIVEBACK,
     OP_JZ, OP_JMP, OP_FIRST, OP_CRY,
     OP_SET, OP_PUT, OP_REMOVE, OP_ASK, OP_LISTEN, OP_READ, OP_WRITE, OP_APPEND,
-    OP_SLEEP, OP_ENDURE, OP_ENDURED
+    OP_SLEEP, OP_ENDURE, OP_ENDURED,
+    OP_SEND, OP_RECEIVE, OP_THANK, OP_HOPE, OP_ADMIT, OP_APOLOGIZE, OP_TAKE_BACK
 };
 
 enum { TO_NAMED = 0, TO_ANYONE = 1, TO_WORLD = 2 };
@@ -52,6 +53,7 @@ typedef struct Ins {
     Expr a, b;          /* the values it needs */
     int jump;           /* jz, jmp and first; where endure goes when it hurts */
     int until;          /* endure: where the enduring ends */
+    int tender;         /* tell ... tenderly */
     int unit;           /* the ritual performed or the kind brought, -1 if none */
     const char *name;   /* its name, for errors */
     int nargs;
@@ -124,6 +126,8 @@ Value t_env(World *w, Value name);
 Value t_now(World *w);
 Value t_fate(World *w, Value n);
 Value t_lines(World *w, Value text);
+Value t_feeling(World *w, Soul *s, int what, Value who);
+enum { F_DISTANCE, F_RESENTMENT, F_HOPING, F_JEALOUS, F_ASHAMED, F_LONGING, F_LETTERS };
 
 enum { B_ADD, B_SUB, B_MUL, B_DIV, B_MOD, B_EQ, B_NE, B_LT, B_LE, B_GT, B_GE };
 enum { R_TRUST, R_INTIMACY, R_PASSION, R_COMMITMENT };
@@ -159,5 +163,8 @@ int t_write(World *w, Soul *s, Value v, Value file, int append);
 int t_sleep(World *w, Soul *s, Value seconds);
 int t_endure(World *w, Soul *s, const Ins *ins);
 int t_endured(World *w, Soul *s, int to);
+int t_send(World *w, Soul *s, const Ins *ins);
+int t_receive(World *w, Soul *s, const Ins *ins);
+int t_apologize(World *w, Soul *s, const Ins *ins, Value scar);
 
 #endif
