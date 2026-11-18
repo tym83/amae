@@ -55,11 +55,18 @@ ritual waiting_of owner
     give back count
 end
 
-ritual still_here name
+# Whether a pod is still on a node: 2 if it lives and works there, 1 if it
+# is there but on its way out, 0 if it is gone. A pod of a StatefulSet comes
+# back under its own name, so the name alone does not say it never left.
+ritual still_here name, node
     let i = 1
     while i <= note "pods"
-        recall name
-        if word 1 of note ("pod " + i) == name
+        recall name node
+        let pod = note ("pod " + i)
+        if word 1 of pod == name and word 2 of pod == node
+            if word 3 of pod == "ready"
+                give back 2
+            end
             give back 1
         end
         i = i + 1
@@ -67,12 +74,24 @@ ritual still_here name
     give back 0
 end
 
+# Whether the last pod let go is gone and its owner has caught up.
+# An eviction can be refused, by a disruption budget for one; a pod that is
+# still working where it was after a while is asked again.
 ritual calm
     if note "let go" == ""
         give back 1
     end
-    perform still_here with note "let go" into here
-    if here
+    perform still_here with note "let go", note "let go from" into here
+    if here == 2
+        note "refused" = note "refused" + 1
+        if note "refused" >= 6
+            note "refused" = 0
+            say "evict " + note "let go"
+            say "log " + note "let go" + " has not gone yet; asking again"
+        end
+        give back 0
+    end
+    if here == 1
         give back 0
     end
     perform waiting_of with note "owner" into now
@@ -108,9 +127,10 @@ end
 
 ritual reconcile
     let sent = 0
+    perform calm into calm
     let i = 1
     while i <= note "nodes"
-        recall sent
+        recall sent calm
         let line = note ("node " + i)
         let name = word 2 of line
         perform remember_node with name
@@ -125,7 +145,6 @@ ritual reconcile
                 perform pods with note ("let go " + name) into many
                 say "log " + name + " has left; it let go of " + many
             else
-                perform calm into calm
                 if sent == 0 and calm
                     perform first_pod_to_let_go with name into pod
                     if pod == ""
@@ -136,6 +155,8 @@ ritual reconcile
                         end
                     else
                         note "let go" = word 1 of pod
+                        note "let go from" = name
+                        note "refused" = 0
                         note "owner" = word 4 of pod
                         perform waiting_of with word 4 of pod into before
                         note "before" = before
