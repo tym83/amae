@@ -6,7 +6,7 @@
 #   make seed       boot/tc.c from the bootstrap (after a change to the compiler)
 
 CC ?= cc
-CFLAGS ?= -std=c11 -D_POSIX_C_SOURCE=200809L -O2 -Wall -Wextra -Wno-unused-parameter
+CFLAGS ?= -std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -O2 -Wall -Wextra -Wno-unused-parameter
 BUILD := build
 RUNTIME := runtime/tainted.c runtime/tainted.h
 HISTORY := $(abspath $(BUILD))/history.json
