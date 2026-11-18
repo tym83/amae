@@ -53,12 +53,34 @@ def memory(q):
 
 
 def requests(pod):
-    c = m = 0
-    for container in pod["spec"].get("containers", []):
+    """What the kubelet will hold for the pod, counted the way the kubelet
+    counts it: app containers and sidecars run together, every other init
+    container runs alone next to the sidecars started before it, the pod
+    takes the larger of the two, and the runtime's overhead comes on top.
+    Resources set for the pod as a whole replace the containers' own."""
+    spec = pod["spec"]
+
+    def own(container):
         req = container.get("resources", {}).get("requests", {})
-        c += cpu(req.get("cpu", 0))
-        m += memory(req.get("memory", 0))
-    return c, m
+        return cpu(req.get("cpu", 0)), memory(req.get("memory", 0))
+
+    pod_level = spec.get("resources", {}).get("requests")
+    if pod_level:
+        c, m = cpu(pod_level.get("cpu", 0)), memory(pod_level.get("memory", 0))
+    else:
+        side_c = side_m = peak_c = peak_m = 0
+        for init in spec.get("initContainers", []):
+            ic, im = own(init)
+            if init.get("restartPolicy") == "Always":
+                side_c, side_m = side_c + ic, side_m + im
+                peak_c, peak_m = max(peak_c, side_c), max(peak_m, side_m)
+            else:
+                peak_c, peak_m = max(peak_c, side_c + ic), max(peak_m, side_m + im)
+        app = [own(x) for x in spec.get("containers", [])]
+        c = max(peak_c, side_c + sum(x[0] for x in app))
+        m = max(peak_m, side_m + sum(x[1] for x in app))
+    overhead = spec.get("overhead", {})
+    return c + cpu(overhead.get("cpu", 0)), m + memory(overhead.get("memory", 0))
 
 
 def tolerates(pod, taint):
@@ -94,6 +116,7 @@ class Bridge:
         with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
             self.source = f.read()
         self.program = tainted.compile_program(self.source)
+        self.last_story = None
 
     def kubectl(self, *args, stdin=None):
         cmd = ["kubectl", "--context", self.context, *args]
@@ -192,10 +215,13 @@ class Bridge:
                      "-f", "-", stdin=json.dumps(binding))
 
     def once(self):
+        """Schedule what is pending. A pass that changes nothing and tells the
+        same story as the one before it is not told again."""
         text, pid = self.describe()
         if text is None:
+            self.last_story = None
             return 0
-        bound = 0
+        bound, story = 0, []
         for line in self.decide(text):
             words = line.split()
             if words[1:3] == ["lives", "on"] and words[0] in pid:
@@ -204,7 +230,11 @@ class Bridge:
                 print(f"{words[0][4:]} lives on {node}", flush=True)
                 bound += 1
             else:
-                print(line.replace("pod:", "").replace("node:", ""), flush=True)
+                story.append(line.replace("pod:", "").replace("node:", ""))
+        if bound or story != self.last_story:
+            for line in story:
+                print(line, flush=True)
+        self.last_story = None if bound else story
         return bound
 
 

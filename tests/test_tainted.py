@@ -117,6 +117,17 @@ class Rituals(unittest.TestCase):
 
 
 class Rules(unittest.TestCase):
+    def test_passion_cools_while_apart(self):
+        """Two strangers meet at first sight (passion 3), then live apart:
+        one degree is lost every fifty steps of each one's own life."""
+        src = ("soul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
+               " say passion b\nend\nsoul b\n meet a\nend\n")
+        code, lines, _ = run(src)
+        self.assertEqual(code, 0)
+        self.assertEqual(lines, ["0"])
+        src = src.replace("i < 60", "i < 20")
+        self.assertEqual(run(src)[1], ["2"])
+
     def test_cannot_tell_a_stranger(self):
         with self.assertRaisesRegex(tainted.TaintedError, "never met"):
             run("soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n")
@@ -444,6 +455,36 @@ class Bridge(unittest.TestCase):
         self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
         self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
 
+    def test_a_pass_that_changes_nothing_is_not_told_again(self):
+        b = bridge.Bridge.__new__(bridge.Bridge)
+        b.last_story = None
+        b.describe = lambda: ("text", {})
+        b.decide = lambda text: ["pod:ns/web has nowhere to live", "the cluster is at rest"]
+        told = []
+        for _ in range(3):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                b.once()
+            told.append(out.getvalue())
+        self.assertEqual(told, ["ns/web has nowhere to live\nthe cluster is at rest\n", "", ""])
+
+    def test_requests_count_init_containers_like_the_kubelet(self):
+        def box(cpu, always=False):
+            c = {"resources": {"requests": {"cpu": cpu}}}
+            if always:
+                c["restartPolicy"] = "Always"
+            return c
+        pod = {"spec": {"initContainers": [box("500m")], "containers": [box("100m")]}}
+        self.assertEqual(bridge.requests(pod)[0], 500)
+        pod["spec"]["initContainers"] = [box("200m", always=True), box("400m")]
+        self.assertEqual(bridge.requests(pod)[0], 600)
+        pod["spec"]["containers"] = [box("500m")]
+        self.assertEqual(bridge.requests(pod)[0], 700)
+        pod["spec"]["overhead"] = {"cpu": "50m"}
+        self.assertEqual(bridge.requests(pod)[0], 750)
+        pod["spec"]["resources"] = {"requests": {"cpu": "1"}}
+        self.assertEqual(bridge.requests(pod)[0], 1050)
+
     def test_binding_needs_no_more_rights_than_binding(self):
         """kubectl create -f validates against the CRD list, which a scheduler
         running with least privilege may not read; the binding subresource
@@ -461,7 +502,7 @@ class Bridge(unittest.TestCase):
 class Parting(unittest.TestCase):
     """The operator in kube/parting.tainted, against a cluster that is only imagined."""
 
-    def live(self, nodes, pods, ticks, slow=0):
+    def live(self, nodes, pods, ticks, slow=0, refuse=0, same_name=False):
         lines = []
         hands = kube_world.Hands("none", log=lines.append)
         said = []
@@ -493,9 +534,12 @@ class Parting(unittest.TestCase):
                 if w_[0] == "cordon":
                     nodes[w_[1]][1] = "cordoned"
                 elif w_[0] == "evict":
+                    if refuse:
+                        refuse -= 1
+                        continue
                     owner = pods.pop(w_[1])[2]
                     born += 1
-                    pods["a/new%d" % born] = ["w1", "waiting", owner]
+                    pods[w_[1] if same_name else "a/new%d" % born] = ["w1", "waiting", owner]
                 elif w_[0] == "annotate":
                     nodes[w_[2]][2] = "left"
             for pod in [p for p in pods if pods[p][1] == "waiting" and tick % (slow + 1) == 0]:
@@ -521,6 +565,8 @@ class Parting(unittest.TestCase):
         evictions = [i for i, h in enumerate(history) if any(c.startswith("evict") for c in h)]
         self.assertEqual(len(evictions), 2)
         self.assertGreaterEqual(evictions[1] - evictions[0], 2)
+        waiting = [l for l in self.logs if "replacement" in l]
+        self.assertEqual(waiting, ["log w2 waits for a/RS/x to bring a replacement up"])
 
     def test_a_crowded_cluster_does_not_make_it_forget(self):
         nodes = {"w1": ["ready", "schedulable", "staying"],
@@ -537,6 +583,25 @@ class Parting(unittest.TestCase):
         nodes = {"w2": ["ready", "cordoned", "leaving"]}
         pods = {"a/bare": ["w2", "ready", "none"]}
         self.assertEqual(self.live(nodes, pods, 3), [[], [], []])
+
+    def test_asks_again_when_an_eviction_is_refused(self):
+        nodes = {"w1": ["ready", "schedulable", "staying"],
+                 "w2": ["ready", "cordoned", "leaving"]}
+        pods = {"a/x": ["w2", "ready", "a/RS/x"]}
+        history = self.live(nodes, pods, 12, refuse=1)
+        evictions = [i for i, h in enumerate(history) if "evict a/x" in h]
+        self.assertEqual(len(evictions), 2)
+        self.assertIn(["annotate node w2 taintednetes.io/left=true"], history)
+
+    def test_a_pod_that_comes_back_under_its_own_name(self):
+        nodes = {"w1": ["ready", "schedulable", "staying"],
+                 "w2": ["ready", "cordoned", "leaving"]}
+        pods = {"a/db-0": ["w2", "ready", "a/StatefulSet/db"],
+                "a/db-1": ["w2", "ready", "a/StatefulSet/db"]}
+        history = self.live(nodes, pods, 6, same_name=True)
+        self.assertEqual(history[0], ["evict a/db-0"])
+        self.assertEqual(history[1], ["evict a/db-1"])
+        self.assertEqual(history[2], ["annotate node w2 taintednetes.io/left=true"])
 
     def test_says_why_it_is_stuck_once(self):
         nodes = {"w2": ["ready", "cordoned", "leaving"]}

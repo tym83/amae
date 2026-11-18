@@ -600,6 +600,7 @@ class Rel:
         self.abandoned = False
         self.pressure = 0
         self.last_meet = 0
+        self.faded = 0      # how many times passion has cooled since the last meeting
         self.heard = []
         self.scars = []
 
@@ -649,6 +650,10 @@ class World:
         self.souls = {s.name: s for s in self.order}
         k = runs % len(self.order)
         self.order = self.order[k:] + self.order[:k]
+        self.pos = {soul: i for i, soul in enumerate(self.order)}
+        self.telling = set()   # souls whose next step is tell or confide
+        for soul in self.order:
+            self.touch(soul)
         self.runs = runs
         self.out = out
         self.patience = patience
@@ -657,15 +662,25 @@ class World:
         self.streaming = hasattr(self.input, "get_nowait")
         self.heard_from_world = []
         self.rels = {}
-        self.mine = {}
         self.round = 0
 
     def rel(self, a, b):
         key = (a, b)
-        if key not in self.rels:
+        r = self.rels.get(key)
+        if r is None:
             r = self.rels[key] = Rel()
-            self.mine.setdefault(a, []).append(r)
-        return self.rels[key]
+        self.cool_down(r, self.souls[a])
+        return r
+
+    @staticmethod
+    def cool_down(r, owner):
+        """Passion cools by one every PASSION_FADE steps of the owner's life
+        without a meeting. It is counted when someone looks, not on every step."""
+        if r.met and not r.left and owner.step > r.last_meet:
+            due = (owner.step - r.last_meet) // PASSION_FADE
+            if due > r.faded:
+                r.passion = max(0, r.passion - (due - r.faded))
+                r.faded = due
 
     def resolve(self, s, target):
         if target[0] == 'name':
@@ -803,8 +818,17 @@ class World:
         return a // b if op == '/' else a % b
 
     # movement
+    def touch(self, s):
+        """Keep the index of souls about to speak, so listeners need not ask everyone."""
+        ins = None if s.done else s.current()
+        if ins and ins[0] in ('tell', 'confide'):
+            self.telling.add(s)
+        else:
+            self.telling.discard(s)
+
     def advance(self, s, to=None):
         s.pc = s.pc + 1 if to is None else to
+        self.touch(s)
 
     def wants_to_meet(self, b, a, strangers=True):
         bi = b.current()
@@ -827,6 +851,7 @@ class World:
             r.met = True
             r.passion += warmth
             r.last_meet = s.step
+            r.faded = 0
             self.advance(s)
         return True
 
@@ -939,8 +964,10 @@ class World:
                 raise TaintedError(f"there is already a soul called {name}")
             child = Soul(name, self.kinds[ins[2]])
             child.arrived = self.round
+            self.pos[child] = len(self.order)
             self.order.append(child)
             self.souls[name] = child
+            self.touch(child)
         elif op == 'meet':
             if ins[2] is None:
                 for b in self.order:
@@ -980,7 +1007,7 @@ class World:
                 b = self.other(s, self.resolve(s, ins[2]))
                 self.known(s, b.name)
                 return self.try_transfer(b, s)
-            for b in self.order:
+            for b in sorted(self.telling, key=self.pos.__getitem__):
                 if b is not s and self.try_transfer(b, s):
                     return True
             return False
@@ -1034,15 +1061,11 @@ class World:
             moved = False
             for s in alive:
                 s.step += 1
-                for r in self.mine.get(s.name, ()):
-                    if r.met and not r.left:
-                        idle = s.step - r.last_meet
-                        if idle and idle % PASSION_FADE == 0 and r.passion:
-                            r.passion -= 1
                 pc = s.pc
                 try:
                     if self.step(s):
                         moved = True
+                    self.touch(s)
                 except TaintedError as err:
                     ins = s.current()
                     where = f"line {ins[1]}, " if ins else ""
@@ -1097,6 +1120,7 @@ class World:
         for (a, b), r in self.rels.items():
             if not r.met:
                 continue
+            self.cool_down(r, self.souls[a])
             notes = []
             if r.gift:
                 notes.append("heart given")
