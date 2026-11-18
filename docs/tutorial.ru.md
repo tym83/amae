@@ -15,7 +15,7 @@ bin/tc program.tainted
 ./program
 ```
 
-Tainted помнит каждую программу, которую когда-либо выполнял (см. [главу 13](#13-во-второй-раз)),
+Tainted помнит каждую программу, которую когда-либо выполнял (см. [главу 17](#17-во-второй-раз)),
 поэтому первый запуск программы может отличаться от последующих. Здесь
 показан вывод первых запусков.
 
@@ -31,8 +31,12 @@ Tainted помнит каждую программу, которую когда-
 - [10. Ритуалы](#10-ритуалы)
 - [11. Тишина](#11-тишина)
 - [12. Мир](#12-мир)
-- [13. Во второй раз](#13-во-второй-раз)
-- [14. Оператор](#14-оператор)
+- [13. Списки и словари](#13-списки-и-словари)
+- [14. Вопросы к миру](#14-вопросы-к-миру)
+- [15. Перетерпеть боль](#15-перетерпеть-боль)
+- [16. Изучить файл](#16-изучить-файл)
+- [17. Во второй раз](#17-во-второй-раз)
+- [18. Оператор](#18-оператор)
 - [Куда двигаться дальше](#куда-двигаться-дальше)
 
 ## 1. Душа
@@ -128,7 +132,7 @@ FizzBuzz
 ```
 
 Внутри души Tainted — обычный маленький язык: переменные (`let i = 1`, а
-потом `i = i + 1`), целые числа и строки, `if … else … end` и `while … end`.
+потом `i = i + 1`), числа и строки (списки и словари — в [главе 13](#13-списки-и-словари)), `if … else … end` и `while … end`.
 `+` склеивает строки, а число, приклеенное к строке, становится текстом.
 Логического типа нет: сравнение даёт `1` или `0`, и с ними работают `and`,
 `or` и `not`.
@@ -489,17 +493,17 @@ gossip5 heard: the miller is rich!!!!
 
 ```tainted
 soul reader
-    let lines = 0
+    let heard = 0
     let longest = ""
     hear world into line
     while line != 0
-        lines = lines + 1
+        heard = heard + 1
         if length of line > length of longest
             longest = line
         end
         hear world into line
     end
-    say lines + " lines; the longest: " + longest
+    say heard + " lines; the longest: " + longest
 end
 ```
 
@@ -516,7 +520,185 @@ that is
 `hear world` читает строку со стандартного ввода. Когда ввод кончается, он
 отдаёт число `0`. Блок `input` выше — то, что получила эта программа.
 
-## 13. Во второй раз
+## 13. Списки и словари
+
+```tainted
+soul librarian
+    let shelf = ["Ada", "Oberon"]
+    put "Modula-2" into shelf
+    shelf[1] = "Ada 83"
+    say shelf
+    say length of shelf + " books, the second is " + shelf[2]
+
+    let years = {"Ada 83": 1983, "Oberon": 1987}
+    years["Modula-2"] = 1978
+    remove "Oberon" from years
+    say years
+    say keys of years
+    say place of "Modula-2" in years
+
+    let average = (years["Ada 83"] + years["Modula-2"]) / 2.0
+    say "on average " + average + ", or " + whole of average
+    say json of {"shelf": shelf, "count": length of shelf}
+    let order = meaning of "{\"title\": \"Oberon\", \"copies\": [1, 2]}"
+    say order["title"] + " in " + length of order["copies"] + " copies"
+end
+```
+
+```output
+["Ada 83", "Oberon", "Modula-2"]
+3 books, the second is Oberon
+{"Ada 83": 1983, "Modula-2": 1978}
+["Ada 83", "Modula-2"]
+2
+on average 1980.5, or 1980
+{"shelf": ["Ada 83", "Oberon", "Modula-2"], "count": 3}
+Oberon in 2 copies
+```
+
+Кроме чисел и слов, душа может хранить дроби, списки и словари. Список пишут
+в квадратных скобках и считают с единицы; словарь пишут в фигурных скобках, и
+ключи в нём — слова, которые хранятся в том порядке, в каком их впервые
+записали. `put` добавляет в конец списка, `remove` вынимает элемент из списка
+или ключ из словаря, а `x[i] = …` меняет то, что лежит внутри, на любой
+глубине. `length of` считает элементы, `keys of` перечисляет ключи, а
+`place of` находит, где что лежит, или даёт 0.
+
+Дробь получается из числа с точкой или из всякого вычисления, в котором такое
+число участвует: `/ 2.0` делит так, как делят дроби, а `/ 2` между целыми
+числами по-прежнему округляет вниз. `whole of` возвращает целую часть. `json of`
+записывает любое значение в JSON, а `meaning of` читает JSON и превращает его в
+списки, словари, числа и слова.
+
+Что душа хранит, то принадлежит ей одной: если положить список в другую
+переменную, сказать его другой душе или записать в заметку, он скопируется, и
+никто не изменит список за спиной у хозяина. Списки и словари выцветают, как и
+всё остальное, и первыми теряют свои последние элементы.
+
+## 14. Вопросы к миру
+
+```tainted
+soul clerk
+    ask world "date -u +%Y" into year
+    say "the world says it is " + (number of year >= 2026)
+    ask world "sort" telling "pear\napple\nfig" into sorted
+    say lines of sorted
+    write "a letter\n" to file "letter.txt"
+    append "and a postscript\n" to file "letter.txt"
+    read file "letter.txt" into letter
+    say length of lines of letter + " lines in the letter"
+    listen to world "echo one; sleep 0.1; echo two"
+    hear world into first_word
+    hear world into second_word
+    say first_word + " then " + second_word
+end
+```
+
+```output
+the world says it is 1
+["apple", "fig", "pear"]
+2 lines in the letter
+one then two
+```
+
+`ask world` запускает команду и ждёт её ответа — всего, что она напечатала,
+без последнего перевода строки. `telling` даёт команде, что прочесть. Команда,
+которая кончилась ошибкой, — это [боль](#15-перетерпеть-боль), и душа может её
+перетерпеть.
+
+`write` и `append` записывают текст в файл, `read file` забирает весь файл
+обратно, а `lines of` разрезает текст на список строк. `listen to world`
+запускает команду, которая не умолкает: каждая сказанная ею строка приходит к
+`hear world` вместе со строками стандартного ввода. Пока душа ждёт мира, мир
+медлит, но не молчит, и программа продолжает жить.
+
+`world "NAME"` — это значение переменной окружения, `now` — время в секундах,
+`wait 5 seconds` даёт остальным душам жить, пока эта спит, а `fate 6` бросает
+шестигранную кость: выпадает от 0 до 5.
+
+## 15. Перетерпеть боль
+
+```tainted
+ritual open_door name
+    let doors = {"front": "open"}
+    give back doors[name]
+end
+
+soul guest
+    perform open_door with "front" into state
+    say "the front door is " + state
+    endure
+        perform open_door with "back" into state
+        say "this is never said"
+    when it hurts as pain
+        say "it hurts: " + pain
+    end
+    endure
+        ask world "exit 2" into nothing
+    when it hurts as pain
+        say "the world refused"
+    end
+    say "and the guest goes on"
+end
+```
+
+```output
+the front door is open
+it hurts: there is nothing under back
+the world refused
+and the guest goes on
+```
+
+Ошибка обрывает программу, если только душа, которая её совершила, не терпит.
+`endure` начинает то, что может причинить боль; `when it hurts as pain`
+говорит, что делать вместо этого, а причина лежит в `pain`. Что бы ни пошло не
+так внутри, как бы глубоко в ритуалах это ни случилось, душа возвращается
+туда, где начала терпеть, а ритуалы, в которых она побывала по дороге,
+обрываются.
+
+## 16. Изучить файл
+
+```tainted
+# words.tainted: a few rituals to learn from.
+ritual shout text
+    ask world "tr a-z A-Z" telling text into loud
+    give back loud
+end
+
+ritual initials list
+    let made = ""
+    let i = 1
+    while i <= length of list
+        made = made + part 1 1 of list[i]
+        i = i + 1
+    end
+    give back made
+end
+```
+
+```tainted
+learn "words.tainted"
+
+soul poet
+    perform shout with "tainted love" into loud
+    say loud
+    perform initials with ["soft", "cell"] into short
+    say short
+end
+```
+
+```output
+TAINTED LOVE
+sc
+```
+
+`learn "words.tainted"` в начале программы приносит в неё роды и ритуалы
+другого файла, будто они были написаны в самой программе. Файл ищут рядом с
+программой, потом в библиотеке, `lib/`. Файл, изученный дважды, изучается
+один раз, а об ошибке в нём сообщают под его собственным именем:
+`tainted: line 3 of words.tainted: expected 'of'`.
+
+## 17. Во второй раз
 
 ```tainted
 soul stranger
@@ -546,7 +728,7 @@ Tainted считает, сколько раз выполнялась кажда�
 сдвигается на одну с каждым запуском, поэтому программа из нескольких душ
 всякий раз проживает чуть-чуть другую жизнь.
 
-## 14. Оператор
+## 18. Оператор
 
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again

@@ -12,7 +12,7 @@ bin/tc program.tainted
 ./program
 ```
 
-Tainted remembers every program it has run (see [chapter 13](#13-the-second-time)),
+Tainted remembers every program it has run (see [chapter 17](#17-the-second-time)),
 so the first run of a program can differ from the ones after it. The outputs
 here are of first runs.
 
@@ -28,8 +28,12 @@ here are of first runs.
 - [10. Rituals](#10-rituals)
 - [11. Silence](#11-silence)
 - [12. The world](#12-the-world)
-- [13. The second time](#13-the-second-time)
-- [14. An operator](#14-an-operator)
+- [13. Lists and maps](#13-lists-and-maps)
+- [14. Asking the world](#14-asking-the-world)
+- [15. Enduring](#15-enduring)
+- [16. Learning](#16-learning)
+- [17. The second time](#17-the-second-time)
+- [18. An operator](#18-an-operator)
 - [Where to go next](#where-to-go-next)
 
 ## 1. A soul
@@ -124,7 +128,7 @@ FizzBuzz
 ```
 
 Inside a soul, Tainted is an ordinary small language: variables (`let i = 1`,
-then `i = i + 1`), whole numbers and strings, `if … else … end` and
+then `i = i + 1`), numbers and strings (lists and maps come in [chapter 13](#13-lists-and-maps)), `if … else … end` and
 `while … end`. `+` joins strings, and a number joined to a string becomes
 text. There are no booleans: a comparison is `1` or `0`, and `and`, `or`,
 `not` work on them.
@@ -479,17 +483,17 @@ stable matching.
 
 ```tainted
 soul reader
-    let lines = 0
+    let heard = 0
     let longest = ""
     hear world into line
     while line != 0
-        lines = lines + 1
+        heard = heard + 1
         if length of line > length of longest
             longest = line
         end
         hear world into line
     end
-    say lines + " lines; the longest: " + longest
+    say heard + " lines; the longest: " + longest
 end
 ```
 
@@ -506,7 +510,181 @@ that is
 `hear world` reads a line of standard input. At the end of the input it gives
 the number `0`. The `input` above is what this program was given.
 
-## 13. The second time
+## 13. Lists and maps
+
+```tainted
+soul librarian
+    let shelf = ["Ada", "Oberon"]
+    put "Modula-2" into shelf
+    shelf[1] = "Ada 83"
+    say shelf
+    say length of shelf + " books, the second is " + shelf[2]
+
+    let years = {"Ada 83": 1983, "Oberon": 1987}
+    years["Modula-2"] = 1978
+    remove "Oberon" from years
+    say years
+    say keys of years
+    say place of "Modula-2" in years
+
+    let average = (years["Ada 83"] + years["Modula-2"]) / 2.0
+    say "on average " + average + ", or " + whole of average
+    say json of {"shelf": shelf, "count": length of shelf}
+    let order = meaning of "{\"title\": \"Oberon\", \"copies\": [1, 2]}"
+    say order["title"] + " in " + length of order["copies"] + " copies"
+end
+```
+
+```output
+["Ada 83", "Oberon", "Modula-2"]
+3 books, the second is Oberon
+{"Ada 83": 1983, "Modula-2": 1978}
+["Ada 83", "Modula-2"]
+2
+on average 1980.5, or 1980
+{"shelf": ["Ada 83", "Oberon", "Modula-2"], "count": 3}
+Oberon in 2 copies
+```
+
+Besides numbers and words, a soul can keep decimals, lists and maps. A list is
+written in brackets and counted from one; a map is written in braces, and its
+keys are words kept in the order they were first written. `put` adds to the
+end of a list, `remove` takes an item out of a list or a key out of a map, and
+`x[i] = …` changes what is inside, however deep. `length of` counts items,
+`keys of` lists the keys, and `place of` finds where something is, or gives 0.
+
+A decimal comes from a number with a point, or from any calculation with one:
+`/ 2.0` divides as decimals do, while `/ 2` between whole numbers still rounds
+down. `whole of` takes the whole part back. `json of` writes any value as JSON
+and `meaning of` reads JSON into lists, maps, numbers and words.
+
+What a soul keeps is its own: storing a list into another variable, telling
+it to another soul or writing it in a note copies it, so nobody can change a
+list behind its owner's back. Lists and maps fade like everything else, losing
+their last items first.
+
+## 14. Asking the world
+
+```tainted
+soul clerk
+    ask world "date -u +%Y" into year
+    say "the world says it is " + (number of year >= 2026)
+    ask world "sort" telling "pear\napple\nfig" into sorted
+    say lines of sorted
+    write "a letter\n" to file "letter.txt"
+    append "and a postscript\n" to file "letter.txt"
+    read file "letter.txt" into letter
+    say length of lines of letter + " lines in the letter"
+    listen to world "echo one; sleep 0.1; echo two"
+    hear world into first_word
+    hear world into second_word
+    say first_word + " then " + second_word
+end
+```
+
+```output
+the world says it is 1
+["apple", "fig", "pear"]
+2 lines in the letter
+one then two
+```
+
+`ask world` runs a command and waits for its answer, everything it printed,
+without the last line ending. `telling` gives the command something to read.
+A command that ends with an error is a [pain](#15-enduring) the soul can
+endure.
+
+`write` and `append` put text into a file, `read file` takes a whole file back,
+and `lines of` cuts text into a list of its lines. `listen to world` starts a
+command that keeps talking: every line it says comes to `hear world`, together
+with the lines of standard input. While a soul waits for the world, the world
+is slow, not silent, and the program goes on living.
+
+`world "NAME"` is the value of an environment variable, `now` is the time in
+seconds, `wait 5 seconds` lets the other souls live while this one sleeps, and
+`fate 6` throws a die with six sides, from 0 to 5.
+
+## 15. Enduring
+
+```tainted
+ritual open_door name
+    let doors = {"front": "open"}
+    give back doors[name]
+end
+
+soul guest
+    perform open_door with "front" into state
+    say "the front door is " + state
+    endure
+        perform open_door with "back" into state
+        say "this is never said"
+    when it hurts as pain
+        say "it hurts: " + pain
+    end
+    endure
+        ask world "exit 2" into nothing
+    when it hurts as pain
+        say "the world refused"
+    end
+    say "and the guest goes on"
+end
+```
+
+```output
+the front door is open
+it hurts: there is nothing under back
+the world refused
+and the guest goes on
+```
+
+A mistake ends the program, unless the soul that makes it is enduring.
+`endure` begins what may hurt; `when it hurts as pain` says what to do instead,
+with the reason in `pain`. Whatever went wrong inside, however deep in rituals,
+the soul comes back to where it endured, and the rituals it was in are let go.
+
+## 16. Learning
+
+```tainted
+# words.tainted: a few rituals to learn from.
+ritual shout text
+    ask world "tr a-z A-Z" telling text into loud
+    give back loud
+end
+
+ritual initials list
+    let made = ""
+    let i = 1
+    while i <= length of list
+        made = made + part 1 1 of list[i]
+        i = i + 1
+    end
+    give back made
+end
+```
+
+```tainted
+learn "words.tainted"
+
+soul poet
+    perform shout with "tainted love" into loud
+    say loud
+    perform initials with ["soft", "cell"] into short
+    say short
+end
+```
+
+```output
+TAINTED LOVE
+sc
+```
+
+`learn "words.tainted"` at the top of a program brings in the kinds and
+rituals of another file, as if they were written in the program. The file is
+looked for next to the program, then in the library, `lib/`. A file learned
+twice is learned once, and a mistake in it is reported with its own name:
+`tainted: line 3 of words.tainted: expected 'of'`.
+
+## 17. The second time
 
 ```tainted
 soul stranger
@@ -535,7 +713,7 @@ of the program, so changing a single character makes it a program that has
 never run. The order in which souls take their steps turns by one with every
 run, so a program of several souls lives a slightly different life each time.
 
-## 14. An operator
+## 18. An operator
 
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again

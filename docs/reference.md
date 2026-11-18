@@ -19,6 +19,8 @@ and how every feeling is counted.
 - [Memory](#memory)
 - [Runs](#runs)
 - [The world](#the-world)
+- [Enduring](#enduring)
+- [Learning](#learning)
 - [How a program ends](#how-a-program-ends)
 - [The command line](#the-command-line)
 - [The compiler](#the-compiler)
@@ -49,15 +51,15 @@ learn anything from another is to be told.
 - One statement per line. A line is split into numbers, strings, names and
   operators; spaces between them do not matter, indentation does not matter.
 - `#` starts a comment that runs to the end of the line, outside strings.
-- A number is a run of decimal digits. There are no fractions; a minus sign is
-  the unary operator.
+- A number is a run of decimal digits; with a point and more digits,
+  `3.25`, it is a decimal. A minus sign is the unary operator.
 - A string is written in double quotes. Inside it `\n` is a new line, `\"` a
   quote and `\\` a backslash, read once from left to right; a backslash before
   anything else stays a backslash.
 - A number written in the program must fit in 64 bits.
 - A name starts with a letter or `_` and goes on with letters, digits and `_`.
   Names are case-sensitive.
-- Operators: `+ - * / % == != < <= > >= = ( ) ,`.
+- Operators: `+ - * / % == != < <= > >= = ( ) , [ ] { } :`.
 
 ### Reserved words
 
@@ -70,6 +72,8 @@ first for forgive from give goodbye hear heart if in intimacy into kind
 leave length let mark me meet named not note number of or part passion
 perform place promise recall return ritual runs say scar scars silence
 soul tell time to trust wait warm while with word words world wound cry
+ask telling listen read write append file seconds endure when hurts learn
+keys json meaning whole fate now put remove lines
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -78,12 +82,22 @@ something else.
 
 ## Values
 
-There are two kinds of values: whole numbers of 64 bits, from −2⁶³ to 2⁶³ − 1,
-and strings. A calculation whose result does not fit is an error. There
-are no booleans: a comparison gives `1` or `0`, and a condition is true unless
-it is `0` or the empty string. There are no lists or maps; the
-[text expressions](#text) treat a string as a list of words separated by
-spaces, and [notes](#notes) give every soul a table indexed by strings.
+| Value | Written | Notes |
+|---|---|---|
+| a whole number | `42`, `-7` | 64 bits, from −2⁶³ to 2⁶³ − 1; a result that does not fit is an error |
+| a decimal | `3.25`, `1 / 4.0` | a 64-bit floating-point number |
+| a string | `"hello"` | UTF-8; lengths and parts count characters |
+| a list | `[1, "two", [3]]` | items counted from 1 |
+| a map | `{"name": "ana", "age": 30}` | keys are words, kept in the order they were first written |
+
+There are no booleans: a comparison gives `1` or `0`, and a condition is false
+when it is `0`, `0.0`, the empty string, an empty list or an empty map. A key
+of a map, like the key of a [note](#notes), is turned into a word: `m[1]` and
+`m["1"]` are the same.
+
+What a soul keeps is its own. Storing a value in a variable or a note, telling
+it, giving it to a ritual or keeping it as a scar makes a copy all the way
+down, so a list can only be changed through the variable that holds it.
 
 ## Expressions
 
@@ -100,8 +114,11 @@ From the loosest binding to the tightest:
 | 7 | `-a` | numbers only |
 | 8 | everything below, a name, a literal, `( … )` | |
 
-`+` joins two values into a string if either of them is a string, and adds
-them otherwise: `"pod " + 3` is `"pod 3"`. `==` and `!=` compare any two values
+`+` joins two values into a string if either of them is a string, joins two
+lists into one, and adds numbers otherwise: `"pod " + 3` is `"pod 3"`,
+`[1] + [2]` is `[1, 2]`. A whole number and a decimal together make a decimal;
+`/` between two whole numbers still rounds down, `/` with a decimal divides
+exactly. `==` and `!=` compare any two values
 and a number never equals a string. `< <= > >=` need two values of the same
 sort; strings compare by character code. `- * / %` need numbers; `/` and `%`
 round towards minus infinity, and dividing by zero is an error.
@@ -140,12 +157,33 @@ A soul that has never met `S` sees nothing: zeros, `nothing yet`, no scars.
 
 | Expression | Value |
 |---|---|
-| `length of s` | the number of characters in `s` |
+| `length of s` | the number of characters in `s`, or of items in a list or a map |
 | `part a b of s` | characters `a` to `b` of `s`, counted from 1, both included |
 | `words of s` | the number of words in `s`, split on spaces |
 | `word n of s` | the n-th word of `s`, or `""` if there is none |
-| `place of x in s` | the position of the word `x` among the words of `s`, or `0` |
-| `number of s` | the number written in `s`; an error if `s` is not a number |
+| `place of x in s` | the position of the word `x` among the words of `s`, of an item equal to `x` in a list, or of the key `x` in a map; `0` if there is none |
+| `number of s` | the number written in `s`, whole or decimal; an error if `s` is not a number |
+| `lines of s` | the lines of `s`, as a list, without their endings |
+
+### Lists, maps and JSON
+
+| Expression | Value |
+|---|---|
+| `[a, b, …]` | a list |
+| `{k: v, …}` | a map |
+| `x[i]` | the i-th item of a list, the value under the key `i` of a map, or the i-th character of a string; an error if there is none |
+| `keys of m` | the keys of a map, as a list |
+| `json of v` | `v` written as JSON |
+| `meaning of s` | the JSON in `s` read back: objects become maps, arrays lists; `true` is `1`, `false` `0` and `null` the empty string |
+| `whole of x` | the whole part of a number, rounded down |
+
+### Environment and time
+
+| Expression | Value |
+|---|---|
+| `world e` | the environment variable named `e`, or `""` |
+| `now` | the time, in seconds since 1970, as a decimal |
+| `fate n` | a whole number from 0 to `n − 1`, as chance decides; `TAINTED_FATE` fixes the chance for a run |
 
 The operand after `of` and `in`, and the indexes of `word`, `part` and
 `scar`, are unary: a literal, a name, another of these expressions or
@@ -181,6 +219,17 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `give back e` | ends the current ritual with the value `e` | no |
 | `wait` | does nothing for one step | one step |
 | `wait for silence` | waits until nobody else can do anything ([Silence](#silence)) | yes |
+| `x[i] = e` | changes an item of a list or a map, however deep: `grid[2][1] = 9` | no |
+| `put e into x` | adds `e` to the end of the list in `x` (or `x[i]…`) | no |
+| `remove k from x` | takes item `k` out of a list, or key `k` out of a map | no |
+| `ask world c into x` | runs the command `c` and waits for what it prints ([The world](#the-world)) | until it ends |
+| `ask world c telling t into x` | the same, with `t` as the command's input | until it ends |
+| `listen to world c` | starts the command `c`; every line it prints comes to `hear world` | no |
+| `read file f into x` | the whole file `f` | no |
+| `write e to file f` | writes `e` into the file `f`, replacing what was there | no |
+| `append e to file f` | adds `e` to the end of the file `f` | no |
+| `wait e seconds` | sleeps for `e` seconds while the others live | while it sleeps |
+| `endure` … `when it hurts as p` … `end` | lives through mistakes ([Enduring](#enduring)) | no |
 | `goodbye` | ends this soul's life | — |
 | `goodbye with e` | ends this soul's life; the program ends with the exit code `e` ([How a program ends](#how-a-program-ends)) | — |
 | `mark m` | names this moment of the soul's life `m` | no |
@@ -394,7 +443,9 @@ something away:
 
 - a number loses its last digit, which becomes zero: after 50 steps 1999 is
   1990, after 100 it is 1900;
-- a string loses its last character: after 50 steps `"hello"` is `"hell"`.
+- a string loses its last character: after 50 steps `"hello"` is `"hell"`;
+- a decimal loses its last digit after the point first, then its whole digits;
+- a list loses its last item, a map its last key.
 
 The faded value is what the soul remembers from then on, and reading it
 touches it again. `recall a b` reads the variables only to keep them fresh.
@@ -425,14 +476,24 @@ several souls never lives the same life twice in a row.
 
 ## The world
 
-`hear world into x` reads one line of standard input, without its line
-ending, into `x`. At the end of input it gives the number `0`, so a loop
-`while line != 0` reads to the end. The world is not a soul: it cannot be met,
-told or wounded.
+`hear world into x` reads one line, without its line ending, from what the
+world says: standard input, and every command the program listens to. At the
+end of all of them it gives the number `0`, so a loop `while line != 0` reads
+to the end. The world is not a soul: it cannot be met, told or wounded.
 
-When a host program supplies the world line by line as it happens (as
-`kube/world.py` does), a soul waiting for the world is not stuck: if nobody
-else can move, the whole world waits for the next line instead of ending.
+`listen to world c` starts the command `c` with `/bin/sh`; each line it prints
+is one more thing the world says. A soul waiting for the world is not stuck:
+if nobody else can move, the whole world waits for the next line instead of
+ending. So does a soul that sleeps with `wait n seconds`.
+
+`ask world c into x` runs `c` with `/bin/sh` and waits for it to end; `x`
+gets everything it printed, without the last line ending. With `telling t`,
+the command reads `t` as its input. A command that ends with an exit code
+other than 0 is an error, which the soul can [endure](#enduring); the error
+says what the command printed on standard error.
+
+`read file`, `write … to file` and `append … to file` read and write whole
+files; paths are relative to where the program runs.
 
 ### Silence
 
@@ -445,6 +506,38 @@ first.
 This is how a Tainted program knows that a computation spread over many souls
 has settled: the scheduler in `taintednetes.tainted` waits for silence and then
 asks every pod where it lives.
+
+## Enduring
+
+```
+endure
+    …
+when it hurts as pain
+    …
+end
+```
+
+A mistake ends the program, unless the soul that makes it is inside an
+`endure`. Then the soul goes on after `when it hurts as pain`, with the reason
+in `pain`, a string such as `"there is no item 5 in a list of 1"`. Whatever went
+wrong inside, however deep in rituals, the soul comes back to the ritual where
+it endured, and the rituals it was in are let go, their memories with them.
+A mistake made while a soul hears another (in the value the speaker computes)
+is the listener's to endure.
+
+## Learning
+
+```
+learn "kube.tainted"
+```
+
+At the top of a program, outside any soul, `learn` brings in the kinds and
+rituals of another file, as if they were written there. The file is looked
+for next to the program (`TAINTED_DIR`, set by `bin/tc`), then in the library
+(`TAINTED_LIB`, `lib/` by default). A file learned twice is learned once. A
+mistake in a learned file names it: `line 7 of kube.tainted, s: …`. The
+learned files are part of the program's source, and so of the history of its
+runs.
 
 ## How a program ends
 
@@ -538,10 +631,5 @@ suite checks this.
 These are absent by design or not yet written; a program has to live without
 them.
 
-- Values are whole numbers and strings. There are no fractions, lists or
-  maps; strings of words and notes stand in for them.
-- Input is standard input line by line, output is standard output and
-  standard error. There are no files, no clock and no randomness: the only
-  uncertainty in a run is the number of runs before it.
 - A ritual call is a statement, not an expression.
-- Errors cannot be caught; the soul that makes one ends the program.
+- Strings cannot hold the character 0.

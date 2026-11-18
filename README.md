@@ -63,6 +63,12 @@ born while the program runs, and of rituals, written as
 `ritual <name> <a>, <b>` … `end`, which any soul can perform. Each round, every soul that is still alive takes one step, in the order the souls are
 written; the starting soul shifts with every past run of the program.
 
+Inside a soul there are whole numbers, decimals, strings, lists and maps, JSON
+both ways, files, commands the soul can ask the world to run or listen to,
+time, chance, enduring a mistake with `endure … when it hurts as pain`, and
+other files to `learn` from. The tables below are the words between souls;
+the [reference](docs/reference.md) has all of them.
+
 ### Words a soul can say to itself
 
 | Statement | Meaning |
