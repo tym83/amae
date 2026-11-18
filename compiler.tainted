@@ -568,9 +568,9 @@ ritual e_primary
         perform tmp with "t_runs(w)" into t
         give back t
     end
-    let feelings = "distance resentment hoping jealous ashamed longing letters consent crossings"
-    let joins = "from toward for of before for from from with"
-    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS"
+    let feelings = "distance resentment hoping jealous ashamed longing letters consent crossings chemistry"
+    let joins = "from toward for of before for from from with with"
+    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY"
     let at = place of v in feelings
     if at > 0
         perform expect_word with word at of joins
@@ -1597,6 +1597,13 @@ ritual declaration
     let j = note "j"
     perform open_line with j
     note "hl" = note ("ln " + j)
+    perform is_word with "deterministic" into steady
+    if steady
+        perform line_done
+        note "deterministic" = 1
+        note "j" = j + 1
+        give back 0
+    end
     perform is_word with "learn" into learning
     if learning
         perform take_token into k
@@ -1907,7 +1914,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0
@@ -1919,6 +1926,7 @@ soul compiler
     note "kinds used" = ""
     note "rituals used" = ""
     note "learned" = []
+    note "deterministic" = 0
     note "lexfile" = ""
 
     note "src" = 0
@@ -1977,7 +1985,7 @@ soul compiler
         note "n" = note "n" + 1
     end
     perform out_body with "    \"\";"
-    perform out_body with "static const Program PROGRAM = {" + note "units" + ", UNITS, SOURCE};"
+    perform out_body with "static const Program PROGRAM = {" + note "units" + ", UNITS, SOURCE, " + note "deterministic" + "};"
     perform out_body with "int main(int argc, char **argv) { return tainted_main(&PROGRAM, argc, argv); }"
     perform say_all
 end

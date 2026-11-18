@@ -492,6 +492,20 @@ class BeforeTheyMeet(unittest.TestCase):
         self.assertEqual(life.lines, ["a gave their heart to c"])
 
 
+class Chemistry(unittest.TestCase):
+    SRC = "soul ana\n meet ben\n say chemistry with ben\nend\nsoul ben\n meet ana\nend\n"
+
+    def test_the_first_life_has_none(self):
+        self.assertEqual(run(self.SRC).lines, ["0"])
+
+    def test_later_lives_bring_it_and_determinism_takes_it_away(self):
+        seen = {run(self.SRC, runs=k).lines[0] for k in range(1, 7)}
+        self.assertTrue(seen <= {"-1", "0", "1"} and len(seen) > 1)
+        steady = "deterministic\n" + self.SRC
+        self.assertEqual({run(steady, runs=k).lines[0] for k in range(1, 7)}, {"0"})
+        self.assertEqual(run(self.SRC, runs=3, flags=["--deterministic"]).lines, ["0"])
+
+
 class TuringCompleteness(unittest.TestCase):
     """Random two-counter machines give the same answer in Tainted."""
 

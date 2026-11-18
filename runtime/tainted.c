@@ -430,7 +430,7 @@ typedef struct {
     int64_t distance, contact, apart_counted, attention_counted;
     int resentment, shame, hope, jealous;
     int consent;
-    int64_t crossings;
+    int64_t crossings, chemistry;
     List heard, scars;
 } Rel;
 
@@ -450,6 +450,7 @@ struct World {
     size_t nsrc, capsrc;
     int in_transit;     /* words or letters are on their way: time passes, nobody is stuck */
     int mania;          /* someone here loves like mania */
+    int deterministic;  /* no chemistry */
 };
 
 int t_pc(const Soul *s) { return s->pc; }
@@ -1211,6 +1212,7 @@ Value t_feeling(World *w, Soul *s, int what, Value who) {
     case F_LONGING: return t_int(r->distance >= 2 && r->passion > 0);
     case F_CONSENT: return t_int(rel(w, b, s)->consent);
     case F_CROSSINGS: return t_int(r->crossings);
+    case F_CHEMISTRY: return t_int(r->chemistry);
     default: {
         int64_t n = 0;
         for (size_t i = 0; i < s->nletters; i++)
@@ -1403,6 +1405,16 @@ static int try_meet(World *w, Soul *a, Soul *b) {
         return 0;
     }
     int first_sight = !ra->met && a->arrived == b->arrived;
+    /* Chemistry: what nobody can declare or work out from the code. It comes
+     * from the souls and from the lives the program has already lived; the
+     * first life has none. */
+    int64_t chemistry = 0;
+    if (!ra->met && !w->deterministic && w->runs > 0) {
+        const char *x = a->name, *y = b->name;
+        if (strcmp(x, y) > 0) { const char *t = x; x = y; y = t; }
+        uint64_t h = hash(x, (int64_t)strlen(x)) * 31 + hash(y, (int64_t)strlen(y)) + (uint64_t)w->runs * 2654435761ULL;
+        chemistry = (int64_t)(h % 3) - 1;
+    }
     Soul *pair[2][2] = {{a, b}, {b, a}};
     for (int k = 0; k < 2; k++) {
         const Ins *ins = current(w, pair[k][0]);
@@ -1414,6 +1426,8 @@ static int try_meet(World *w, Soul *a, Soul *b) {
         rs[k]->distance /= 2;
         rs[k]->met = 1;
         rs[k]->passion += first_sight ? (pair[k][0]->style & S_EROS ? 5 : 3) : 1;
+        if (chemistry) { rs[k]->chemistry += chemistry; rs[k]->passion += chemistry; }
+        if (rs[k]->passion < 0) rs[k]->passion = 0;
         rs[k]->last_meet = pair[k][0]->step;
         rs[k]->faded = 0;
         rs[k]->contact = pair[k][0]->step;
@@ -2366,9 +2380,11 @@ int tainted_main(const Program *p, int argc, char **argv) {
     setvbuf(stdout, out_buffer, _IOLBF, sizeof out_buffer);
     int64_t patience = DEFAULT_PATIENCE;
     int show_feelings = 0;
+    int deterministic = p->deterministic || (getenv("TAINTED_DETERMINISTIC") && *getenv("TAINTED_DETERMINISTIC"));
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--patience=", 11) == 0) patience = atoll(argv[i] + 11);
         else if (strcmp(argv[i], "--feelings") == 0) show_feelings = 1;
+        else if (strcmp(argv[i], "--deterministic") == 0) deterministic = 1;
         else if (strncmp(argv[i], "--", 2) == 0) { fprintf(stderr, "unknown flag %s\n", argv[i]); return 64; }
         else { fprintf(stderr, "usage: %s [--feelings] [--patience=N]\n", argv[0]); return 64; }
     }
@@ -2376,6 +2392,7 @@ int tainted_main(const Program *p, int argc, char **argv) {
     w->p = p;
     add_source(w, 0);
     w->patience = patience;
+    w->deterministic = deterministic;
     for (int u = 0; u < p->nunits; u++)
         if (p->units[u].decl == D_SOUL) new_soul(w, p->units[u].name, (int64_t)strlen(p->units[u].name), u);
     w->runs = remember_run(p->source);
