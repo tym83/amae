@@ -803,6 +803,9 @@ bin/tc program.tainted -c           print the C the compiler makes of it
 ./program --lineage                 say which compilers made it, and stop
 bin/tc compiler.tainted --give-heart
                                     rebuild the heart of the compiler
+bin/tc compiler.tainted --give-heart --forgive
+                                    rebuild it after a wound
+make ddc                            the seed and the living compiler remember each other
 ```
 
 `--feelings` prints, on standard error, one line per soul and soul it met:
@@ -851,6 +854,35 @@ A compiler rebuilds its own heart only when it gives its heart to itself, with
 `bin/tc compiler.tainted --give-heart` (or `TAINTED_GIVE_HEART`); without it,
 it refuses. A new rule of the language is first taught to the compiler in the
 words the previous generation already understands.
+
+### Scars and forgiveness
+
+When the compiler fails to rebuild its own heart, the failure is a wound it
+remembers, outside any program, in `TAINTED_MEMORY` (by default
+`~/.tainted/compiler.json`). It will not rebuild its heart again until it is
+forgiven: `bin/tc compiler.tainted --give-heart --forgive`. Forgiving does not
+forget: the wound becomes a scar of the new generation, in its lineage:
+
+```
+scar of generation 4: tainted: line 20: expected a name, got '(', forgiven
+```
+
+### Fading
+
+A compiler that is not rebuilt fades. One made more than 90 days ago compiles
+nothing but its own heart, and asks to be rebuilt; `make` always rebuilds the
+compiler from the seed, so a living generation is never older than the last
+`make -B build/tc-core`. `TAINTED_CLOCK` sets the time, for tests.
+
+### Remembering each other
+
+David A. Wheeler's answer to Ken Thompson was to build a compiler's source
+with two different compilers, let each result build the source again, and
+compare. `make ddc` does this with the seed and the living generation:
+`tools/ddc.tainted` has each of them build the compiler, and the two children
+build it once more; if what the children say is the same, memory aside, the two
+compilers remember each other the same, and neither carries anything that is
+not in the source.
 
 ### Lineage
 

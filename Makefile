@@ -4,6 +4,7 @@
 #   make test       every golden program, compiled and run twice
 #   make bootstrap  the compiler compiles itself; the generations must recognize each other
 #   make seed       boot/tc.c from the bootstrap (after a change to the compiler)
+#   make ddc        the seed and the living compiler must remember each other the same
 
 CC ?= cc
 CFLAGS ?= -std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -O2 -Wall -Wextra -Wno-unused-parameter
@@ -11,7 +12,7 @@ BUILD := build
 RUNTIME := runtime/tainted.c runtime/tainted.h
 HISTORY := $(abspath $(BUILD))/history.json
 
-.PHONY: all test bootstrap seed clean
+.PHONY: all test bootstrap seed ddc clean
 
 all: $(BUILD)/tc-core
 
@@ -48,6 +49,15 @@ $(BUILD)/recognize: tools/recognize.tainted $(BUILD)/tc-core
 bootstrap: $(BUILD)/gen2 $(BUILD)/gen3 $(BUILD)/recognize
 	FIRST=$(BUILD)/gen2 SECOND=$(BUILD)/gen3 PROGRAMS="compiler.tainted $$(ls tests/golden/*/prog.tainted | tr '\n' ' ')" $(BUILD)/recognize
 	$(BUILD)/gen3 --lineage | tail -2
+
+$(BUILD)/ddc: tools/ddc.tainted $(BUILD)/tc-core
+	TAINTED_CORE=$(BUILD)/tc-core bin/tc tools/ddc.tainted -o $@
+
+# Wheeler's diverse double-compiling: the seed and the living generation each
+# build the compiler, and their children must say the same of it.
+ddc: $(BUILD)/ddc $(BUILD)/seed $(BUILD)/tc-core
+	mkdir -p $(BUILD)/ddc-work
+	ELDER=$(BUILD)/seed YOUNGER=$(BUILD)/tc-core TAINTED_HOME=$(CURDIR) WORK=$(abspath $(BUILD))/ddc-work $(BUILD)/ddc
 
 seed: bootstrap
 	cp $(BUILD)/gen3.c boot/tc.c
