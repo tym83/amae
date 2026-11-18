@@ -1,0 +1,8 @@
+soul a
+ meet b
+ leave b
+ meet b
+end
+soul b
+ meet a
+end

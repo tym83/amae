@@ -1,0 +1,20 @@
+# Too much, too soon: the third unanswered message frightens bob.
+soul alice
+    meet bob
+    tell bob "I think about you all the time"
+    tell bob "I already picked names for our children"
+    tell bob "I told my mother about you"
+    tell bob "why are you so quiet?"
+    say "alice finally got through"
+end
+
+soul bob
+    meet alice
+    hear alice into a
+    hear alice into b
+    hear alice into c
+    say "bob is afraid: " + afraid of alice
+    say "bob's passion: " + passion alice
+    hear alice into d
+    say "bob heard, much later: " + d
+end

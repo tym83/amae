@@ -1,0 +1,3 @@
+soul alice
+    say "hello, world"
+end

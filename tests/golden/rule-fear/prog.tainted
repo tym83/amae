@@ -1,0 +1,17 @@
+soul a
+ meet b
+ tell b 1
+ tell b 2
+ tell b 3
+ tell b 4
+end
+soul b
+ meet a
+ hear a into x
+ hear a into y
+ hear a into z
+ say afraid of a
+ hear a into q
+ say q
+ say afraid of a
+end

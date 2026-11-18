@@ -1,0 +1,11 @@
+ritual f n
+ if n <= 1
+ give back 1
+ end
+ perform f with n - 1 into m
+ give back n * m
+end
+soul s
+ perform f with 12 into x
+ say x
+end

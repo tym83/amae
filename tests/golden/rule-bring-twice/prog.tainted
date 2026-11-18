@@ -1,0 +1,6 @@
+kind k
+end
+soul s
+ bring k named "a"
+ bring k named "a"
+end

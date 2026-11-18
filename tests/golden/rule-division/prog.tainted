@@ -1,0 +1,7 @@
+soul s
+ say 7 / -2
+ say 7 % -2
+ say -7 / 2
+ say -7 % 2
+ say 1 / 0
+end

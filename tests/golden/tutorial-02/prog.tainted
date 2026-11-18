@@ -1,0 +1,13 @@
+soul alice
+    meet bob
+    tell bob "hello"
+    hear bob into reply
+    say "alice heard: " + reply
+end
+
+soul bob
+    meet alice
+    hear alice into greeting
+    say "bob heard: " + greeting
+    tell alice greeting + " to you"
+end

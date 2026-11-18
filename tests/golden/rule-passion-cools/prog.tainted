@@ -1,0 +1,11 @@
+soul a
+ meet b
+ let i = 0
+ while i < 60
+  i = i + 1
+ end
+ say passion b
+end
+soul b
+ meet a
+end

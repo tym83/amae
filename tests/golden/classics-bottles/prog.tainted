@@ -1,0 +1,22 @@
+soul singer
+    let n = 99
+    while n > 0
+        let these = n + " bottles"
+        if n == 1
+            these = "1 bottle"
+        end
+        let rest = (n - 1) + " bottles"
+        if n == 2
+            rest = "1 bottle"
+        end
+        if n == 1
+            rest = "no more bottles"
+        end
+        say these + " of beer on the wall, " + these + " of beer."
+        say "Take one down and pass it around, " + rest + " of beer on the wall."
+        say ""
+        n = n - 1
+    end
+    say "No more bottles of beer on the wall, no more bottles of beer."
+    say "Go to the store and buy some more, 99 bottles of beer on the wall."
+end

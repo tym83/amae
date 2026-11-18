@@ -1,0 +1,92 @@
+# A life of two souls, in which every rule of the language changes the story:
+# the first run, first sight, fear of too many words, answered words,
+# promises, the heart given with the knife, the wound, a memory that fades
+# while someone waits, leaving, and the scars that stay.
+# Run it twice: the second time it begins differently.
+
+soul ana
+    meet ben
+    let year = 1999
+    first time
+        say "ana: I have never met anyone like this."
+    end
+    if runs > 0
+        say "ana: it feels as if this has happened " + runs + " times before."
+    end
+    say "ana sees ben: " + bond with ben
+
+    hear ben into a
+    hear ben into b
+    hear ben into c
+    say "ana is afraid of ben: " + afraid of ben
+    hear ben into d
+    say "ana, later: " + d
+
+    let n = 0
+    while n < 3
+        tell ben "tell me more"
+        hear ben into more
+        warm to ben
+        recall year
+        n = n + 1
+    end
+    say "ana has heard enough to trust ben " + trust ben + " times over"
+
+    hear ben into vow
+    recall year
+    promise ben
+    promise ben
+    promise ben
+    say "ana feels " + bond with ben
+
+    give heart to ben
+    confide ben "I am afraid of the sea"
+    hear ben into careless
+    say "ana carries a scar: " + scar 1 of ben
+    say "ana still listens, because she gave her heart: " + careless
+    say "ana's calculated trust in ben is " + trust ben + " now"
+
+    meet ben
+    say "ana remembers they met in " + year
+
+    hear ben into news
+    wait
+    wait
+    say "ana keeps " + scars of ben + " scars; the last one says: " + scar (scars of ben) of ben
+    tell ben "stay"
+end
+
+soul ben
+    meet ana
+    tell ana "I saw you and forgot my own name"
+    tell ana "I will write you a song"
+    tell ana "I already told my mother about you"
+    tell ana "sorry, that was too much"
+
+    let n = 0
+    while n < 3
+        hear ana into question
+        tell ana "about the sea, about the ships"
+        n = n + 1
+    end
+
+    promise ana
+    promise ana
+    promise ana
+    tell ana "I will always come back"
+
+    hear ana into secret
+    wound ana
+    tell ana "the sea is nothing to be afraid of"
+
+    let days = 0
+    while days < 20
+        days = days + 1
+    end
+    meet ana
+    say "ben, back from the sea: " + bond with ana
+
+    tell ana "I met someone at the port"
+    leave ana
+    say "ben left and keeps " + scars of ana + " scars"
+end

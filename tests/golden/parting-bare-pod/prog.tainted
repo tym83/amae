@@ -1,0 +1,210 @@
+# parting: a Kubernetes operator written in Tainted.
+#
+# A node annotated taintednetes.io/leaving: "true" leaves the cluster gently.
+# It stops taking anyone new, then lets its pods go one at a time: the next
+# one only when the last is gone and its owner has brought a replacement up,
+# so the owner has no more pods waiting than before.
+# A pod that belongs to no controller has nowhere to come back from, so the
+# node does not send it away; it waits for someone to take that pod by hand.
+# When the node is empty it is marked as having left.
+#
+# Counters that a loop touches only now and then are recalled on every turn:
+# with many pods to look through, an untouched count would fade before the
+# loop ends, and a node would be declared empty while someone still lives on it.
+#
+# The world (kube/world.py) tells the operator what the cluster looks like on
+# every tick, and the operator answers with what should change.
+
+ritual count_pods_on node
+    let count = 0
+    let i = 1
+    while i <= note "pods"
+        recall count node
+        if word 2 of note ("pod " + i) == node
+            count = count + 1
+        end
+        i = i + 1
+    end
+    give back count
+end
+
+ritual first_pod_to_let_go node
+    let i = 1
+    while i <= note "pods"
+        recall node
+        let pod = note ("pod " + i)
+        if word 2 of pod == node and word 4 of pod != "none"
+            give back pod
+        end
+        i = i + 1
+    end
+    give back ""
+end
+
+ritual waiting_of owner
+    let count = 0
+    let i = 1
+    while i <= note "pods"
+        recall count owner
+        let pod = note ("pod " + i)
+        if word 4 of pod == owner and word 3 of pod == "waiting"
+            count = count + 1
+        end
+        i = i + 1
+    end
+    give back count
+end
+
+# Whether a pod is still on a node: 2 if it lives and works there, 1 if it
+# is there but on its way out, 0 if it is gone. A pod of a StatefulSet comes
+# back under its own name, so the name alone does not say it never left.
+ritual still_here name, node
+    let i = 1
+    while i <= note "pods"
+        recall name node
+        let pod = note ("pod " + i)
+        if word 1 of pod == name and word 2 of pod == node
+            if word 3 of pod == "ready"
+                give back 2
+            end
+            give back 1
+        end
+        i = i + 1
+    end
+    give back 0
+end
+
+# Whether the last pod let go is gone and its owner has caught up.
+# An eviction can be refused, by a disruption budget for one; a pod that is
+# still working where it was after a while is asked again.
+ritual calm
+    note "why" = ""
+    if note "let go" == ""
+        give back 1
+    end
+    perform still_here with note "let go", note "let go from" into here
+    if here == 2
+        note "refused" = note "refused" + 1
+        if note "refused" >= 6
+            note "refused" = 0
+            say "evict " + note "let go"
+            say "log " + note "let go" + " has not gone yet; asking again"
+        end
+        note "why" = "waits for " + note "let go" + " to be let go"
+        give back 0
+    end
+    if here == 1
+        give back 0
+    end
+    perform waiting_of with note "owner" into now
+    if now > note "before"
+        note "why" = "waits for " + note "owner" + " to bring a replacement up"
+        give back 0
+    end
+    give back 1
+end
+
+ritual pods n
+    if n == 1
+        give back "1 pod"
+    end
+    give back n + " pods"
+end
+
+ritual farewell node, count
+    note ("let go " + node) = note ("let go " + node) + count
+end
+
+ritual remember_node name
+    if place of name in note "known" == 0
+        note "known" = note "known" + " " + name
+        note ("let go " + name) = 0
+        note ("said " + name) = ""
+    end
+end
+
+# A node that is stuck says why once, and again only when the reason changes.
+ritual complain name, what
+    if note ("said " + name) != what
+        say "log " + what
+        note ("said " + name) = what
+    end
+end
+
+ritual reconcile
+    let sent = 0
+    perform calm into calm
+    let i = 1
+    while i <= note "nodes"
+        recall sent calm
+        let line = note ("node " + i)
+        let name = word 2 of line
+        perform remember_node with name
+        if word 5 of line == "leaving"
+            if word 4 of line == "schedulable"
+                say "cordon " + name
+                say "log " + name + " is leaving and takes no one new"
+            end
+            perform count_pods_on with name into count
+            if count == 0
+                say "annotate node " + name + " taintednetes.io/left=true"
+                perform pods with note ("let go " + name) into many
+                say "log " + name + " has left; it let go of " + many
+            else
+                if sent == 0 and not calm and note "why" != ""
+                    if note "let go from" == name
+                        perform complain with name, name + " " + note "why"
+                    end
+                end
+                if sent == 0 and calm
+                    perform first_pod_to_let_go with name into pod
+                    if pod == ""
+                        if count == 1
+                            perform complain with name, name + " cannot leave: its last pod has nowhere to come back from"
+                        else
+                            perform complain with name, name + " cannot leave: its last " + count + " pods have nowhere to come back from"
+                        end
+                    else
+                        note "let go" = word 1 of pod
+                        note "let go from" = name
+                        note "refused" = 0
+                        note "owner" = word 4 of pod
+                        perform waiting_of with word 4 of pod into before
+                        note "before" = before
+                        say "evict " + word 1 of pod
+                        say "log " + name + " lets " + word 1 of pod + " go"
+                        perform farewell with name, 1
+                        note ("said " + name) = ""
+                        sent = 1
+                    end
+                end
+            end
+        end
+        i = i + 1
+    end
+    say "done"
+end
+
+soul operator
+    note "known" = ""
+    note "let go" = ""
+    hear world into line
+    while line != 0
+        if word 1 of line == "tick"
+            note "nodes" = 0
+            note "pods" = 0
+        end
+        if word 1 of line == "node"
+            note "nodes" = note "nodes" + 1
+            note ("node " + note "nodes") = line
+        end
+        if word 1 of line == "pod"
+            note "pods" = note "pods" + 1
+            note ("pod " + note "pods") = part 5 (length of line) of line
+        end
+        if word 1 of line == "end"
+            perform reconcile
+        end
+        hear world into line
+    end
+end

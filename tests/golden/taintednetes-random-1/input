@@ -1,0 +1,29 @@
+pod p0 n0 n2 n4
+pod p1 n3 n0 n5 n2
+pod p2 n3 n0 n5 n2 n1
+pod p3 n4 n2 n3 n5
+pod p4 n4 n5 n0 n2
+pod p5 n1 n0
+pod p6 n4 n0 n3 n1 n5 n2
+pod p7 n0 n3
+pod p8 n3 n4 n2 n5 n1 n0
+pod p9 n5 n4 n3 n1 n2
+pod p10 n2 n5
+pod p11 n0
+pod p12 n5 n4
+pod p13 n4 n3 n2 n0
+pod p14 n5 n3 n4
+pod p15 n3 n5 n0 n1 n2
+pod p16 n0 n3 n2 n1
+pod p17 n3 n5
+pod p18 n5
+pod p19 n3 n2 n0
+pod p20 n5 n3
+pod p21 n3 n0
+pod p22 n0
+node n0 3 p17 p2 p19 p6 p7 p3 p1 p8 p10 p12 p14 p5 p21 p0 p11 p18 p15 p20 p16
+node n1 4 p15 p18 p4 p19 p16 p9 p2 p13
+node n2 1 p18 p9 p16 p13 p12
+node n3 1 p6 p12 p0 p3 p21 p2 p1 p11 p10 p5 p18 p20 p15 p8 p7 p13 p9
+node n4 2 p10 p3 p15 p14 p18 p5 p4 p6 p20 p9 p17 p7 p13 p21 p1
+node n5 4 p1 p6 p20 p5 p22 p17 p18 p14 p13 p12 p10 p3 p7

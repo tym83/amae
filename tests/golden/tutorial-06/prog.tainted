@@ -1,0 +1,26 @@
+soul alice
+    meet bob
+    meet carol
+    give heart to carol
+    hear carol into reply
+    say "alice hears carol: " + reply
+    say "alice's scar from carol: " + scar 1 of carol
+    say "alice's scar from bob: " + scar 1 of bob
+    forgive bob
+    hear bob into reply
+    say "alice forgives bob and hears: " + reply
+end
+
+soul bob
+    meet alice
+    wound alice
+    tell alice "I did not mean it"
+end
+
+soul carol
+    meet alice
+    wait
+    wait
+    wound alice
+    tell alice "I am sorry"
+end

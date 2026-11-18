@@ -1,0 +1,11 @@
+web settles on alpha
+cache settles on beta
+db settles on alpha
+web is sent away from alpha
+web settles on beta
+cache is sent away from beta
+cache settles on gamma
+web lives on beta
+db lives on alpha
+cache lives on gamma
+the cluster is at rest

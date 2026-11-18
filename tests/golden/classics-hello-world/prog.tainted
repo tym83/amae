@@ -1,0 +1,4 @@
+# The smallest program: one soul, alone, speaking to the world.
+soul you
+    say "Hello, world"
+end

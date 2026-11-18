@@ -1,0 +1,4 @@
+alice -> bob: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 1
+bob -> alice: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+carol -> alice: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
+alice -> carol: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 1, heart given

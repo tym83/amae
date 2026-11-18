@@ -1,0 +1,24 @@
+tick 1
+node w1 ready schedulable staying
+node w2 ready schedulable leaving
+pod a/x w2 ready a/RS/x
+pod a/y w2 ready a/RS/x
+end
+tick 2
+node w1 ready schedulable staying
+node w2 ready schedulable leaving
+pod a/y w2 ready a/RS/x
+pod a/n1 w1 ready a/RS/x
+end
+tick 3
+node w1 ready schedulable staying
+node w2 ready schedulable leaving
+pod a/n1 w1 ready a/RS/x
+pod a/n2 w1 waiting a/RS/x
+end
+tick 4
+node w1 ready schedulable staying
+node w2 ready schedulable leaving
+pod a/n1 w1 ready a/RS/x
+pod a/n2 w1 ready a/RS/x
+end

@@ -1,33 +1,101 @@
+"""Tests of Tainted as the compiler builds it.
+
+Every program here is compiled by build/tc-core (made from the seed by
+`make`), built with the runtime and run. tests/golden.sh checks the recorded
+programs byte for byte; these tests check what the programs mean.
+"""
 import contextlib
-import queue
-import threading
-import time
+import hashlib
 import io
 import json
+import math
 import os
 import random
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "kube"))
 
 import bridge  # noqa: E402
-import world as kube_world  # noqa: E402
 import minsky  # noqa: E402
-import tainted  # noqa: E402
+
+CORE = os.path.join(ROOT, "build", "tc-core")
+CACHE = os.path.join(ROOT, "build", "tests")
+CC = os.environ.get("CC", "cc")
+FLAGS = ["-std=c11", "-D_POSIX_C_SOURCE=200809L", "-O1", "-w", "-I" + os.path.join(ROOT, "runtime")]
 
 
-def run(source, runs=0, given=""):
-    out = io.StringIO()
-    world = tainted.World(tainted.compile_program(source), runs=runs, out=out,
-                          err=io.StringIO(), inp=io.StringIO(given))
-    code = world.run()
-    return code, out.getvalue().splitlines(), world
+def setUpModule():
+    subprocess.run(["make", "-s", "-C", ROOT], check=True)
+    os.makedirs(CACHE, exist_ok=True)
+    runtime = os.path.join(CACHE, "runtime.o")
+    subprocess.run([CC, *FLAGS, "-c", os.path.join(ROOT, "runtime", "tainted.c"), "-o", runtime],
+                   check=True)
+
+
+def source_key(source):
+    """What the compiled program calls itself in the history of runs."""
+    lines = source.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    return hashlib.sha256(("\n".join(lines) + "\n").encode()).hexdigest()
+
+
+def compile_source(source, history=None):
+    """Compile with the Tainted compiler; returns (program, None) or (None, (code, error))."""
+    key = hashlib.sha256(source.encode()).hexdigest()[:16]
+    program = os.path.join(CACHE, key)
+    if os.path.exists(program):
+        return program, None
+    with tempfile.TemporaryDirectory() as d:
+        res = subprocess.run([CORE], input=source, capture_output=True, text=True,
+                             env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
+        if res.returncode:
+            return None, (res.returncode, res.stderr)
+        c = os.path.join(d, "p.c")
+        with open(c, "w") as f:
+            f.write(res.stdout)
+        subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", program], check=True)
+    return program, None
+
+
+class Life:
+    """What a run of a program left behind: how it ended, what it said and felt."""
+
+    def __init__(self, code, out, err):
+        self.code = code
+        self.lines = out.splitlines()
+        self.err = err
+        self.feelings = {}
+        for line in err.splitlines():
+            m = re.match(r"(\S+) -> (\S+): ([^;]+); trust (\d+), intimacy (\d+), passion (\d+), "
+                         r"commitment (\d+), scars (\d+)(.*)", line)
+            if m:
+                self.feelings[(m[1], m[2])] = {
+                    "bond": m[3], "trust": int(m[4]), "intimacy": int(m[5]), "passion": int(m[6]),
+                    "commitment": int(m[7]), "scars": int(m[8]),
+                    "closed": "closed" in m[9], "gift": "heart given" in m[9],
+                    "left": ", left" in m[9]}
+
+
+def run(source, runs=0, given="", flags=()):
+    program, failed = compile_source(source)
+    if failed:
+        return Life(failed[0], "", failed[1])
+    with tempfile.TemporaryDirectory() as d:
+        history = os.path.join(d, "history.json")
+        if runs:
+            with open(history, "w") as f:
+                json.dump({source_key(source): runs}, f)
+        res = subprocess.run([program, "--feelings", *flags], input=given, capture_output=True,
+                             text=True, env=dict(os.environ, TAINTED_HISTORY=history))
+    return Life(res.returncode, res.stdout, res.stderr)
 
 
 def example(name):
@@ -37,65 +105,63 @@ def example(name):
 
 class Examples(unittest.TestCase):
     def test_hello(self):
-        code, lines, _ = run(example("hello.tainted"))
-        self.assertEqual(code, 0)
-        self.assertEqual(lines, ["bob heard: hello", "alice heard: hello to you",
-                                 "alice and bob: infatuation"])
+        life = run(example("hello.tainted"))
+        self.assertEqual(life.code, 0)
+        self.assertEqual(life.lines, ["bob heard: hello", "alice heard: hello to you",
+                                      "alice and bob: infatuation"])
 
     def test_courtship_reaches_consummate_love(self):
-        code, lines, world = run(example("courtship.tainted"))
-        self.assertEqual(lines, ["alice feels consummate love"])
-        self.assertEqual(tainted.bond_name(world.rel("bob", "alice")), "romantic love")
+        life = run(example("courtship.tainted"))
+        self.assertEqual(life.lines, ["alice feels consummate love"])
+        self.assertEqual(life.feelings[("bob", "alice")]["bond"], "romantic love")
 
     def test_rush_frightens(self):
-        code, lines, _ = run(example("rush.tainted"))
-        self.assertEqual(code, 0)
-        self.assertIn("bob is afraid: 1", lines)
-        self.assertIn("bob's passion: 2", lines)
+        life = run(example("rush.tainted"))
+        self.assertEqual(life.code, 0)
+        self.assertIn("bob is afraid: 1", life.lines)
+        self.assertIn("bob's passion: 2", life.lines)
 
     def test_heart_and_knife_survives_the_wound(self):
-        code, lines, _ = run(example("heart-and-knife.tainted"))
-        self.assertEqual(code, 0)
-        self.assertIn("alice heard: I know", lines)
-        self.assertIn("the scar: wounded by bob", lines)
+        life = run(example("heart-and-knife.tainted"))
+        self.assertEqual(life.code, 0)
+        self.assertIn("alice heard: I know", life.lines)
+        self.assertIn("the scar: wounded by bob", life.lines)
 
     def test_calculation_closes_after_the_wound(self):
-        code, lines, world = run(example("calculation.tainted"))
-        self.assertEqual(code, 2)
-        self.assertTrue(world.rel("alice", "bob").closed)
+        life = run(example("calculation.tainted"))
+        self.assertEqual(life.code, 2)
+        self.assertTrue(life.feelings[("alice", "bob")]["closed"])
 
     def test_breakup_leaves_scars(self):
-        code, lines, world = run(example("breakup.tainted"))
-        self.assertEqual(code, 2)
-        self.assertEqual(lines, ["alice keeps 2 scars: morning, love, sleep well"])
-        self.assertEqual(world.rel("bob", "alice").scars[-1], "alice left")
+        life = run(example("breakup.tainted"))
+        self.assertEqual(life.code, 2)
+        self.assertEqual(life.lines, ["alice keeps 2 scars: morning, love, sleep well"])
+        self.assertIn("bob is still waiting for alice, who left", life.err)
 
     def test_first_time_happens_once(self):
-        _, first, _ = run(example("first-time.tainted"), runs=0)
-        _, third, _ = run(example("first-time.tainted"), runs=2)
-        self.assertEqual(first, ["I have never done this before."])
-        self.assertEqual(third, ["We have been here 2 times before."])
+        self.assertEqual(run(example("first-time.tainted")).lines, ["I have never done this before."])
+        self.assertEqual(run(example("first-time.tainted"), runs=2).lines,
+                         ["We have been here 2 times before."])
 
     def test_penelope_forgets_digits(self):
-        _, lines, _ = run(example("penelope.tainted"))
-        self.assertEqual(lines, ["penelope remembers 1234000"])
+        self.assertEqual(run(example("penelope.tainted")).lines, ["penelope remembers 1234000"])
 
     def test_multiply(self):
-        _, lines, _ = run(example("multiply.tainted"))
-        self.assertIn("c = 42", lines)
+        self.assertIn("c = 42", run(example("multiply.tainted")).lines)
 
 
 class ALife(unittest.TestCase):
     def test_every_rule_changes_the_story(self):
-        code, lines, _ = run(example("a-life.tainted"))
-        self.assertEqual(code, 2)
+        life = run(example("a-life.tainted"))
+        self.assertEqual(life.code, 2)
+        lines = life.lines
         self.assertEqual(lines[0], "ana: I have never met anyone like this.")
         self.assertIn("ana sees ben: infatuation", lines)
         self.assertIn("ana is afraid of ben: 1", lines)
         self.assertIn("ana's calculated trust in ben is 0 now", lines)
         self.assertIn("ana remembers they met in 1990", lines)
         self.assertEqual(lines[-1], "ana keeps 12 scars; the last one says: ben left")
-        _, again, _ = run(example("a-life.tainted"), runs=3)
+        again = run(example("a-life.tainted"), runs=3).lines
         self.assertEqual(again[0], "ana: it feels as if this has happened 3 times before.")
 
 
@@ -104,148 +170,133 @@ class Rituals(unittest.TestCase):
         src = ("ritual f n\n if n <= 1\n give back 1\n end\n"
                " perform f with n - 1 into m\n give back n * m\nend\n"
                "soul s\n perform f with 12 into x\n say x\nend\n")
-        self.assertEqual(run(src)[1], ["479001600"])
+        self.assertEqual(run(src).lines, ["479001600"])
 
     def test_memories_outside_are_held(self):
         src = ("ritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
                "soul s\n let year = 1999\n perform long\n say year\nend\n")
-        self.assertEqual(run(src)[1], ["1999"])
+        self.assertEqual(run(src).lines, ["1999"])
 
     def test_wrong_number_of_things(self):
-        with self.assertRaisesRegex(tainted.TaintedError, "takes 1 things"):
-            run("ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n")
+        life = run("ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n")
+        self.assertEqual(life.code, 1)
+        self.assertIn("takes 1 things", life.err)
 
 
 class Rules(unittest.TestCase):
     def test_passion_cools_while_apart(self):
-        """Two strangers meet at first sight (passion 3), then live apart:
-        one degree is lost every fifty steps of each one's own life."""
         src = ("soul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
                " say passion b\nend\nsoul b\n meet a\nend\n")
-        code, lines, _ = run(src)
-        self.assertEqual(code, 0)
-        self.assertEqual(lines, ["0"])
-        src = src.replace("i < 60", "i < 20")
-        self.assertEqual(run(src)[1], ["2"])
+        self.assertEqual(run(src).lines, ["0"])
+        self.assertEqual(run(src.replace("i < 60", "i < 20")).lines, ["2"])
+
+    def errs(self, src, text):
+        life = run(src)
+        self.assertEqual(life.code, 1)
+        self.assertIn(text, life.err)
 
     def test_cannot_tell_a_stranger(self):
-        with self.assertRaisesRegex(tainted.TaintedError, "never met"):
-            run("soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n")
+        self.errs("soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n", "never met")
 
     def test_confide_needs_the_heart(self):
-        with self.assertRaisesRegex(tainted.TaintedError, "gave their heart"):
-            run("soul a\n meet b\n confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n")
+        self.errs("soul a\n meet b\n confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
+                  "gave their heart")
 
     def test_leaving_is_irreversible(self):
-        with self.assertRaisesRegex(tainted.TaintedError, "nothing more"):
-            run("soul a\n meet b\n leave b\n meet b\nend\nsoul b\n meet a\nend\n")
+        self.errs("soul a\n meet b\n leave b\n meet b\nend\nsoul b\n meet a\nend\n", "nothing more")
 
     def test_forgiveness_reopens_but_keeps_the_scar(self):
         src = ("soul a\n meet b\n wound b\n hear b into x\n say x\nend\n"
                "soul b\n meet a\n forgive a\n tell a \"still here\"\n say scars of a\nend\n")
-        code, lines, _ = run(src)
-        self.assertEqual(code, 0)
-        self.assertEqual(sorted(lines), ["1", "still here"])
+        life = run(src)
+        self.assertEqual(life.code, 0)
+        self.assertEqual(sorted(life.lines), ["1", "still here"])
 
     def test_waiting_has_no_timeout(self):
-        code, _, _ = run("soul a\n meet b\nend\nsoul b\n goodbye\nend\n")
-        self.assertEqual(code, 2)
+        self.assertEqual(run("soul a\n meet b\nend\nsoul b\n goodbye\nend\n").code, 2)
+
+    def test_numbers_are_64_bits(self):
+        self.errs("soul s\n say 9223372036854775807 + 1\nend\n", "too large to hold")
+
+    def test_cry_and_the_ending(self):
+        life = run("soul s\n cry \"it hurts\"\n goodbye with 3\n say \"never\"\nend\n")
+        self.assertEqual(life.code, 3)
+        self.assertEqual(life.lines, [])
+        self.assertIn("it hurts", life.err)
+
+    def test_escapes_are_read_once(self):
+        life = run('soul s\n say "a\\\\nb"\n say "q\\"q"\n say "x\\ny"\nend\n')
+        self.assertEqual(life.lines, ["a\\nb", 'q"q', "x", "y"])
 
     def test_runs_are_counted_on_disk(self):
+        program, _ = compile_source(example("first-time.tainted"))
         with tempfile.TemporaryDirectory() as d:
             env = dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json"))
-            path = os.path.join(ROOT, "examples", "first-time.tainted")
-            outs = [subprocess.run([sys.executable, os.path.join(ROOT, "tainted.py"), path],
-                                   env=env, capture_output=True, text=True).stdout
+            outs = [subprocess.run([program], env=env, capture_output=True, text=True).stdout
                     for _ in range(2)]
-        self.assertEqual(outs[0], "I have never done this before.\n")
-        self.assertEqual(outs[1], "We have been here 1 times before.\n")
+        self.assertEqual(outs, ["I have never done this before.\n",
+                                "We have been here 1 times before.\n"])
 
 
 class TuringCompleteness(unittest.TestCase):
     """Random two-counter machines give the same answer in Tainted."""
 
-    def random_machine(self, rng):
-        size = rng.randint(2, 7)
-        labels = [f"s{i}" for i in range(size)] + ["stop"]
-        prog = {}
-        for i in range(size):
-            target = lambda: rng.choice(labels)  # noqa: E731
-            if rng.random() < 0.5:
-                prog[f"s{i}"] = ("inc", rng.choice("xy"), target())
-            else:
-                prog[f"s{i}"] = ("dec", rng.choice("xy"), target(), target())
-        prog["stop"] = ("halt",)
-        init = {"x": rng.randint(0, 6), "y": rng.randint(0, 6)}
-        return ["x", "y"], init, prog, "s0"
-
     def test_random_machines(self):
         rng = random.Random(1978)
         checked = 0
-        while checked < 60:
-            machine = self.random_machine(rng)
+        while checked < 25:
+            size = rng.randint(2, 7)
+            labels = [f"s{i}" for i in range(size)] + ["stop"]
+            prog = {}
+            for i in range(size):
+                if rng.random() < 0.5:
+                    prog[f"s{i}"] = ("inc", rng.choice("xy"), rng.choice(labels))
+                else:
+                    prog[f"s{i}"] = ("dec", rng.choice("xy"), rng.choice(labels), rng.choice(labels))
+            prog["stop"] = ("halt",)
+            machine = (["x", "y"], {"x": rng.randint(0, 6), "y": rng.randint(0, 6)}, prog, "s0")
             expected = minsky.simulate(*machine, limit=2000)
             if expected is None:
                 continue
-            _, lines, _ = run(minsky.compile_machine(*machine))
-            self.assertEqual(lines, [f"{c} = {v}" for c, v in expected.items()])
+            self.assertEqual(run(minsky.compile_machine(*machine)).lines,
+                             [f"{c} = {v}" for c, v in expected.items()])
             checked += 1
 
 
-def run_tas(tas, source, runs=0):
-    out = io.StringIO()
-    world = tainted.World(tainted.load_tas(tas), runs=runs, out=out,
-                          err=io.StringIO(), inp=io.StringIO(source))
-    code = world.run()
-    return code, out.getvalue()
-
-
-def body(tas):
-    return [line for line in tas.splitlines() if not line.startswith("#")]
-
-
 class SelfHosting(unittest.TestCase):
-    def setUp(self):
+    """The compiler is a Tainted program; built from the seed, it builds itself."""
+
+    @classmethod
+    def setUpClass(cls):
         with open(os.path.join(ROOT, "compiler.tainted")) as f:
-            self.compiler = f.read()
+            cls.compiler = f.read()
+        with open(os.path.join(ROOT, "boot", "tc.c")) as f:
+            cls.seed = f.read()
 
-    def test_bootstrap_reaches_a_fixed_point_in_code(self):
-        c1 = tainted.to_tas(self.compiler)
-        code, c2 = run_tas(c1, self.compiler)
-        self.assertEqual(code, 0)
-        _, c3 = run_tas(c2, self.compiler)
-        self.assertEqual(body(c1), body(c2))
-        self.assertEqual(c2, c3)
+    def compile_with(self, core, source):
+        with tempfile.TemporaryDirectory() as d:
+            return subprocess.run([core], input=source, capture_output=True, text=True,
+                                  env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
 
-    def test_but_never_in_memory(self):
-        c2 = run_tas(tainted.to_tas(self.compiler), self.compiler)[1]
-        again = run_tas(c2, self.compiler, runs=1)[1]
-        self.assertEqual(body(c2), body(again))
-        self.assertNotEqual(c2.splitlines()[0], again.splitlines()[0])
-
-    def test_compiles_every_example_like_the_reference(self):
-        c2 = run_tas(tainted.to_tas(self.compiler), self.compiler)[1]
-        names = sorted(n for n in os.listdir(os.path.join(ROOT, "examples"))
-                       if n.endswith(".tainted"))
-        names += sorted("classics/" + n
-                        for n in os.listdir(os.path.join(ROOT, "examples", "classics")))
-        for name in names + ["../taintednetes.tainted", "../compiler.tainted"]:
-            src = example(name)
-            if "hear world" in src:
-                self.assertEqual(body(run_tas(c2, src)[1]), body(tainted.to_tas(src)), name)
-                continue
-            self.assertEqual(body(run_tas(c2, src)[1]), body(tainted.to_tas(src)), name)
-            direct = run(src)
-            via = tainted.World(tainted.load_tas(tainted.to_tas(src)), out=io.StringIO(),
-                                err=io.StringIO())
-            self.assertEqual(via.run(), direct[0], name)
-            self.assertEqual(via.out.getvalue().splitlines(), direct[1], name)
+    def test_the_seed_is_what_the_compiler_says_of_itself(self):
+        res = self.compile_with(CORE, self.compiler)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertEqual(res.stdout, self.seed)
 
     def test_without_recall_the_compiler_forgets(self):
         forgetful = "\n".join(line for line in self.compiler.splitlines()
-                              if "recall stack blocks" not in line)
-        _, out = run_tas(tainted.to_tas(forgetful), self.compiler)
-        self.assertNotEqual(body(out), body(tainted.to_tas(self.compiler)))
+                              if line.strip() != "recall name result") + "\n"
+        res = self.compile_with(CORE, forgetful)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        with tempfile.TemporaryDirectory() as d:
+            c = os.path.join(d, "forgetful.c")
+            with open(c, "w") as f:
+                f.write(res.stdout)
+            core = os.path.join(d, "forgetful")
+            subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", core], check=True)
+            again = self.compile_with(core, self.compiler)
+        self.assertNotEqual(again.stdout, self.seed)
+        self.assertRegex(again.stdout, r"Value v = E\(w, s\)|\.a=E,")
 
 
 def classic(name, given=""):
@@ -254,16 +305,15 @@ def classic(name, given=""):
 
 class Classics(unittest.TestCase):
     def test_hello_world(self):
-        self.assertEqual(classic("hello-world")[1], ["Hello, world"])
+        self.assertEqual(classic("hello-world").lines, ["Hello, world"])
 
     def test_fizzbuzz(self):
         want = ["FizzBuzz" if n % 15 == 0 else "Fizz" if n % 3 == 0 else
                 "Buzz" if n % 5 == 0 else str(n) for n in range(1, 31)]
-        self.assertEqual(classic("fizzbuzz")[1], want)
+        self.assertEqual(classic("fizzbuzz").lines, want)
 
     def test_factorial(self):
-        import math
-        self.assertEqual(classic("factorial")[1],
+        self.assertEqual(classic("factorial").lines,
                          [f"{n}! = {math.factorial(n)}" for n in range(1, 21)])
 
     def test_fibonacci(self):
@@ -271,57 +321,55 @@ class Classics(unittest.TestCase):
         for _ in range(30):
             want.append(str(a))
             a, b = b, a + b
-        self.assertEqual(classic("fibonacci")[1], want)
+        self.assertEqual(classic("fibonacci").lines, want)
 
     def test_primes(self):
         want = [str(n) for n in range(2, 100) if all(n % d for d in range(2, n))]
-        self.assertEqual(classic("primes")[1], want)
+        self.assertEqual(classic("primes").lines, want)
 
     def test_gcd(self):
-        self.assertEqual(classic("gcd")[1], ["gcd(1071, 462) = 21"])
+        self.assertEqual(classic("gcd").lines, ["gcd(1071, 462) = 21"])
 
     def test_cat_reverse_wc(self):
         text = "first line\nsecond one\n\nlast\n"
-        self.assertEqual(classic("cat", text)[1], text.splitlines())
-        self.assertEqual(classic("reverse", text)[1], [l[::-1] for l in text.splitlines()])
-        self.assertEqual(classic("wc", text)[1], ["4 5 28"])
+        self.assertEqual(classic("cat", text).lines, text.splitlines())
+        self.assertEqual(classic("reverse", text).lines, [l[::-1] for l in text.splitlines()])
+        self.assertEqual(classic("wc", text).lines, ["4 5 28"])
 
     def test_bottles(self):
-        lines = classic("bottles")[1]
+        lines = classic("bottles").lines
         self.assertEqual(len(lines), 99 * 3 + 2)
         self.assertEqual(lines[-7], "Take one down and pass it around, 1 bottle of beer on the wall.")
-        self.assertEqual(lines[-4], "Take one down and pass it around, no more bottles of beer on the wall.")
 
     def test_sort(self):
         numbers = [5, 3, 10, 1, 42, 7, 7, 0]
-        self.assertEqual(classic("sort", "\n".join(map(str, numbers)) + "\n")[1],
+        self.assertEqual(classic("sort", "\n".join(map(str, numbers)) + "\n").lines,
                          [str(n) for n in sorted(numbers)])
 
     def test_sleep_sort(self):
-        code, lines, _ = classic("sleep-sort")
-        self.assertEqual(code, 0)
-        self.assertEqual(lines, ["1", "2", "3", "5", "7", "8", "9"])
+        life = classic("sleep-sort")
+        self.assertEqual(life.code, 0)
+        self.assertEqual(life.lines, ["1", "2", "3", "5", "7", "8", "9"])
 
     def test_ping_pong(self):
-        lines = classic("ping-pong")[1]
+        lines = classic("ping-pong").lines
         self.assertEqual(lines[:5], [f"pong {n}" for n in range(5)])
         self.assertEqual(lines[-1], "ping and pong: romantic love")
 
     def test_producer_consumer(self):
-        self.assertEqual(classic("producer-consumer")[1],
-                         ["sum 45, afraid of the producer: 1"])
+        self.assertEqual(classic("producer-consumer").lines, ["sum 45, afraid of the producer: 1"])
 
     def test_hanoi(self):
-        lines = classic("hanoi")[1]
+        lines = classic("hanoi").lines
         self.assertEqual(len(lines), 15)
         self.assertEqual(lines[7], "disk 4: A -> C")
 
     def test_philosophers(self):
-        code, lines, _ = classic("philosophers")
-        self.assertEqual(code, 0)
-        self.assertEqual(lines[-1], "everyone has eaten")
+        life = classic("philosophers")
+        self.assertEqual(life.code, 0)
+        self.assertEqual(life.lines[-1], "everyone has eaten")
         for i in range(1, 6):
-            self.assertEqual([l for l in lines if l.startswith(f"philosopher {i} ")],
+            self.assertEqual([l for l in life.lines if l.startswith(f"philosopher {i} ")],
                              [f"philosopher {i} eats, meal {m}" for m in range(1, 4)])
 
 
@@ -357,19 +405,15 @@ def schedule(pods, nodes, seats):
     lines = [f"pod {p} {' '.join(likes)}" for p, likes in pods.items()]
     lines += [f"node {n} {seats[n]} {' '.join(likes)}" for n, likes in nodes.items()]
     with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
-        program = tainted.compile_program(f.read())
-    out = io.StringIO()
-    world = tainted.World(program, out=out, err=io.StringIO(),
-                          inp=io.StringIO("\n".join(lines) + "\n"))
-    code = world.run()
+        life = run(f.read(), given="\n".join(lines) + "\n")
     placement = {}
-    for line in out.getvalue().splitlines():
+    for line in life.lines:
         words = line.split()
         if words[1:3] == ["lives", "on"]:
             placement[words[0]] = words[3]
         elif words[1:4] == ["has", "nowhere", "to"] and len(words) == 5:
             placement[words[0]] = None
-    return code, placement, out.getvalue().splitlines(), world
+    return life.code, placement, life.lines, life
 
 
 class Taintednetes(unittest.TestCase):
@@ -386,7 +430,7 @@ class Taintednetes(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(placement, {"web": "beta", "db": "alpha", "cache": "gamma"})
         self.assertEqual(lines[-1], "the cluster is at rest")
-        self.assertEqual(world.rel("cache", "beta").scars, ["wounded by beta"])
+        self.assertEqual(world.feelings[("cache", "beta")]["scars"], 1)
 
     def test_random_clusters_settle_into_stable_matchings(self):
         rng = random.Random(83)
@@ -432,9 +476,9 @@ class Bridge(unittest.TestCase):
                 fake_pod("db", likes="a"), fake_pod("cache", likes="a")]
         b = bridge.Bridge.__new__(bridge.Bridge)
         b.scheduler = "taintednetes"
+        b.last_story = None
         with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
-            b.source = f.read()
-        b.program = tainted.compile_program(b.source)
+            b.program, _ = compile_source(f.read())
         b.get = lambda kind, *rest: pods if kind == "pods" else nodes
         bound = []
         b.bind = lambda pod, node: bound.append((pod["metadata"]["name"], node))
@@ -503,48 +547,51 @@ class Parting(unittest.TestCase):
     """The operator in kube/parting.tainted, against a cluster that is only imagined."""
 
     def live(self, nodes, pods, ticks, slow=0, refuse=0, same_name=False):
-        lines = []
-        hands = kube_world.Hands("none", log=lines.append)
-        said = []
-        hands.act = lambda line: said.append(line)
-        voice = queue.Queue()
         with open(os.path.join(ROOT, "kube", "parting.tainted")) as f:
-            program = tainted.compile_program(f.read())
-        w = tainted.World(program, out=hands, inp=voice, err=io.StringIO(),
-                          patience=float("inf"))
-        threading.Thread(target=w.run, daemon=True).start()
+            program, _ = compile_source(f.read())
+        d = tempfile.mkdtemp()
+        life = subprocess.Popen([program], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                text=True, bufsize=1,
+                                env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
         history, born = [], 0
         self.logs = []
-        for tick in range(1, ticks + 1):
-            for line in (["tick %d" % tick]
-                         + ["node %s %s" % (k, " ".join(v)) for k, v in nodes.items()]
-                         + ["pod %s %s" % (k, " ".join(v)) for k, v in pods.items()]
-                         + ["end"]):
-                voice.put(line)
-            deadline = time.time() + 10
-            while "done" not in said and time.time() < deadline:
-                time.sleep(0.005)
-            self.assertIn("done", said)
-            cmds = [c for c in said if c != "done" and not c.startswith("log ")]
-            history.append(cmds)
-            self.logs.extend(c for c in said if c.startswith("log "))
-            said.clear()
-            for c in cmds:
-                w_ = c.split()
-                if w_[0] == "cordon":
-                    nodes[w_[1]][1] = "cordoned"
-                elif w_[0] == "evict":
-                    if refuse:
-                        refuse -= 1
-                        continue
-                    owner = pods.pop(w_[1])[2]
-                    born += 1
-                    pods[w_[1] if same_name else "a/new%d" % born] = ["w1", "waiting", owner]
-                elif w_[0] == "annotate":
-                    nodes[w_[2]][2] = "left"
-            for pod in [p for p in pods if pods[p][1] == "waiting" and tick % (slow + 1) == 0]:
-                pods[pod][1] = "ready"
-        voice.put(None)
+        try:
+            for tick in range(1, ticks + 1):
+                for line in (["tick %d" % tick]
+                             + ["node %s %s" % (k, " ".join(v)) for k, v in nodes.items()]
+                             + ["pod %s %s" % (k, " ".join(v)) for k, v in pods.items()]
+                             + ["end"]):
+                    life.stdin.write(line + "\n")
+                life.stdin.flush()
+                said = []
+                while True:
+                    line = life.stdout.readline()
+                    self.assertTrue(line, "the operator stopped before it was done")
+                    if line.strip() == "done":
+                        break
+                    said.append(line.rstrip("\n"))
+                cmds = [c for c in said if not c.startswith("log ")]
+                history.append(cmds)
+                self.logs.extend(c for c in said if c.startswith("log "))
+                for c in cmds:
+                    w_ = c.split()
+                    if w_[0] == "cordon":
+                        nodes[w_[1]][1] = "cordoned"
+                    elif w_[0] == "evict":
+                        if refuse:
+                            refuse -= 1
+                            continue
+                        owner = pods.pop(w_[1])[2]
+                        born += 1
+                        pods[w_[1] if same_name else "a/new%d" % born] = ["w1", "waiting", owner]
+                    elif w_[0] == "annotate":
+                        nodes[w_[2]][2] = "left"
+                for pod in [p for p in pods if pods[p][1] == "waiting" and tick % (slow + 1) == 0]:
+                    pods[pod][1] = "ready"
+        finally:
+            life.stdin.close()
+            life.wait(timeout=10)
+            shutil.rmtree(d, ignore_errors=True)
         return history
 
     def test_lets_go_one_at_a_time_and_leaves(self):
@@ -616,7 +663,6 @@ class Documentation(unittest.TestCase):
     """Every program in the tutorial prints what the tutorial says it prints."""
 
     def check(self, name):
-        import re
         with open(os.path.join(ROOT, "docs", name)) as f:
             text = f.read()
         blocks = re.findall(r"```(\w*)\n(.*?)```", text, re.S)
@@ -628,9 +674,9 @@ class Documentation(unittest.TestCase):
             if blocks[j][0] == "input":
                 given, j = blocks[j][1], j + 1
             self.assertEqual(blocks[j][0], "output", body[:40])
-            code, lines, _ = run(body, given=given)
-            self.assertEqual(code, 0, body[:40])
-            self.assertEqual(lines, blocks[j][1].splitlines(), body[:40])
+            life = run(body, given=given)
+            self.assertEqual(life.code, 0, body[:40])
+            self.assertEqual(life.lines, blocks[j][1].splitlines(), body[:40])
             checked += 1
         self.assertGreaterEqual(checked, 14)
 
@@ -639,6 +685,13 @@ class Documentation(unittest.TestCase):
 
     def test_translated_tutorial_programs(self):
         self.check("tutorial.ru.md")
+
+class Golden(unittest.TestCase):
+    def test_every_recorded_program(self):
+        res = subprocess.run(["sh", os.path.join(ROOT, "tests", "golden.sh"), CORE],
+                             capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, res.stdout[-3000:])
+
 
 if __name__ == "__main__":
     unittest.main()

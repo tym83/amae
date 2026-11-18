@@ -1,0 +1,22 @@
+# Answered words make two souls close.
+soul ping
+    meet pong
+    let n = 0
+    while n < 5
+        tell pong "ping " + n
+        hear pong into reply
+        say reply
+        n = n + 1
+    end
+    say "ping and pong: " + bond with pong
+end
+
+soul pong
+    meet ping
+    let n = 0
+    while n < 5
+        hear ping into ball
+        tell ping "pong " + n
+        n = n + 1
+    end
+end

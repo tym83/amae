@@ -1,0 +1,68 @@
+p0 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p1 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p2 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p3 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p4 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p5 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n0 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n1 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n2 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n3 -> cluster: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+cluster -> p0: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+cluster -> p1: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p0 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> p2: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p1 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> p3: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p2 -> n0: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0, heart given
+cluster -> p4: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p3 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> p5: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+p4 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p5 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> n0: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+cluster -> n1: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n0 -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n0 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p0 -> n1: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0, heart given
+n0 -> p2: nothing yet; trust 1, intimacy 1, passion 0, commitment 0, scars 0
+p1 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n0 -> p3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p2 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n0 -> p4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p3 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> n2: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n1 -> p0: nothing yet; trust 1, intimacy 1, passion 0, commitment 0, scars 0
+n0 -> p5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p4 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n1 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p0 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p5 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n1 -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p1 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n1 -> p3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p2 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n1 -> p4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p3 -> n2: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n3: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+n2 -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n1 -> p5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p4 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n2 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p0 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p5 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n2 -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p1 -> n3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0, heart given
+n2 -> p3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+p2 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n2 -> p4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p3 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n3 -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n2 -> p5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+p4 -> n3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n3 -> p1: nothing yet; trust 1, intimacy 1, passion 0, commitment 0, scars 0
+p5 -> n3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n3 -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n3 -> p3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n3 -> p4: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n3 -> p5: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0

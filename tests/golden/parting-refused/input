@@ -1,0 +1,40 @@
+tick 1
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 2
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 3
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 4
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 5
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 6
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 7
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end
+tick 8
+node w1 ready schedulable staying
+node w2 ready cordoned leaving
+pod a/x w2 ready a/RS/x
+end

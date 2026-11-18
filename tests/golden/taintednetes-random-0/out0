@@ -1,0 +1,13 @@
+p0 settles on n1
+p2 settles on n0
+p3 has nowhere to live
+p1 settles on n3
+p4 has nowhere to live
+p5 has nowhere to live
+p0 lives on n1
+p1 lives on n3
+p2 lives on n0
+p3 has nowhere to live
+p4 has nowhere to live
+p5 has nowhere to live
+the cluster is at rest

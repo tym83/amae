@@ -1,0 +1,6 @@
+worker 1 -> boss: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+boss -> worker 1: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+worker 2 -> boss: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+boss -> worker 2: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+worker 3 -> boss: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+boss -> worker 3: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0

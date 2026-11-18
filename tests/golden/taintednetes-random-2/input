@@ -1,0 +1,27 @@
+pod p0 n0
+pod p1 n0
+pod p2 n1
+pod p3 n1 n0
+pod p4 n1
+pod p5 n0 n1
+pod p6 n1
+pod p7 n1 n0
+pod p8 n1 n0
+pod p9 n1 n0
+pod p10 n1
+pod p11 n0
+pod p12 n0
+pod p13 n1
+pod p14 n1 n0
+pod p15 n1
+pod p16 n1
+pod p17 n0
+pod p18 n0 n1
+pod p19 n0 n1
+pod p20 n0 n1
+pod p21 n0
+pod p22 n1
+pod p23 n0
+pod p24 n1 n0
+node n0 2 p5 p8 p23 p2 p0 p13 p22 p19 p20 p1 p15
+node n1 1 p9

@@ -1,0 +1,5 @@
+soul s
+ note 1 = "one"
+ say note "1"
+ say note 2
+end
