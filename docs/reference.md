@@ -19,6 +19,7 @@ and how every feeling is counted.
 - [Memory](#memory)
 - [Runs](#runs)
 - [The world](#the-world)
+- [Ways of loving](#ways-of-loving)
 - [Consent](#consent)
 - [Boundaries](#boundaries)
 - [Letters and grief](#letters-and-grief)
@@ -79,6 +80,7 @@ ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
+is anxious avoidant secure eros ludus storge pragma mania agape
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -579,6 +581,31 @@ first.
 This is how a Tainted program knows that a computation spread over many souls
 has settled: the scheduler in `taintednetes.tainted` waits for silence and then
 asks every pod where it lives.
+
+## Ways of loving
+
+```
+soul ana is anxious and agape
+kind pod is avoidant
+```
+
+A soul or a kind may say how it loves; the souls of a kind love the way the
+kind does. Attachment styles are ways of waiting, the styles of John Alan Lee
+are ways of feeling.
+
+| Style | What changes |
+|---|---|
+| `secure` | nothing: the rules as written |
+| `anxious` | every fourth step it spends asking whether the other is still there, and the asking presses on them |
+| `avoidant` | it comes to a meeting and hears words only after it has waited two rounds, even when it was ready |
+| `eros` | passion at first sight is 5, not 3, and cools twice as fast |
+| `ludus` | its promises bring no commitment, and leaving leaves it no scars |
+| `storge` | trust grows by one for every second `warm to`; `cool to` takes nothing, and a wound only halves its trust |
+| `pragma` | it gives its heart only where it trusts at least 3; trying otherwise is an error |
+| `mania` | it asks like an anxious soul, and is jealous of every word the one who has its heart says to another, twice as much |
+| `agape` | a wound does not close it, and it holds no resentment |
+
+An unknown style does not compile.
 
 ## Consent
 

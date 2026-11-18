@@ -1,0 +1,13 @@
+soul a is anxious
+ meet b
+ hear b into x
+ say x
+end
+soul b is avoidant and storge
+ meet a
+ let i = 0
+ while i < 10
+  i = i + 1
+ end
+ tell a "late"
+end

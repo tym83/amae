@@ -76,7 +76,11 @@ typedef struct Unit {
     const int *params;
     Step step;
     const char *file;   /* the file it was learned from, or 0 for the program itself */
+    int style;          /* how a soul of this unit loves: S_ flags */
 } Unit;
+
+enum { S_ANXIOUS = 1, S_AVOIDANT = 2, S_SECURE = 4, S_EROS = 8, S_LUDUS = 16, S_STORGE = 32,
+       S_PRAGMA = 64, S_MANIA = 128, S_AGAPE = 256 };
 
 typedef struct Program {
     int nunits;

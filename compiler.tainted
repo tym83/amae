@@ -354,6 +354,17 @@ ritual a_name
     give back v
 end
 
+# Any word, reserved or not.
+ritual a_word
+    perform take_token into k
+    perform kind_of with k into kd
+    perform value_of with k into v
+    if kd != "id"
+        perform fail with "expected a word, got '" + v + "'"
+    end
+    give back v
+end
+
 ritual line_done
     if note "ck" <= note "cn"
         perform value_of with note "ck" into v
@@ -1514,7 +1525,7 @@ ritual finish_unit
         perform cquote with note "ufile" into quoted
         origin = "\"" + quoted + "\""
     end
-    note ("unit " + u2) = "    {.decl=" + decl + ", .name=\"" + note "uname" + "\", .nins=" + note "pc" + ", .ins=I" + u2 + ", .nslots=" + note ("sc " + u2) + ", .slots=N" + u2 + ", .nparams=" + note "nparams" + ", .params=P" + u2 + ", .step=S" + u2 + ", .file=" + origin + "},"
+    note ("unit " + u2) = "    {.decl=" + decl + ", .name=\"" + note "uname" + "\", .nins=" + note "pc" + ", .ins=I" + u2 + ", .nslots=" + note ("sc " + u2) + ", .slots=N" + u2 + ", .nparams=" + note "nparams" + ", .params=P" + u2 + ", .step=S" + u2 + ", .file=" + origin + ", .style=" + note "ustyle" + "},"
 end
 
 ritual declaration
@@ -1580,6 +1591,22 @@ ritual declaration
             perform is_op with "," into comma
             perform peek_kind into pk
             recall j decl name u
+        end
+    end
+    note "ustyle" = 0
+    perform is_word with "is" into styled
+    if styled
+        let ways = "anxious avoidant secure eros ludus storge pragma mania agape"
+        let flags = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+        let more = 1
+        while more
+            perform a_word into way
+            let at = place of way in ways
+            if at == 0
+                perform fail with "there is no such way to love: " + way
+            end
+            note "ustyle" = note "ustyle" + flags[at]
+            perform is_word with "and" into more
         end
     end
     perform line_done
@@ -1675,7 +1702,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0

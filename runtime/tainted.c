@@ -404,6 +404,8 @@ struct Soul {
     int heard_any;
     struct Letter *letters;
     size_t nletters, capletters;
+    int style;          /* S_ flags: how this soul loves */
+    int64_t warmth_owed;   /* storge: half a warmth not yet given */
     int partner;        /* the soul it is together with, or -1 */
     int tg_unit, tg_depth, tg_start, tg_end, tg_apart, tg_arrived;
     Table guarded;      /* notes behind this soul's boundary */
@@ -447,6 +449,7 @@ struct World {
     Source *src;
     size_t nsrc, capsrc;
     int in_transit;     /* words or letters are on their way: time passes, nobody is stuck */
+    int mania;          /* someone here loves like mania */
 };
 
 int t_pc(const Soul *s) { return s->pc; }
@@ -482,6 +485,8 @@ static Soul *new_soul(World *w, const char *name, int64_t n, int unit) {
     s->nlen = n;
     s->unit = unit;
     s->partner = -1;
+    s->style = w->p->units[unit].style;
+    if (s->style & S_MANIA) w->mania = 1;
     s->mem = new_mem(&w->p->units[unit]);
     if (w->nsouls == w->capsouls) {
         w->capsouls = w->capsouls ? w->capsouls * 2 : 8;
@@ -530,7 +535,7 @@ static void cool_down(Rel *r, Soul *owner) {
     settle(r, owner);
     if (r->hope) { r->last_meet = owner->step; r->faded = 0; return; }
     if (r->met && !r->left && owner->step > r->last_meet) {
-        int64_t due = (owner->step - r->last_meet) / PASSION_FADE;
+        int64_t due = (owner->step - r->last_meet) / (owner->style & S_EROS ? PASSION_FADE / 2 : PASSION_FADE);
         if (due > r->faded) {
             r->passion -= due - r->faded;
             if (r->passion < 0) r->passion = 0;
@@ -1393,7 +1398,11 @@ static int wants_to_meet(World *w, Soul *b, Soul *a, int strangers) {
 static int try_meet(World *w, Soul *a, Soul *b) {
     Rel *ra = rel(w, a, b), *rb = rel(w, b, a);
     if (ra->left || rb->left || ra->closed || rb->closed) return 0;
-    int64_t warmth = (!ra->met && a->arrived == b->arrived) ? 3 : 1;
+    if ((a->style & S_AVOIDANT && w->round - a->arrived < 2) || (b->style & S_AVOIDANT && w->round - b->arrived < 2)) {
+        w->in_transit = 1;      /* an avoidant soul comes, but late */
+        return 0;
+    }
+    int first_sight = !ra->met && a->arrived == b->arrived;
     Soul *pair[2][2] = {{a, b}, {b, a}};
     for (int k = 0; k < 2; k++) {
         const Ins *ins = current(w, pair[k][0]);
@@ -1404,7 +1413,7 @@ static int try_meet(World *w, Soul *a, Soul *b) {
         settle(rs[k], pair[k][0]);
         rs[k]->distance /= 2;
         rs[k]->met = 1;
-        rs[k]->passion += warmth;
+        rs[k]->passion += first_sight ? (pair[k][0]->style & S_EROS ? 5 : 3) : 1;
         rs[k]->last_meet = pair[k][0]->step;
         rs[k]->faded = 0;
         rs[k]->contact = pair[k][0]->step;
@@ -1872,14 +1881,15 @@ static void heard(Soul *s, Value v) {
 }
 
 /* Whoever gave their heart to someone who confides in another is jealous. */
-static void jealousy(World *w, Soul *snd, Soul *rcv) {
+static void jealousy(World *w, Soul *snd, Soul *rcv, int only_mania) {
     for (size_t i = 0; i < w->nsouls; i++) {
         Soul *a = w->order[i];
         if (a == snd || a == rcv) continue;
+        if (only_mania && !(a->style & S_MANIA)) continue;
         Rel *r = rel_if(w, a, snd);
         if (!r || !r->gift || r->left) continue;
         r->jealous = 1;
-        r->passion++;
+        r->passion += a->style & S_MANIA ? 2 : 1;
         if (r->intimacy > 0) r->intimacy--;
     }
 }
@@ -1895,6 +1905,7 @@ static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     int64_t *f = fear_of(rcv, snd->id);
     if (f && *f > 0) return 0;
     if (w->round - snd->arrived < rs->distance) { w->in_transit = 1; return 0; }  /* still on their way */
+    if (rcv->style & S_AVOIDANT && w->round - rcv->arrived < 2) { w->in_transit = 1; return 0; }
     if (si->op == OP_CONFIDE && !rs->gift)
         t_fail(w, "%s can confide only in someone they gave their heart to", snd->name);
     Value value = si->a(w, snd);
@@ -1908,7 +1919,8 @@ static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     rr->pressure = 0;
     if (si->tender) { if (!rr->resentment) rr->intimacy++; }
     else rs->pressure++;
-    if (si->op == OP_CONFIDE) jealousy(w, snd, rcv);
+    if (si->op == OP_CONFIDE) jealousy(w, snd, rcv, 0);
+    else if (w->mania) jealousy(w, snd, rcv, 1);
     if (rs->pressure > rr->intimacy + 2) {
         frighten(rcv, snd->id, 3 + rs->pressure);
         if (rr->passion > 0) rr->passion--;
@@ -1953,10 +1965,18 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
     Soul *b = resolve(w, s, who);
     Rel *mine = known(w, s, b);
     switch (ins->op) {
-    case OP_WARM: mine->trust++; break;
-    case OP_COOL: if (mine->trust > 0) mine->trust--; break;
-    case OP_PROMISE: mine->commitment++; break;
-    case OP_GIVE: mine->gift = 1; break;
+    case OP_WARM:
+        if (s->style & S_STORGE) { if (++s->warmth_owed % 2 == 0) mine->trust++; }
+        else mine->trust++;
+        break;
+    case OP_COOL: if (mine->trust > 0 && !(s->style & S_STORGE)) mine->trust--; break;
+    case OP_PROMISE: if (!(s->style & S_LUDUS)) mine->commitment++; break;
+    case OP_GIVE:
+        if (s->style & S_PRAGMA && mine->trust < 3)
+            t_fail(w, "%s gives its heart only where it trusts, and trusts %s only %lld", s->name, b->name,
+                   (long long)mine->trust);
+        mine->gift = 1;
+        break;
     case OP_FORGIVE: mine->closed = 0; break;
     case OP_TAKE_BACK: mine->gift = 0; break;
     case OP_CONSENT: mine->consent = 1; break;
@@ -1971,11 +1991,11 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
     }
     case OP_WOUND: {
         Rel *them = rel(w, b, s);
-        them->trust = 0;
+        them->trust = b->style & S_STORGE ? them->trust / 2 : 0;
         them->intimacy /= 2;
         list_push(&them->scars, printf_value("wounded by %s", s->name));
-        if (!them->gift) them->closed = 1;
-        them->resentment = 1;
+        if (!them->gift && !(b->style & S_AGAPE)) them->closed = 1;
+        them->resentment = !(b->style & S_AGAPE);
         if (them->gift) mine->shame = 1;
         break;
     }
@@ -1983,7 +2003,8 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
         Rel *them = rel(w, b, s);
         mine->left = 1;
         mine->commitment = 0;
-        for (size_t i = 0; i < mine->heard.n; i++) list_push(&mine->scars, mine->heard.v[i]);
+        if (!(s->style & S_LUDUS))
+            for (size_t i = 0; i < mine->heard.n; i++) list_push(&mine->scars, mine->heard.v[i]);
         for (size_t i = 0; i < them->heard.n; i++) list_push(&them->scars, them->heard.v[i]);
         list_push(&them->scars, printf_value("%s left", s->name));
         them->abandoned = 1;
@@ -2159,6 +2180,24 @@ static int live(World *w) {
             Soul *s = list[k];
             s->step++;
             int pc = s->pc;
+            if (s->style & (S_ANXIOUS | S_MANIA) && s->step % 4 == 0) {
+                /* it spends this step asking whether the other is still there */
+                const Ins *ins = current(w, s);
+                if (ins && ins->mode == TO_NAMED && ins->target &&
+                    (ins->op == OP_MEET || ins->op == OP_HEAR || ins->op == OP_TELL || ins->op == OP_TOGETHER)) {
+                    jmp_buf quiet, *outer = w->trap;
+                    w->trap = &quiet;
+                    if (setjmp(quiet) == 0) {
+                        Value who = target(w, s, ins);
+                        Soul *b = find(w, who);
+                        if (b && b != s) { Rel *r = rel_if(w, s, b); if (r && r->met) r->pressure++; }
+                    }
+                    w->trap = outer;
+                }
+                w->in_transit = 1;
+                step_over();
+                continue;
+            }
             int r = attempt(w, s);
             if (r < 0) { free(list); step_over(); return -1; }
             if (r) moved = 1;
