@@ -832,7 +832,7 @@ bin/tc program.tainted -o path      compile it to path
 bin/tc program.tainted -c           print the C the compiler makes of it
 ./program                           run it; the world is its standard input
 ./program --feelings                run it, then print every relationship
-./program --patience=N              give up after N rounds
+./program --patience=N              give up after N rounds; 0 never gives up
 ./program --deterministic           no chemistry, the same life every run
 ./program --lineage                 say which compilers made it, and stop
 bin/tc compiler.tainted --give-heart

@@ -21,9 +21,7 @@ import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-sys.path.insert(0, os.path.join(ROOT, "kube"))
 
-import bridge  # noqa: E402
 import minsky  # noqa: E402
 
 CORE = os.path.join(ROOT, "build", "tc-core")
@@ -50,7 +48,10 @@ def source_key(source):
 
 def compile_source(source, history=None):
     """Compile with the Tainted compiler; returns (program, None) or (None, (code, error))."""
-    stamp = f"{os.path.getmtime(CORE)}:{os.path.getmtime(os.path.join(ROOT, 'runtime', 'tainted.c'))}"
+    lib = os.path.join(ROOT, "lib")
+    stamp = ":".join(str(os.path.getmtime(f)) for f in
+                     [CORE, os.path.join(ROOT, "runtime", "tainted.c")] +
+                     sorted(os.path.join(lib, x) for x in os.listdir(lib)))
     key = hashlib.sha256((stamp + source).encode()).hexdigest()[:16]
     program = os.path.join(CACHE, key)
     if os.path.exists(program):
@@ -58,7 +59,8 @@ def compile_source(source, history=None):
     with tempfile.TemporaryDirectory() as d:
         res = subprocess.run([CORE], input=source, capture_output=True, text=True,
                              env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json"),
-                                      TAINTED_MEMORY=os.path.join(d, "memory.json")))
+                                      TAINTED_MEMORY=os.path.join(d, "memory.json"),
+                                      TAINTED_LIB=lib))
         if res.returncode:
             return None, (res.returncode, res.stderr)
         c = os.path.join(d, "p.c")
@@ -87,7 +89,7 @@ class Life:
                     "left": ", left" in m[9]}
 
 
-def run(source, runs=0, given="", flags=()):
+def run(source, runs=0, given="", flags=(), env=None):
     program, failed = compile_source(source)
     if failed:
         return Life(failed[0], "", failed[1])
@@ -97,7 +99,7 @@ def run(source, runs=0, given="", flags=()):
             with open(history, "w") as f:
                 json.dump({source_key(source): runs}, f)
         res = subprocess.run([program, "--feelings", *flags], input=given, capture_output=True,
-                             text=True, env=dict(os.environ, TAINTED_HISTORY=history))
+                             text=True, env=dict(os.environ, TAINTED_HISTORY=history, **(env or {})))
     return Life(res.returncode, res.stdout, res.stderr)
 
 
@@ -784,70 +786,111 @@ class Taintednetes(unittest.TestCase):
             self.assertEqual(placement, gale_shapley(pods, nodes, seats))
 
 
-def fake_node(name, seats=None, likes=None, taint=False):
+SEATS = "taintednetes.io/seats"
+LIKES = "taintednetes.io/likes"
+
+
+def fake_node(name, seats=None, likes=None, taint=False, labels=None, extra=None):
     annotations = {}
     if seats is not None:
-        annotations[bridge.SEATS] = str(seats)
+        annotations[SEATS] = str(seats)
     if likes:
-        annotations[bridge.LIKES] = likes
-    return {"metadata": {"name": name, "annotations": annotations, "labels": {}},
+        annotations[LIKES] = likes
+    allocatable = {"cpu": "4", "memory": "8Gi", "pods": "110", **(extra or {})}
+    return {"metadata": {"name": name, "annotations": annotations, "labels": labels or {}},
             "spec": {"taints": [{"key": "role", "effect": "NoSchedule"}] if taint else []},
-            "status": {"allocatable": {"cpu": "4", "memory": "8Gi", "pods": "110"},
+            "status": {"allocatable": allocatable,
                        "conditions": [{"type": "Ready", "status": "True"}]}}
 
 
-def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z"):
+def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z", requests=None,
+             affinity=None, host_port=None, tolerations=None, scheduler="taintednetes"):
+    container = {"resources": {"requests": requests or {"cpu": "100m", "memory": "16Mi"}}}
+    if host_port:
+        container["ports"] = [{"containerPort": host_port, "hostPort": host_port}]
+    spec = {"schedulerName": scheduler, "nodeName": node, "containers": [container]}
+    if affinity:
+        spec["affinity"] = affinity
+    if tolerations:
+        spec["tolerations"] = tolerations
     return {"metadata": {"name": name, "namespace": "ns", "creationTimestamp": created,
-                         "annotations": {bridge.LIKES: likes} if likes else {}},
-            "spec": {"schedulerName": "taintednetes", "nodeName": node,
-                     "containers": [{"resources": {"requests": {"cpu": "100m",
-                                                                "memory": "16Mi"}}}]},
+                         "annotations": {LIKES: likes} if likes else {}},
+            "spec": spec,
             "status": {"phase": "Running" if node else "Pending"}}
 
 
-class Bridge(unittest.TestCase):
-    def test_decisions_come_from_tainted(self):
+def scheduler_source():
+    with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
+        return f.read()
+
+
+def place(nodes, pods):
+    """Where taintednetes.tainted would put the pending pods of a cluster
+    that is only imagined, told to it as kubectl would tell it."""
+    given = json.dumps({"items": nodes}) + "\n" + json.dumps({"items": pods}) + "\n"
+    life = run(scheduler_source(), given=given)
+    placed = {}
+    for line in life.lines:
+        words = line.split()
+        if words[1:3] == ["lives", "on"]:
+            placed[words[0]] = words[3]
+        elif words[1:4] == ["has", "nowhere", "to"] and len(words) == 5:
+            placed.setdefault(words[0], None)
+    return life, placed
+
+
+AFFINITY_Z1 = {"nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": {
+    "nodeSelectorTerms": [{"matchExpressions": [
+        {"key": "zone", "operator": "In", "values": ["z1"]}]}]}}}
+
+
+class Scheduler(unittest.TestCase):
+    """taintednetes.tainted deciding, in Tainted, who may live where."""
+
+    def test_seats_likes_and_taints(self):
         nodes = [fake_node("a", seats=2, likes="ns/db"), fake_node("b", seats=1),
                  fake_node("master", taint=True)]
         pods = [fake_pod("old", node="a"), fake_pod("web", likes="a"),
                 fake_pod("db", likes="a"), fake_pod("cache", likes="a")]
-        b = bridge.Bridge.__new__(bridge.Bridge)
-        b.scheduler = "taintednetes"
-        b.last_story = None
-        with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
-            b.program, _ = compile_source(f.read())
-        b.get = lambda kind, *rest: pods if kind == "pods" else nodes
-        bound = []
-        b.bind = lambda pod, node: bound.append((pod["metadata"]["name"], node))
-        old = os.environ.get("TAINTED_HISTORY")
-        with tempfile.TemporaryDirectory() as d:
-            os.environ["TAINTED_HISTORY"] = os.path.join(d, "h.json")
-            try:
-                with contextlib.redirect_stdout(io.StringIO()):
-                    b.once()
-            finally:
-                if old is None:
-                    del os.environ["TAINTED_HISTORY"]
-                else:
-                    os.environ["TAINTED_HISTORY"] = old
-        placed = dict(bound)
+        life, placed = place(nodes, pods)
+        self.assertEqual(life.code, 0, life.err)
         self.assertNotIn("master", placed.values())
-        self.assertEqual(placed["db"], "a")
+        self.assertEqual(placed["ns/db"], "a")
         self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
         self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
 
-    def test_a_pass_that_changes_nothing_is_not_told_again(self):
-        b = bridge.Bridge.__new__(bridge.Bridge)
-        b.last_story = None
-        b.describe = lambda: ("text", {})
-        b.decide = lambda text: ["pod:ns/web has nowhere to live", "the cluster is at rest"]
-        told = []
-        for _ in range(3):
-            out = io.StringIO()
-            with contextlib.redirect_stdout(out):
-                b.once()
-            told.append(out.getvalue())
-        self.assertEqual(told, ["ns/web has nowhere to live\nthe cluster is at rest\n", "", ""])
+    def test_a_toleration_opens_a_tainted_node(self):
+        nodes = [fake_node("master", taint=True)]
+        pods = [fake_pod("guest"), fake_pod("admin", tolerations=[{"key": "role", "operator": "Exists"}])]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/guest": None, "ns/admin": "master"})
+
+    def test_extended_resources_such_as_gpus(self):
+        nodes = [fake_node("cpu-only"), fake_node("gpu", extra={"nvidia.com/gpu": "2"})]
+        gpu = {"cpu": "100m", "nvidia.com/gpu": "1"}
+        pods = [fake_pod("train", requests=gpu), fake_pod("tune", requests=gpu),
+                fake_pod("third", requests=gpu)]
+        _, placed = place(nodes, pods)
+        self.assertEqual(sorted(placed.values(), key=str), [None, "gpu", "gpu"])
+
+    def test_required_node_affinity(self):
+        nodes = [fake_node("x", labels={"zone": "z2"}), fake_node("y", labels={"zone": "z1"})]
+        _, placed = place(nodes, [fake_pod("zonal", affinity=AFFINITY_Z1)])
+        self.assertEqual(placed, {"ns/zonal": "y"})
+
+    def test_preferred_node_affinity_leans(self):
+        lean = {"nodeAffinity": {"preferredDuringSchedulingIgnoredDuringExecution": [
+            {"weight": 10, "preference": {"matchExpressions": [
+                {"key": "disk", "operator": "Exists"}]}}]}}
+        nodes = [fake_node("plain"), fake_node("ssd", labels={"disk": "ssd"})]
+        _, placed = place(nodes, [fake_pod("db", affinity=lean)])
+        self.assertEqual(placed, {"ns/db": "ssd"})
+
+    def test_a_host_port_is_taken_once_per_node(self):
+        nodes = [fake_node("a"), fake_node("b")]
+        pods = [fake_pod("there", node="a", host_port=80), fake_pod("wants", host_port=80, likes="a")]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/wants": "b"})
 
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
@@ -855,29 +898,88 @@ class Bridge(unittest.TestCase):
             if always:
                 c["restartPolicy"] = "Always"
             return c
-        pod = {"spec": {"initContainers": [box("500m")], "containers": [box("100m")]}}
-        self.assertEqual(bridge.requests(pod)[0], 500)
-        pod["spec"]["initContainers"] = [box("200m", always=True), box("400m")]
-        self.assertEqual(bridge.requests(pod)[0], 600)
-        pod["spec"]["containers"] = [box("500m")]
-        self.assertEqual(bridge.requests(pod)[0], 700)
-        pod["spec"]["overhead"] = {"cpu": "50m"}
-        self.assertEqual(bridge.requests(pod)[0], 750)
-        pod["spec"]["resources"] = {"requests": {"cpu": "1"}}
-        self.assertEqual(bridge.requests(pod)[0], 1050)
+        cases = [({"initContainers": [box("500m")], "containers": [box("100m")]}, 500),
+                 ({"initContainers": [box("200m", True), box("400m")], "containers": [box("100m")]}, 600),
+                 ({"initContainers": [box("200m", True), box("400m")], "containers": [box("500m")]}, 700),
+                 ({"initContainers": [box("200m", True), box("400m")], "containers": [box("500m")],
+                   "overhead": {"cpu": "50m"}}, 750),
+                 ({"initContainers": [box("200m", True)], "containers": [box("500m")],
+                   "overhead": {"cpu": "50m"}, "resources": {"requests": {"cpu": "1"}}}, 1050)]
+        lines = ['written by "tests"', 'learn "kube.tainted"', "soul counter"]
+        for spec, _ in cases:
+            lines.append(f"    let pod = meaning of {json.dumps(json.dumps({'spec': spec}))}")
+            lines.append("    perform requests with pod into held")
+            lines.append('    say held["cpu"]')
+        lines.append("end")
+        life = run("\n".join(lines) + "\n")
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(life.lines, [str(c) for _, c in cases])
+
+    def test_quantities(self):
+        life = run('written by "tests"\nlearn "kube.tainted"\nsoul q\n'
+                   '    perform bytes_of with "1.5Gi" into a\n    say a\n'
+                   '    perform bytes_of with "64M" into a\n    say a\n'
+                   '    perform cpu_of with "2" into a\n    say a\n'
+                   '    perform cpu_of with "0.25" into a\n    say a\nend\n')
+        self.assertEqual(life.lines, [str(3 * 2**29), "64000000", "2000", "250"])
+
+
+class LiveScheduler(unittest.TestCase):
+    """The scheduler of a cluster, talking to a kubectl that only imagines one."""
+
+    def live(self, nodes, pods, looks):
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "nodes.json"), "w") as f:
+                json.dump({"items": nodes}, f)
+            with open(os.path.join(d, "pods.json"), "w") as f:
+                json.dump({"items": pods}, f)
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write('#!/bin/sh\n'
+                        '[ "$1 $2" = "--context imagined" ] || { echo "no context" >&2; exit 1; }\n'
+                        'shift 2\n'
+                        'case "$1 $2" in\n'
+                        f'  "get nodes") cat {d}/nodes.json ;;\n'
+                        f'  "get pods") cat {d}/pods.json ;;\n'
+                        f'  "create --raw") echo "$3 $(cat)" >> {d}/asked ;;\n'
+                        '  *) exit 1 ;;\n'
+                        'esac\n')
+            os.chmod(fake, 0o755)
+            life = run(scheduler_source(), flags=("--patience=0",),
+                       env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined",
+                            "TAINTEDNETES_LOOKS": str(looks), "TAINTEDNETES_INTERVAL": "0"})
+            asked = []
+            if os.path.exists(os.path.join(d, "asked")):
+                with open(os.path.join(d, "asked")) as f:
+                    for line in f:
+                        path, body = line.split(" ", 1)
+                        asked.append((path, json.loads(body)))
+        return life, asked
 
     def test_binding_needs_no_more_rights_than_binding(self):
         """kubectl create -f validates against the CRD list, which a scheduler
         running with least privilege may not read; the binding subresource
         is posted raw instead."""
-        b = bridge.Bridge.__new__(bridge.Bridge)
-        calls = []
-        b.kubectl = lambda *args, stdin=None: calls.append((args, json.loads(stdin)))
-        b.bind(fake_pod("web"), "a")
-        (args, body), = calls
-        self.assertEqual(args, ("create", "--raw", "/api/v1/namespaces/ns/pods/web/binding",
-                                "-f", "-"))
+        life, asked = self.live([fake_node("a")], [fake_pod("web")], looks=1)
+        self.assertEqual(life.code, 0, life.err)
+        (path, body), = asked
+        self.assertEqual(path, "/api/v1/namespaces/ns/pods/web/binding")
+        self.assertEqual(body["kind"], "Binding")
         self.assertEqual(body["target"]["name"], "a")
+        self.assertIn("ns/web lives on a", life.lines)
+
+    def test_a_look_that_changes_nothing_is_not_told_again(self):
+        life, asked = self.live([fake_node("a", taint=True)], [fake_pod("web")], looks=3)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(asked, [])
+        self.assertEqual(life.lines.count("ns/web has nowhere to live"), 2)
+
+    def test_nodes_live_between_looks(self):
+        """Every look brings new pod souls, but the nodes are the same souls."""
+        life, asked = self.live([fake_node("a"), fake_node("b")],
+                                [fake_pod("web"), fake_pod("db")], looks=2)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(len(asked), 4)
 
 
 class Parting(unittest.TestCase):

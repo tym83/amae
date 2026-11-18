@@ -1,9 +1,35 @@
 # Taintednetes: a scheduler written in Tainted.
 #
-# The cluster hears its pods and nodes from the world, one per line:
+# With KUBE_CONTEXT set, it is the scheduler of that cluster. It looks at the
+# cluster through kubectl, works out in Tainted who could live where, lets
+# the pods and the nodes find each other, binds every pod to the node it
+# settled on, and looks again. Pods choose it with schedulerName:
+# taintednetes (or TAINTEDNETES_NAME). It looks every TAINTEDNETES_INTERVAL
+# seconds (5 if not set) and, if TAINTEDNETES_LOOKS is set, rests after
+# that many looks.
+#
+# Without it, the world tells it about a cluster on standard input, either
+# as the cluster itself (two lines: `kubectl get nodes -o json` and
+# `kubectl get pods -A -o json`, each on one line) or as preferences, one
+# soul per line:
 #     pod web alpha beta gamma        the nodes web would live on, best first
 #     node alpha 2 db cache web       how many pods alpha can take, and whom it prefers
-# and brings every one of them to life as a soul.
+# and it says where everyone would live.
+#
+# Who may meet whom is decided the way kube-scheduler decides it: a pod
+# likes only the nodes it fits on (resources counted as the kubelet counts
+# them, extended resources such as GPUs among them, node selector, required
+# node affinity, taints it tolerates, free host ports), and a node offers
+# only as many seats as it can hold of the largest pod that wants it. A node
+# annotated taintednetes.io/seats: "N" hosts at most N pods of this scheduler.
+#
+# Preferences:
+#   pod annotation  taintednetes.io/likes: "node-a node-b"   nodes it wants first
+#   node annotation taintednetes.io/likes: "ns/pod ns/pod"   pods it wants first
+# then the nodes its preferred node affinity leans to, then the nodes with
+# more free whole cores; where the nodes are equal every pod has its own
+# lasting taste, so a crowd of identical pods spreads out. Nodes prefer pods
+# with higher priority, then the ones waiting longest.
 #
 # A pod proposes to the nodes it likes, in order. A node keeps the best pods
 # that have asked so far, says no to the rest and, when someone better comes
@@ -14,7 +40,8 @@
 # Nobody compares the cluster with a desired state. When every soul is
 # waiting and nobody has anything left to say, the cluster hears the silence,
 # asks every pod where it lives and lets everyone rest. That silence is a
-# stable matching.
+# stable matching. The nodes stay: every look at the cluster is one more
+# meeting with them. The pods of one look are souls of that look.
 #
 # Everything that has to survive a wait is written down with note:
 # a soul that waits forgets, and a scheduler that forgets loses its pods.
@@ -24,18 +51,24 @@ written by "tainted"
 # Infrastructure lives the same life every run: no chemistry.
 deterministic
 
+learn "kube.tainted"
+
 # Being handed something by the cluster, and thanking it, so that the
 # cluster never says too much unanswered.
 ritual accept_gift
     hear cluster into gift
+    note "gift" = gift
     tell cluster "thank you"
-    give back gift
+    give back note "gift"
 end
 
-# Handing something over and waiting for the thanks.
+# Handing something over and waiting for the thanks. Waiting is long
+# enough to forget, so what is handed over is written down first.
 ritual hand_over who, what
-    tell soul named who what
-    hear soul named who into thanks
+    note "to" = who
+    note "handed" = what
+    tell soul named note "to" note "handed"
+    hear soul named note "to" into thanks
 end
 
 # Meeting everyone on a list, in the order of the list. The place in the list
@@ -59,16 +92,30 @@ ritual words_from line, n
     give back rest
 end
 
-# Saying the same thing to everyone on a list.
-ritual tell_everyone list, what
-    let i = 1
-    while i <= words of note list
-        tell soul named word i of note list what
-        i = i + 1
+# Handing the same thing to everyone on a list.
+ritual hand_everyone list, what
+    note "handing" = 1
+    while note "handing" <= words of note list
+        perform hand_over with word (note "handing") of note list, what
+        note "handing" = note "handing" + 1
     end
 end
 
+# A pod's name without the look it belongs to.
+ritual shown name
+    let i = 1
+    while i <= length of name
+        if name[i] == "#"
+            give back part 1 (i - 1) of name
+        end
+        i = i + 1
+    end
+    give back name
+end
+
 kind pod
+    perform shown with me into name
+    note "me" = name
     meet cluster
     perform accept_gift into likes
     note "likes" = likes
@@ -82,7 +129,7 @@ kind pod
         hear soul named note "there" into answer
         if answer == "yes"
             give heart to soul named note "there"
-            say me + " settles on " + note "there"
+            say note "me" + " settles on " + note "there"
             mark settled
             hear anyone into news from who
             if who == "cluster"
@@ -92,11 +139,11 @@ kind pod
                 tell cluster note "there"
                 return to settled
             end
-            say me + " is sent away from " + note "there"
+            say note "me" + " is sent away from " + note "there"
         end
         note "k" = note "k" + 1
     end
-    say me + " has nowhere to live"
+    say note "me" + " has nowhere to live"
     mark homeless
     hear cluster into question
     if question == "rest"
@@ -106,10 +153,16 @@ kind pod
     return to homeless
 end
 
+# A node lives as long as the scheduler does. Every look at the cluster it is
+# part of begins with what it can take now and whom it would have.
 kind node
     meet cluster
+    mark looking
     perform accept_gift into seats
-    note "seats" = number of seats
+    if seats == "farewell"
+        goodbye
+    end
+    note "seats" = number of ("" + seats)
     perform accept_gift into likes
     note "likes" = likes
     perform accept_gift into pods
@@ -119,7 +172,7 @@ kind node
     mark attentive
     hear anyone into asking from who
     if who == "cluster"
-        goodbye
+        return to looking
     end
     note "who" = who
     note "rank" = place of who in note "likes"
@@ -150,10 +203,271 @@ kind node
     return to attentive
 end
 
-soul cluster
+# One look: the pods in note "pods" and the nodes in note "nodes" find each
+# other, with what each likes in note ("likes " + name) and the seats of the
+# nodes in note ("seats " + name). Where every pod lives goes to
+# note ("home " + pod): a node, or "nowhere".
+ritual match
+    note "i" = 1
+    while note "i" <= words of note "pods"
+        bring pod named word (note "i") of note "pods"
+        note "i" = note "i" + 1
+    end
+    note "i" = 1
+    while note "i" <= words of note "nodes"
+        note "n" = word (note "i") of note "nodes"
+        if place of note "n" in note "known nodes" == 0
+            bring node named note "n"
+            meet soul named note "n"
+            note "known nodes" = note "known nodes" + " " + note "n"
+        end
+        note "i" = note "i" + 1
+    end
+
+    note "i" = 1
+    while note "i" <= words of note "pods"
+        note "p" = word (note "i") of note "pods"
+        meet soul named note "p"
+        perform hand_over with note "p", note ("likes " + note "p")
+        perform hand_over with note "p", note "nodes"
+        note "i" = note "i" + 1
+    end
+    note "i" = 1
+    while note "i" <= words of note "nodes"
+        note "n" = word (note "i") of note "nodes"
+        perform hand_over with note "n", note ("seats " + note "n")
+        perform hand_over with note "n", note ("likes " + note "n")
+        perform hand_over with note "n", note "pods"
+        note "i" = note "i" + 1
+    end
+
+    wait for silence
+
+    note "i" = 1
+    while note "i" <= words of note "pods"
+        note "p" = word (note "i") of note "pods"
+        tell soul named note "p" "where do you live?"
+        hear soul named note "p" into home
+        note ("home " + note "p") = home
+        tell soul named note "p" "rest"
+        note "i" = note "i" + 1
+    end
+    note "i" = 1
+    while note "i" <= words of note "nodes"
+        tell soul named word (note "i") of note "nodes" "rest"
+        note "i" = note "i" + 1
+    end
+end
+
+# The cluster as kubectl tells it, made into a look: who may meet whom, in
+# what order, and how many seats every node has. Pods are named ns/name.
+ritual describe all_nodes, all_pods, scheduler
+    let free = {}
+    let ports = {}
+    let ours = {}
+    let up_nodes = []
+    let i = 1
+    while i <= length of all_nodes
+        perform ready with all_nodes[i] into up
+        if up
+            let name = all_nodes[i]["metadata"]["name"]
+            put all_nodes[i] into up_nodes
+            perform allocatable with all_nodes[i] into left
+            free[name] = left
+            ports[name] = ""
+            ours[name] = 0
+        end
+        recall all_nodes all_pods scheduler free ports ours up_nodes
+        i = i + 1
+    end
+
+    let pending = []
+    i = 1
+    while i <= length of all_pods
+        let p = all_pods[i]
+        perform field with p["spec"], "nodeName", "" into where
+        perform field with p["status"], "phase", "" into stage
+        perform field with p["spec"], "schedulerName", "" into chosen
+        if where != "" and place of where in free > 0 and stage != "Succeeded" and stage != "Failed"
+            perform requests with p into r
+            perform take_away with free[where], r into left
+            free[where] = left
+            perform host_ports with p into hp
+            ports[where] = ports[where] + hp
+            if chosen == scheduler
+                ours[where] = ours[where] + 1
+            end
+        end
+        perform field with p["metadata"], "deletionTimestamp", "" into dying
+        if where == "" and stage == "Pending" and dying == "" and chosen == scheduler
+            put p into pending
+        end
+        recall all_nodes all_pods scheduler free ports ours up_nodes pending
+        i = i + 1
+    end
+
+    # Who fits where, and why not.
+    let pods = ""
+    let objects = {}
+    let wants = {}
+    let fits = {}
+    let why = {}
+    i = 1
+    while i <= length of pending
+        let p = pending[i]
+        let pn = p["metadata"]["namespace"] + "/" + p["metadata"]["name"]
+        pods = pods + " " + pn
+        objects[pn] = p
+        perform requests with p into r
+        wants[pn] = r
+        let reasons = {}
+        let j = 1
+        while j <= length of up_nodes
+            let nn = up_nodes[j]["metadata"]["name"]
+            perform unfit with p, up_nodes[j], r, free[nn], ports[nn] into reason
+            fits[pn + " " + nn] = reason == ""
+            if reason != ""
+                reasons[reason] = 1
+            end
+            recall p pn r reasons i pending up_nodes free ports ours pods objects wants fits why
+            j = j + 1
+        end
+        why[pn] = keys of reasons
+        recall pending up_nodes free ports ours pods objects wants fits why
+        i = i + 1
+    end
+
+    # What every pod likes, best first.
+    let likes = {}
+    i = 1
+    while i <= words of pods
+        let pn = word i of pods
+        perform annotation with objects[pn], "taintednetes.io/likes" into wanted
+        let candidates = []
+        let order = []
+        let j = 1
+        while j <= length of up_nodes
+            let nn = up_nodes[j]["metadata"]["name"]
+            if fits[pn + " " + nn]
+                let rank = place of nn in wanted
+                if rank == 0
+                    rank = words of wanted + 1
+                end
+                perform leaning with objects[pn], up_nodes[j] into lean
+                perform field with free[nn], "cpu", 0 into cores
+                put nn into candidates
+                put [rank, 0 - lean, 0 - cores / 1000, hash of ("pod:" + pn + " node:" + nn)] into order
+            end
+            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants
+            j = j + 1
+        end
+        perform sorted with candidates, order into best
+        let line = ""
+        j = 1
+        while j <= length of best
+            line = line + " " + best[j]
+            recall best line pn i pods objects up_nodes free fits likes ours wants
+            j = j + 1
+        end
+        likes[pn] = line
+        recall pods objects up_nodes free fits likes
+        i = i + 1
+    end
+
+    # Whom every node prefers, and how many it can take.
+    let nodes = ""
+    let seats = {}
+    i = 1
+    while i <= length of up_nodes
+        let node = up_nodes[i]
+        let nn = node["metadata"]["name"]
+        nodes = nodes + " " + nn
+        perform annotation with node, "taintednetes.io/likes" into wanted
+        let suitors = []
+        let order = []
+        let j = 1
+        while j <= words of pods
+            let pn = word j of pods
+            if fits[pn + " " + nn]
+                let rank = place of pn in wanted
+                if rank == 0
+                    rank = words of wanted + 1
+                end
+                perform field with objects[pn]["spec"], "priority", 0 into priority
+                put pn into suitors
+                put [rank, 0 - priority, objects[pn]["metadata"]["creationTimestamp"], pn] into order
+            end
+            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes
+            j = j + 1
+        end
+        perform sorted with suitors, order into best
+        let line = ""
+        let left = free[nn]
+        perform field with left, "pods", 0 into room
+        perform annotation with node, "taintednetes.io/seats" into limit
+        if limit != ""
+            if number of limit - ours[nn] < room
+                room = number of limit - ours[nn]
+            end
+        end
+        j = 1
+        while j <= length of best
+            line = line + " " + best[j]
+            let r = wants[best[j]]
+            let names = keys of r
+            let k = 1
+            while k <= length of names
+                if r[names[k]] > 0
+                    perform field with left, names[k], 0 into has
+                    if has / r[names[k]] < room
+                        room = has / r[names[k]]
+                    end
+                end
+                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes
+                k = k + 1
+            end
+            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes
+            j = j + 1
+        end
+        if room < 0
+            room = 0
+        end
+        likes[nn] = line
+        seats[nn] = room
+        recall up_nodes pods objects wants fits free ours nodes seats likes
+        i = i + 1
+    end
+    give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why}
+end
+
+# A look made into the notes `match` reads. The pods of the look are named
+# with "#" and the number of the look, so that every look has souls of its own.
+ritual prepare look, tail
+    perform each_with with look["pods"], tail into pods
+    note "pods" = pods
+    note "nodes" = look["nodes"]
+    let i = 1
+    while i <= words of look["pods"]
+        note ("likes " + word i of look["pods"] + tail) = look["likes"][word i of look["pods"]]
+        recall look tail
+        i = i + 1
+    end
+    i = 1
+    while i <= words of look["nodes"]
+        let nn = word i of look["nodes"]
+        perform each_with with look["likes"][nn], tail into suitors
+        note ("likes " + nn) = suitors
+        note ("seats " + nn) = look["seats"][nn]
+        recall look tail
+        i = i + 1
+    end
+end
+
+# The preferences, line by line, as the world tells them.
+ritual hear_preferences first_line
     note "pods" = ""
     note "nodes" = ""
-    hear world into line
+    let line = first_line
     while line != 0
         let name = word 2 of line
         if word 1 of line == "pod"
@@ -169,51 +483,119 @@ soul cluster
         end
         hear world into line
     end
+end
 
+# Where everyone lives, told; with `binding`, made so in the cluster too.
+ritual tell_homes look, tail, binding
+    let bound = 0
     let i = 1
-    while i <= words of note "pods"
-        bring pod named word i of note "pods"
-        i = i + 1
-    end
-    i = 1
-    while i <= words of note "nodes"
-        bring node named word i of note "nodes"
-        i = i + 1
-    end
-
-    note "i" = 1
-    while note "i" <= words of note "pods"
-        note "p" = word (note "i") of note "pods"
-        meet soul named note "p"
-        perform hand_over with note "p", note ("likes " + note "p")
-        perform hand_over with note "p", note "nodes"
-        note "i" = note "i" + 1
-    end
-    note "i" = 1
-    while note "i" <= words of note "nodes"
-        note "n" = word (note "i") of note "nodes"
-        meet soul named note "n"
-        perform hand_over with note "n", note ("seats " + note "n")
-        perform hand_over with note "n", note ("likes " + note "n")
-        perform hand_over with note "n", note "pods"
-        note "i" = note "i" + 1
-    end
-
-    wait for silence
-
-    note "i" = 1
-    while note "i" <= words of note "pods"
-        note "p" = word (note "i") of note "pods"
-        tell soul named note "p" "where do you live?"
-        hear soul named note "p" into home
+    while i <= words of look["pods"]
+        let pn = word i of look["pods"]
+        let home = note ("home " + pn + tail)
         if home == "nowhere"
-            say note "p" + " has nowhere to live"
+            say pn + " has nowhere to live"
         else
-            say note "p" + " lives on " + home
+            if binding
+                let pod = look["objects"][pn]
+                endure
+                    perform bind with pod["metadata"]["namespace"], pod["metadata"]["name"], home into said
+                    say pn + " lives on " + home
+                    bound = bound + 1
+                when it hurts as pain
+                    cry "taintednetes: " + pn + " could not live on " + home + ": " + pain
+                end
+            else
+                say pn + " lives on " + home
+                bound = bound + 1
+            end
         end
-        tell soul named note "p" "rest"
-        note "i" = note "i" + 1
+        recall look tail binding bound
+        i = i + 1
     end
-    perform tell_everyone with "nodes", "rest"
-    say "the cluster is at rest"
+    give back bound
+end
+
+soul cluster
+    note "known nodes" = ""
+    let scheduler = world "TAINTEDNETES_NAME"
+    if scheduler == ""
+        scheduler = "taintednetes"
+    end
+    note "scheduler" = scheduler
+
+    if world "KUBE_CONTEXT" == ""
+        hear world into line
+        if line != 0 and word 1 of line != "pod" and word 1 of line != "node"
+            let all_nodes = (meaning of line)["items"]
+            hear world into more
+            let all_pods = (meaning of more)["items"]
+            perform describe with all_nodes, all_pods, note "scheduler" into look
+            perform prepare with look, ""
+            perform match
+            perform tell_homes with look, "", 0 into bound
+        else
+            perform hear_preferences with line
+            perform match
+            note "i" = 1
+            while note "i" <= words of note "pods"
+                note "p" = word (note "i") of note "pods"
+                if note ("home " + note "p") == "nowhere"
+                    say note "p" + " has nowhere to live"
+                else
+                    say note "p" + " lives on " + note ("home " + note "p")
+                end
+                note "i" = note "i" + 1
+            end
+        end
+        perform hand_everyone with "known nodes", "farewell"
+        say "the cluster is at rest"
+        goodbye
+    end
+
+    # The scheduler of a cluster: it looks, lets everyone find each other,
+    # and looks again. A look that would tell the same story as the one
+    # before, which bound nobody, is not told again.
+    note "looks" = 0
+    note "times" = 0
+    note "story" = ""
+    note "every" = world "TAINTEDNETES_INTERVAL"
+    if note "every" == ""
+        note "every" = 5
+    end
+    say "taintednetes schedules the pods that choose " + note "scheduler"
+    mark looking
+    endure
+        perform get_all with "nodes" into all_nodes
+        perform get_all with "pods -A" into all_pods
+        perform describe with all_nodes, all_pods, note "scheduler" into look
+        note "look" = look
+    when it hurts as pain
+        cry "taintednetes: " + pain
+        note "look" = {"pods": ""}
+    end
+    let look = note "look"
+    if words of look["pods"] == 0
+        note "story" = ""
+    else
+        let story = hash of json of [look["likes"], look["seats"]]
+        if story != note "story"
+            note "looks" = note "looks" + 1
+            perform prepare with note "look", "#" + note "looks"
+            perform match
+            perform tell_homes with note "look", "#" + note "looks", 1 into bound
+            note "story" = story
+            if bound > 0
+                note "story" = ""
+            end
+        end
+    end
+    note "times" = note "times" + 1
+    if world "TAINTEDNETES_LOOKS" != ""
+        if note "times" >= number of world "TAINTEDNETES_LOOKS"
+            perform hand_everyone with "known nodes", "farewell"
+            goodbye
+        end
+    end
+    wait number of ("" + note "every") seconds
+    return to looking
 end

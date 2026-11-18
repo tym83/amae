@@ -2240,7 +2240,7 @@ static int live(World *w) {
         memcpy(list, alive, sizeof(Soul *) * nalive);
         step_over();
         w->round++;
-        if (w->round > w->patience) {
+        if (w->patience > 0 && w->round > w->patience) {
             fprintf(stderr, "patience ran out after %lld steps\n", (long long)w->patience);
             free(list);
             return 4;

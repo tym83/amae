@@ -99,12 +99,13 @@ spec:
       containers:
         - name: scheduler
           image: ghcr.io/tym83/tainted:latest
-          command: [python3, -u, /opt/tainted/kube/bridge.py, --context, in-cluster, --interval, "5",
-                    --program, /opt/tainted/bin/taintednetes]
+          # A scheduler lives as long as its cluster: no patience limit.
+          command: [/opt/tainted/bin/taintednetes, --patience=0]
           env:
             - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: KUBE_CONTEXT, value: in-cluster}
+            - {name: TAINTEDNETES_INTERVAL, value: "5"}
             - {name: HOME, value: /tmp}
-            - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
           volumeMounts:
             - {name: kubeconfig, mountPath: /etc/taintednetes}
           resources:
