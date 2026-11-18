@@ -39,8 +39,18 @@ ritual out_case text
     note ("c " + note "csn") = text
 end
 
+# Where a line is: "line 7", or "line 7 of kube.tainted" for a learned file.
+ritual where j
+    let place_name = "line " + note ("ln " + j)
+    if note ("lf " + j) != ""
+        place_name = place_name + " of " + note ("lf " + j)
+    end
+    give back place_name
+end
+
 ritual fail message
-    cry "tainted: line " + note ("ln " + note "cj") + ": " + message
+    perform where with note "cj" into at
+    cry "tainted: " + at + ": " + message
     goodbye with 1
 end
 
@@ -113,8 +123,16 @@ ritual token what, value
     note ("tv " + j + " " + note "lxc") = value
 end
 
+ritual lex_where
+    if note "lexfile" == ""
+        give back "line " + note "lxn"
+    end
+    give back "line " + note "lxn" + " of " + note "lexfile"
+end
+
 ritual lex_fail
-    cry "tainted: line " + note "lxn" + ": cannot read '" + part (note "lxp") (note "lxlen") of note "lxl" + "'"
+    perform lex_where into at
+    cry "tainted: " + at + ": cannot read '" + part (note "lxp") (note "lxlen") of note "lxl" + "'"
     goodbye with 1
 end
 
@@ -127,12 +145,25 @@ ritual lex_number
         perform digit with part q q of note "lxl" into more
     end
     let digits = part (note "lxp") (q - 1) of note "lxl"
+    perform digit with part (q + 1) (q + 1) of note "lxl" into fraction
+    if part q q of note "lxl" == "." and fraction
+        q = q + 1
+        let more = 1
+        while more
+            q = q + 1
+            perform digit with part q q of note "lxl" into more
+        end
+        perform token with "dec", part (note "lxp") (q - 1) of note "lxl"
+        note "lxp" = q
+        give back 0
+    end
     let value = digits
     while length of value > 1 and part 1 1 of value == "0"
         value = part 2 (length of value) of value
     end
     if length of value > 19 or (length of value == 19 and value > "9223372036854775807")
-        cry "tainted: line " + note "lxn" + ": " + digits + " is too large a number"
+        perform lex_where into at
+        cry "tainted: " + at + ": " + digits + " is too large a number"
         goodbye with 1
     end
     perform token with "num", value
@@ -213,7 +244,7 @@ ritual lex_one
         note "lxp" = p + 2
         give back 0
     end
-    if place of c in "- + * / % < > = ( ) ," > 0
+    if place of c in "- + * / % < > = ( ) , [ ] { } :" > 0
         perform token with "op", c
         note "lxp" = p + 1
         give back 0
@@ -233,6 +264,7 @@ ritual lex line, n
     if note "lxc" > 0
         note "lines" = note "lines" + 1
         note ("ln " + note "lines") = note "lxn"
+        note ("lf " + note "lines") = note "lexfile"
         note ("nt " + note "lines") = note "lxc"
     end
 end
@@ -371,6 +403,49 @@ ritual e_primary
         perform tmp with "t_int(" + v + "LL)" into t
         give back t
     end
+    if kd == "dec"
+        perform tmp with "t_dec(" + v + ")" into t
+        give back t
+    end
+    if kd == "op" and v == "["
+        perform tmp with "t_list_new(w)" into t
+        perform is_op with "]" into empty
+        if not empty
+            let more = 1
+            while more
+                perform e_or into x
+                perform out_fn with "    t_list_push(w, " + t + ", " + x + ");"
+                perform is_op with "," into more
+            end
+            perform is_op with "]" into closed
+            if not closed
+                perform fail with "expected ']'"
+            end
+        end
+        give back t
+    end
+    if kd == "op" and v == "{"
+        perform tmp with "t_map_new(w)" into t
+        perform is_op with "}" into empty
+        if not empty
+            let more = 1
+            while more
+                perform e_or into key
+                perform is_op with ":" into colon
+                if not colon
+                    perform fail with "expected ':'"
+                end
+                perform e_or into x
+                perform out_fn with "    t_map_put(w, " + t + ", " + key + ", " + x + ");"
+                perform is_op with "," into more
+            end
+            perform is_op with "}" into closed
+            if not closed
+                perform fail with "expected '}'"
+            end
+        end
+        give back t
+    end
     if kd == "str"
         perform cquote with v into q
         perform tmp with "t_cstr(\"" + q + "\")" into t
@@ -461,6 +536,25 @@ ritual e_primary
         perform tmp with "t_runs(w)" into t
         give back t
     end
+    if v == "now"
+        perform tmp with "t_now(w)" into t
+        give back t
+    end
+    if v == "fate" or v == "world"
+        perform e_unary into x
+        let call = "t_fate"
+        if v == "world"
+            call = "t_env"
+        end
+        perform tmp with call + "(w, " + x + ")" into t
+        give back t
+    end
+    if v == "keys" or v == "json" or v == "meaning" or v == "whole" or v == "lines"
+        perform expect_word with "of"
+        perform e_unary into x
+        perform tmp with "t_" + v + "(w, " + x + ")" into t
+        give back t
+    end
     if v == "length"
         perform expect_word with "of"
         perform e_unary into text
@@ -492,6 +586,16 @@ ritual e_unary
         give back t
     end
     perform e_primary into t
+    perform is_op with "[" into indexed
+    while indexed
+        perform e_or into i
+        perform is_op with "]" into closed
+        if not closed
+            perform fail with "expected ']'"
+        end
+        perform tmp with "t_index(w, " + t + ", " + i + ")" into t
+        perform is_op with "[" into indexed
+    end
     give back t
 end
 
@@ -655,6 +759,29 @@ ritual target_fn
     give back name
 end
 
+# A place inside a variable: `name[a][b]`. Says the C that works out the
+# indexes, in order, into an array p, and how many there are.
+ritual path_code
+    let code = ""
+    let n = 0
+    perform is_op with "[" into indexed
+    while indexed
+        perform expr_fn into e
+        perform is_op with "]" into closed
+        if not closed
+            perform fail with "expected ']'"
+        end
+        code = code + " p[" + n + "] = " + e + "(w, s);"
+        n = n + 1
+        perform is_op with "[" into indexed
+    end
+    note "path n" = n
+    if n == 0
+        give back " Value p[1] = {{0}};"
+    end
+    give back " Value p[" + n + "];" + code
+end
+
 # ------------------------------------------------------------- instructions
 
 ritual add_ins op, extra, code
@@ -778,6 +905,20 @@ ritual statement
     perform reserved with head into isreserved
     if not isreserved
         perform a_name into name
+        perform peek_value into next
+        if next == "["
+            perform slot_of with name into slot
+            perform path_code into path
+            let n = note "path n"
+            perform is_op with "=" into eq
+            if not eq
+                perform fail with "expected '='"
+            end
+            perform expr_fn into e
+            perform add_ins with "OP_SET", ", .a=" + e + ", .var=" + slot + ", .var2=-1, .unit=-1", "{ Value v = " + e + "(w, s);" + path + " return t_set(w, s, " + slot + ", " + n + ", p, v); }"
+            perform line_done
+            give back 0
+        end
         perform is_op with "=" into eq
         if not eq
             perform fail with "'" + name + "' is not something a soul can do"
@@ -973,11 +1114,18 @@ ritual statement_of head, j
     end
     if head == "wait"
         perform is_word with "for" into waits
+        perform peek_kind into pk
         if waits
             perform expect_word with "silence"
             perform add_ins with "OP_SILENCE", note "none", "return t_silence(w, s);"
         else
-            perform add_ins with "OP_WAIT", note "none", "return t_wait(w, s);"
+            if pk != ""
+                perform expr_fn into e
+                perform expect_word with "seconds"
+                perform add_ins with "OP_SLEEP", ", .a=" + e + note "none", "return t_sleep(w, s, " + e + "(w, s));"
+            else
+                perform add_ins with "OP_WAIT", note "none", "return t_wait(w, s);"
+            end
         end
         perform line_done
         give back 0
@@ -1018,7 +1166,8 @@ ritual statement_of head, j
         let u = note "u"
         if place of moment in note ("marks " + u) > 0
             if note ("merr " + u) == ""
-                note ("merr " + u) = "line " + note "hl" + ": " + note "uname" + " already has a moment called " + moment
+                perform where with note "cj" into at
+                note ("merr " + u) = at + ": " + note "uname" + " already has a moment called " + moment
             end
         else
             note ("marks " + u) = note ("marks " + u) + " " + moment
@@ -1033,7 +1182,8 @@ ritual statement_of head, j
         let u = note "u"
         note ("rn " + u) = note ("rn " + u) + 1
         note ("rname " + u + " " + note ("rn " + u)) = moment
-        note ("rline " + u + " " + note ("rn " + u)) = note "hl"
+        perform where with note "cj" into at
+        note ("rline " + u + " " + note ("rn " + u)) = at
         perform jmp_to with "M" + u + "_" + moment
         give back 0
     end
@@ -1056,7 +1206,124 @@ ritual statement_of head, j
         note "j" = note "j" + 1
         give back 0
     end
+    perform statement_of_world with head, j
+end
+
+# What a soul does with lists and maps, the world and its own mistakes.
+ritual statement_of_world head, j
+    if head == "put" or head == "remove"
+        perform expr_fn into e
+        let call = "t_put"
+        let op = "OP_PUT"
+        if head == "put"
+            perform expect_word with "into"
+        else
+            perform expect_word with "from"
+            call = "t_remove"
+            op = "OP_REMOVE"
+        end
+        perform a_name into name
+        perform slot_of with name into slot
+        perform path_code into path
+        let n = note "path n"
+        perform add_ins with op, ", .a=" + e + ", .var=" + slot + ", .var2=-1, .unit=-1", "{ Value v = " + e + "(w, s);" + path + " return " + call + "(w, s, " + slot + ", " + n + ", p, v); }"
+        perform line_done
+        give back 0
+    end
+    if head == "ask"
+        perform expect_word with "world"
+        perform expr_fn into command
+        let given = "t_int(0)"
+        let tells = 0
+        perform is_word with "telling" into says
+        if says
+            perform expr_fn into input
+            given = input + "(w, s)"
+            tells = 1
+        end
+        perform expect_word with "into"
+        perform a_name into name
+        perform slot_of with name into slot
+        perform add_ins with "OP_ASK", ", .a=" + command + ", .var=" + slot + ", .var2=-1, .unit=-1", "{ Value c = " + command + "(w, s); Value i = " + given + "; return t_ask(w, s, " + slot + ", c, " + tells + ", i); }"
+        perform line_done
+        give back 0
+    end
+    if head == "listen"
+        perform expect_word with "to"
+        perform expect_word with "world"
+        perform with_value with "OP_LISTEN", "t_listen"
+        perform line_done
+        give back 0
+    end
+    if head == "read"
+        perform expect_word with "file"
+        perform expr_fn into e
+        perform expect_word with "into"
+        perform a_name into name
+        perform slot_of with name into slot
+        perform add_ins with "OP_READ", ", .a=" + e + ", .var=" + slot + ", .var2=-1, .unit=-1", "return t_read(w, s, " + slot + ", " + e + "(w, s));"
+        perform line_done
+        give back 0
+    end
+    if head == "write" or head == "append"
+        perform expr_fn into e
+        perform expect_word with "to"
+        perform expect_word with "file"
+        perform expr_fn into f
+        let adding = 0
+        let op = "OP_WRITE"
+        if head == "append"
+            adding = 1
+            op = "OP_APPEND"
+        end
+        perform add_ins with op, ", .a=" + e + ", .b=" + f + note "none", "{ Value v = " + e + "(w, s); Value f = " + f + "(w, s); return t_write(w, s, v, f, " + adding + "); }"
+        perform line_done
+        give back 0
+    end
+    if head == "endure"
+        perform line_done
+        let line = j
+        let id = 0
+        perform label into id
+        perform here into at
+        perform add_ins with "OP_ENDURE", ", .var=" + id + "s, .var2=-1, .unit=-1, .jump=" + id + "h, .until=" + id + "u", "return t_endure(w, s, " + at + ");"
+        perform at_when into found
+        while not found
+            perform at with "end" into ended
+            if ended
+                perform open_line with note "j"
+                perform fail with "an endure needs 'when it hurts as' and a name"
+            end
+            perform statement
+            perform at_when into found
+        end
+        perform open_line with note "j"
+        note "hl" = note ("ln " + note "j")
+        perform expect_word with "when"
+        perform expect_word with "it"
+        perform expect_word with "hurts"
+        perform expect_word with "as"
+        perform a_name into pain
+        perform line_done
+        perform slot_of with pain into slot
+        perform define with id + "s", slot
+        perform define with id + "u", note "pc"
+        perform add_ins with "OP_ENDURED", note "none", "return t_endured(w, s, " + id + "x);"
+        perform define with id + "h", note "pc"
+        note "j" = note "j" + 1
+        perform block with "end"
+        perform define with id + "x", note "pc"
+        note "j" = note "j" + 1
+        give back 0
+    end
     perform fail with "'" + head + "' cannot start a line"
+end
+
+ritual at_when
+    if note "j" > note "lines"
+        perform fail_plain with "the program ends before an 'end'"
+    end
+    give back note ("tk " + note "j" + " 1") == "id" and note ("tv " + note "j" + " 1") == "when"
 end
 
 # ------------------------------------------------------------- declarations
@@ -1068,7 +1335,7 @@ ritual finish_unit
         let moment = note ("rname " + u + " " + i)
         if place of moment in note ("marks " + u) == 0
             if note ("merr " + u) == ""
-                note ("merr " + u) = "line " + note ("rline " + u + " " + i) + ": " + note "uname" + " has no moment called " + moment + " to return to"
+                note ("merr " + u) = note ("rline " + u + " " + i) + ": " + note "uname" + " has no moment called " + moment + " to return to"
             end
             perform define with "M" + u + "_" + moment, 0
             note ("marks " + u) = note ("marks " + u) + " " + moment
@@ -1111,13 +1378,32 @@ ritual finish_unit
         decl = "D_RITUAL"
     end
     let u2 = note "u"
-    note ("unit " + u2) = "    {.decl=" + decl + ", .name=\"" + note "uname" + "\", .nins=" + note "pc" + ", .ins=I" + u2 + ", .nslots=" + note ("sc " + u2) + ", .slots=N" + u2 + ", .nparams=" + note "nparams" + ", .params=P" + u2 + ", .step=S" + u2 + "},"
+    let origin = "0"
+    if note "ufile" != ""
+        perform cquote with note "ufile" into quoted
+        origin = "\"" + quoted + "\""
+    end
+    note ("unit " + u2) = "    {.decl=" + decl + ", .name=\"" + note "uname" + "\", .nins=" + note "pc" + ", .ins=I" + u2 + ", .nslots=" + note ("sc " + u2) + ", .slots=N" + u2 + ", .nparams=" + note "nparams" + ", .params=P" + u2 + ", .step=S" + u2 + ", .file=" + origin + "},"
 end
 
 ritual declaration
     let j = note "j"
     perform open_line with j
     note "hl" = note ("ln " + j)
+    perform is_word with "learn" into learning
+    if learning
+        perform take into k
+        perform kind_of with k into kd
+        if kd != "str"
+            perform fail with "learn needs the name of a file, in quotes"
+        end
+        perform value_of with k into wanted
+        perform line_done
+        note "j" = j + 1
+        perform learn_file with wanted
+        give back 0
+    end
+    note "ufile" = note ("lf " + j)
     let decl = ""
     perform is_word with "soul" into yes
     if yes
@@ -1186,6 +1472,49 @@ ritual declaration
     perform finish_unit
 end
 
+# A file of kinds and rituals, read and lexed after everything already read,
+# so that its declarations come next. It is looked for next to the program
+# (TAINTED_DIR), then among the libraries (TAINTED_LIB).
+ritual learn_file wanted
+    if place of wanted in note "learned" > 0
+        give back 0
+    end
+    let dir = world "TAINTED_DIR"
+    if dir == ""
+        dir = "."
+    end
+    let path = dir + "/" + wanted
+    if part 1 1 of wanted == "/"
+        path = wanted
+    end
+    let text = ""
+    endure
+        read file path into text
+    when it hurts as pain
+        let lib = world "TAINTED_LIB"
+        if lib == "" or part 1 1 of wanted == "/"
+            perform fail with "there is no file to learn from: " + wanted
+        end
+        endure
+            read file lib + "/" + wanted into text
+        when it hurts as again
+            perform fail with "there is no file to learn from: " + wanted
+        end
+    end
+    note "learned" = note "learned" + [wanted]
+    let all = lines of text
+    note "lexfile" = wanted
+    let i = 1
+    while i <= length of all
+        note "src" = note "src" + 1
+        note ("src " + note "src") = all[i]
+        perform lex with all[i], i
+        i = i + 1
+        recall all
+    end
+    note "lexfile" = ""
+end
+
 ritual define_uses list, prefix, sort
     let names = note list
     let i = 1
@@ -1215,7 +1544,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0
@@ -1226,6 +1555,8 @@ soul compiler
     note "declared" = ""
     note "kinds used" = ""
     note "rituals used" = ""
+    note "learned" = []
+    note "lexfile" = ""
 
     note "src" = 0
     hear world into line
@@ -1236,7 +1567,8 @@ soul compiler
     end
 
     note "n" = 1
-    while note "n" <= note "src"
+    note "main" = note "src"
+    while note "n" <= note "main"
         perform lex with note ("src " + note "n"), note "n"
         note "n" = note "n" + 1
     end
