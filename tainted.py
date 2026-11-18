@@ -37,7 +37,7 @@ KEYWORDS = {
     "passion", "commitment", "bond", "with", "scars", "scar", "of", "runs",
     "afraid", "world", "recall", "length", "part", "me", "note", "word",
     "words", "place", "in", "number", "named", "kind", "bring", "from",
-    "silence", "for",
+    "silence", "for", "as",
 }
 
 
@@ -315,7 +315,11 @@ class Parser:
         elif head == 'say':
             st = ('say', n, c.expr())
         elif head == 'meet':
-            st = ('meet', n, c.target())
+            if c.word('anyone'):
+                c.expect_word('as')
+                st = ('meet', n, None, c.name())
+            else:
+                st = ('meet', n, c.target(), None)
         elif head in ('tell', 'confide'):
             who = c.target()
             st = (head, n, who, c.expr())
@@ -777,14 +781,23 @@ class World:
     def advance(self, s, to=None):
         s.pc = s.pc + 1 if to is None else to
 
-    def try_meet(self, a, b):
+    def wants_to_meet(self, b, a, strangers=True):
         bi = b.current()
-        if not (bi and bi[0] == 'meet' and self.resolve(b, bi[2]) == a.name):
+        if not (bi and bi[0] == 'meet'):
             return False
+        if bi[2] is None:
+            return strangers
+        return self.resolve(b, bi[2]) == a.name
+
+    def try_meet(self, a, b):
         ra, rb = self.rel(a.name, b.name), self.rel(b.name, a.name)
         if ra.left or rb.left or ra.closed or rb.closed:
             return False
         warmth = 3 if not ra.met and a.arrived == b.arrived else 1
+        for s, other in ((a, b), (b, a)):
+            ins = s.current()
+            if ins[2] is None:
+                s.mem[ins[3]] = (other.name, s.step)
         for s, r in ((a, ra), (b, rb)):
             r.met = True
             r.passion += warmth
@@ -873,10 +886,17 @@ class World:
             self.order.append(child)
             self.souls[name] = child
         elif op == 'meet':
+            if ins[2] is None:
+                for b in self.order:
+                    if (b is not s and not b.done
+                            and self.wants_to_meet(b, s, strangers=False)
+                            and self.try_meet(s, b)):
+                        return True
+                return False
             b = self.other(s, self.resolve(s, ins[2]))
             if self.rel(s.name, b.name).left:
                 raise TaintedError(f"{s.name} left {b.name}; there is nothing more to do")
-            return self.try_meet(s, b)
+            return self.wants_to_meet(b, s) and self.try_meet(s, b)
         elif op in ('tell', 'confide'):
             b = self.other(s, self.resolve(s, ins[2]))
             r = self.known(s, b.name)

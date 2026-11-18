@@ -41,8 +41,9 @@ first time twice.
 
 ## The language
 
-A program is a list of souls, each written as `soul <name>` … `end`. Each
-round, every soul that is still alive takes one step, in the order the souls are
+A program is a list of souls, each written as `soul <name>` … `end`, and of
+kinds of souls, written as `kind <name>` … `end`, from which new souls are
+born while the program runs. Each round, every soul that is still alive takes one step, in the order the souls are
 written; the starting soul shifts with every past run of the program.
 
 ### Words a soul can say to itself
@@ -57,6 +58,9 @@ written; the starting soul shifts with every past run of the program.
 | `first time` … `end` | runs only on the very first run of the program |
 | `wait` | let a step pass |
 | `recall x y …` | think of these memories again so they do not fade further |
+| `note key = expr` | write something down; notes never fade |
+| `bring k named expr` | bring a new soul of kind `k` into the world |
+| `wait for silence` | wait until nobody else has anything left to do |
 | `hear world into x` | read a line from standard input; at the end of input `x` becomes `0` |
 | `goodbye` | end this soul |
 
@@ -65,8 +69,9 @@ written; the starting soul shifts with every past run of the program.
 | Statement | Meaning |
 |---|---|
 | `meet b` | rendezvous: both souls must be waiting for each other; there is no timeout |
+| `meet anyone as x` | meet whoever comes looking for you, and learn their name |
 | `tell b expr` | hand a value over; completes only when `b` is listening |
-| `hear b into x`, `hear anyone into x` | listen |
+| `hear b into x`, `hear anyone into x [from who]` | listen; `from` learns who spoke |
 | `confide b expr` | tell a secret; allowed only to someone you gave your heart to |
 | `warm to b`, `cool to b` | trust `b` one step more or less |
 | `promise b` | commitment grows |
@@ -75,13 +80,19 @@ written; the starting soul shifts with every past run of the program.
 | `forgive b` | open the door that a wound from `b` closed; the scar stays |
 | `leave b` | irreversible; everything each of you heard becomes scars |
 
+Wherever a soul is named, `soul named expr` names it by a computed word:
+`tell soul named who "yes"`.
+
 ### Expressions
 
 Numbers, strings, `+ - * / %`, comparisons, `and`, `or`, `not`, and what a soul
 knows about its relationships: `trust b`, `intimacy b`, `passion b`,
 `commitment b`, `afraid of b`, `bond with b`, `scars of b`, `scar n of b`, and
 `runs`, the number of earlier runs of this program. Words have `length of x`
-and `part i j of x`, the letters from `i` to `j`, counting from 1.
+and `part i j of x`, the letters from `i` to `j`, counting from 1. A line is
+also a list of words: `words of x`, `word i of x`, `place of w in x` (0 when
+`w` is not there) and `number of x`. A soul knows its own name as `me` and
+reads its notes with `note key`.
 
 ## How feelings work
 
@@ -159,37 +170,77 @@ breaks.
 
 ## Taintednetes
 
-`tools/taintednetes.py` turns a cluster into a Tainted program in which every
-pod and every node is a soul. A pod proposes to the nodes it likes, best first.
-A node keeps the best pod that has asked so far, says no to the others and,
-when someone better comes, tells its current pod to go and wounds it in
-parting. A pod gives its heart to the node that takes it, so the wound leaves a
-scar but does not close the pod to the next node.
-
-Nobody compares the cluster with a desired state. The cluster settles when
-every soul is waiting for someone and nobody has anything left to say, and
-that silence is a stable matching: no pod and node would both rather be with
-each other than where they are. The tests run random clusters and compare the
-result with the Gale–Shapley algorithm.
+`taintednetes.tainted` is a scheduler written in Tainted. It hears the cluster
+from standard input, one line per pod or node:
 
 ```
-python3 tools/taintednetes.py examples/cluster.taintednetes
-python3 tools/taintednetes.py --emit examples/cluster.taintednetes   # print the program
+pod web alpha beta gamma        the nodes web would live on, best first
+node alpha 2 db cache web       how many pods alpha can take, and whom it prefers
 ```
 
-```
-web settles on alpha
-cache settles on beta
-db settles on alpha
-web is sent away from alpha
-web settles on beta
-cache is sent away from beta
-cache settles on gamma
+and brings every pod and every node to life as a soul. A pod proposes to the
+nodes it likes, in order. A node keeps the best pods that have asked so far,
+says no to the rest and, when someone better comes while it is full, tells the
+least wanted pod to go and wounds it in parting. A pod gives its heart to the
+node that takes it, so the wound leaves a scar but does not close the pod to
+the next node.
 
-web lives on beta; sent away 1 time(s)
-db lives on alpha; sent away 0 time(s)
-cache lives on gamma; sent away 1 time(s)
+Nobody compares the cluster with a desired state. When every soul is waiting
+and nobody has anything left to say, the cluster hears the silence, asks every
+pod where it lives and lets everyone rest. That silence is a stable matching:
+no pod and node would both rather be with each other than where they are. The
+tests run random clusters with random capacities and compare the result with
+the Gale–Shapley algorithm.
+
+Waiting is what a soul does most in a scheduler, and a soul that waits forgets,
+so everything that has to outlive a wait is written down in notes.
+
 ```
+python3 tainted.py taintednetes.tainted < examples/cluster.txt
+```
+
+### On a real cluster
+
+`kube/bridge.py` makes `taintednetes.tainted` the scheduler of a real
+Kubernetes cluster. It reads pending pods with `schedulerName: taintednetes`
+and the ready nodes through `kubectl`, describes them to the Tainted program
+and binds every pod where the program says it lives. The bridge decides only
+who may meet whom: a pod likes the nodes it fits on (free CPU and memory, node
+selector, taints it tolerates), a node offers as many seats as it can hold of
+the largest pod that wants it.
+
+| Annotation | On | Meaning |
+|---|---|---|
+| `taintednetes.io/likes: "node-a node-b"` | pod | nodes it wants first |
+| `taintednetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
+| `taintednetes.io/seats: "N"` | node | at most N pods of this scheduler |
+
+Without annotations, pods prefer nodes with more free cores, and where the
+nodes are equal every pod has its own lasting taste, so identical pods spread
+out; nodes prefer pods with higher priority, then the ones waiting longest.
+
+```
+kubectl --context <ctx> create namespace demo
+kubectl --context <ctx> -n demo apply -f kube/demo.yaml
+python3 kube/bridge.py --context <ctx> --once     # or leave it running
+```
+
+On a kind cluster with three workers limited to two seats each, seven pods
+compete for six places:
+
+```
+scarcity/db settles on taintednetes-worker
+scarcity/web settles on taintednetes-worker
+scarcity/crowd-6d4fb9dc84-gkc7j is sent away from taintednetes-worker
+scarcity/crowd-6d4fb9dc84-gkc7j settles on taintednetes-worker3
+scarcity/crowd-6d4fb9dc84-qm6qc is sent away from taintednetes-worker3
+scarcity/crowd-6d4fb9dc84-qm6qc has nowhere to live
+...
+the cluster is at rest
+```
+
+The six who found a home are running; the seventh stays pending until a seat
+opens.
 
 ## Examples
 
@@ -204,6 +255,23 @@ cache lives on gamma; sent away 1 time(s)
 | `first-time.tainted` | run it twice |
 | `penelope.tainted` | memory fades while she waits |
 | `multiply.tainted` | 6 × 7 computed on trust alone |
+
+### Classic programs
+
+The usual programs, the way souls would write them, in `examples/classics/`.
+
+| File | What it shows |
+|---|---|
+| `hello-world.tainted` | one soul, alone |
+| `fizzbuzz.tainted`, `factorial.tainted`, `fibonacci.tainted`, `primes.tainted` | ordinary arithmetic and loops |
+| `bottles.tainted` | 99 bottles of beer |
+| `cat.tainted`, `reverse.tainted`, `wc.tainted` | reading the world line by line |
+| `sort.tainted` | insertion sort over notes, because a list in memory would fade |
+| `gcd.tainted` | Euclid as a conversation between two souls |
+| `ping-pong.tainted` | answered messages grow into romantic love |
+| `producer-consumer.tainted` | a producer that never waits for an answer frightens its consumer |
+| `sleep-sort.tainted` | every number becomes a soul that waits as long as it is large |
+| `philosophers.tainted` | dining philosophers: forks are souls, and the host listens for silence |
 
 ## License
 

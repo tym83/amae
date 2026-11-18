@@ -1,3 +1,4 @@
+import contextlib
 import io
 import os
 import random
@@ -9,15 +10,17 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
+sys.path.insert(0, os.path.join(ROOT, "kube"))
 
+import bridge  # noqa: E402
 import minsky  # noqa: E402
 import tainted  # noqa: E402
 
 
-def run(source, runs=0):
+def run(source, runs=0, given=""):
     out = io.StringIO()
     world = tainted.World(tainted.compile_program(source), runs=runs, out=out,
-                          err=io.StringIO())
+                          err=io.StringIO(), inp=io.StringIO(given))
     code = world.run()
     return code, out.getvalue().splitlines(), world
 
@@ -177,6 +180,8 @@ class SelfHosting(unittest.TestCase):
         c2 = run_tas(tainted.to_tas(self.compiler), self.compiler)[1]
         names = sorted(n for n in os.listdir(os.path.join(ROOT, "examples"))
                        if n.endswith(".tainted"))
+        names += sorted("classics/" + n
+                        for n in os.listdir(os.path.join(ROOT, "examples", "classics")))
         for name in names + ["../taintednetes.tainted", "../compiler.tainted"]:
             src = example(name)
             if "hear world" in src:
@@ -194,6 +199,78 @@ class SelfHosting(unittest.TestCase):
                               if "recall stack blocks" not in line)
         _, out = run_tas(tainted.to_tas(forgetful), self.compiler)
         self.assertNotEqual(body(out), body(tainted.to_tas(self.compiler)))
+
+
+def classic(name, given=""):
+    return run(example(f"classics/{name}.tainted"), given=given)
+
+
+class Classics(unittest.TestCase):
+    def test_hello_world(self):
+        self.assertEqual(classic("hello-world")[1], ["Hello, world"])
+
+    def test_fizzbuzz(self):
+        want = ["FizzBuzz" if n % 15 == 0 else "Fizz" if n % 3 == 0 else
+                "Buzz" if n % 5 == 0 else str(n) for n in range(1, 31)]
+        self.assertEqual(classic("fizzbuzz")[1], want)
+
+    def test_factorial(self):
+        import math
+        self.assertEqual(classic("factorial")[1],
+                         [f"{n}! = {math.factorial(n)}" for n in range(1, 21)])
+
+    def test_fibonacci(self):
+        a, b, want = 0, 1, []
+        for _ in range(30):
+            want.append(str(a))
+            a, b = b, a + b
+        self.assertEqual(classic("fibonacci")[1], want)
+
+    def test_primes(self):
+        want = [str(n) for n in range(2, 100) if all(n % d for d in range(2, n))]
+        self.assertEqual(classic("primes")[1], want)
+
+    def test_gcd(self):
+        self.assertEqual(classic("gcd")[1], ["gcd(1071, 462) = 21"])
+
+    def test_cat_reverse_wc(self):
+        text = "first line\nsecond one\n\nlast\n"
+        self.assertEqual(classic("cat", text)[1], text.splitlines())
+        self.assertEqual(classic("reverse", text)[1], [l[::-1] for l in text.splitlines()])
+        self.assertEqual(classic("wc", text)[1], ["4 5 28"])
+
+    def test_bottles(self):
+        lines = classic("bottles")[1]
+        self.assertEqual(len(lines), 99 * 3 + 2)
+        self.assertEqual(lines[-7], "Take one down and pass it around, 1 bottle of beer on the wall.")
+        self.assertEqual(lines[-4], "Take one down and pass it around, no more bottles of beer on the wall.")
+
+    def test_sort(self):
+        numbers = [5, 3, 10, 1, 42, 7, 7, 0]
+        self.assertEqual(classic("sort", "\n".join(map(str, numbers)) + "\n")[1],
+                         [str(n) for n in sorted(numbers)])
+
+    def test_sleep_sort(self):
+        code, lines, _ = classic("sleep-sort")
+        self.assertEqual(code, 0)
+        self.assertEqual(lines, ["1", "2", "3", "5", "7", "8", "9"])
+
+    def test_ping_pong(self):
+        lines = classic("ping-pong")[1]
+        self.assertEqual(lines[:5], [f"pong {n}" for n in range(5)])
+        self.assertEqual(lines[-1], "ping and pong: romantic love")
+
+    def test_producer_consumer(self):
+        self.assertEqual(classic("producer-consumer")[1],
+                         ["sum 45, afraid of the producer: 1"])
+
+    def test_philosophers(self):
+        code, lines, _ = classic("philosophers")
+        self.assertEqual(code, 0)
+        self.assertEqual(lines[-1], "everyone has eaten")
+        for i in range(1, 6):
+            self.assertEqual([l for l in lines if l.startswith(f"philosopher {i} ")],
+                             [f"philosopher {i} eats, meal {m}" for m in range(1, 4)])
 
 
 def gale_shapley(pods, nodes, seats):
@@ -272,6 +349,59 @@ class Taintednetes(unittest.TestCase):
             code, placement, _, _ = schedule(pods, nodes, seats)
             self.assertEqual(code, 0)
             self.assertEqual(placement, gale_shapley(pods, nodes, seats))
+
+
+def fake_node(name, seats=None, likes=None, taint=False):
+    annotations = {}
+    if seats is not None:
+        annotations[bridge.SEATS] = str(seats)
+    if likes:
+        annotations[bridge.LIKES] = likes
+    return {"metadata": {"name": name, "annotations": annotations, "labels": {}},
+            "spec": {"taints": [{"key": "role", "effect": "NoSchedule"}] if taint else []},
+            "status": {"allocatable": {"cpu": "4", "memory": "8Gi", "pods": "110"},
+                       "conditions": [{"type": "Ready", "status": "True"}]}}
+
+
+def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z"):
+    return {"metadata": {"name": name, "namespace": "ns", "creationTimestamp": created,
+                         "annotations": {bridge.LIKES: likes} if likes else {}},
+            "spec": {"schedulerName": "taintednetes", "nodeName": node,
+                     "containers": [{"resources": {"requests": {"cpu": "100m",
+                                                                "memory": "16Mi"}}}]},
+            "status": {"phase": "Running" if node else "Pending"}}
+
+
+class Bridge(unittest.TestCase):
+    def test_decisions_come_from_tainted(self):
+        nodes = [fake_node("a", seats=2, likes="ns/db"), fake_node("b", seats=1),
+                 fake_node("master", taint=True)]
+        pods = [fake_pod("old", node="a"), fake_pod("web", likes="a"),
+                fake_pod("db", likes="a"), fake_pod("cache", likes="a")]
+        b = bridge.Bridge.__new__(bridge.Bridge)
+        b.scheduler = "taintednetes"
+        with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
+            b.source = f.read()
+        b.program = tainted.compile_program(b.source)
+        b.get = lambda kind, *rest: pods if kind == "pods" else nodes
+        bound = []
+        b.bind = lambda pod, node: bound.append((pod["metadata"]["name"], node))
+        old = os.environ.get("TAINTED_HISTORY")
+        with tempfile.TemporaryDirectory() as d:
+            os.environ["TAINTED_HISTORY"] = os.path.join(d, "h.json")
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    b.once()
+            finally:
+                if old is None:
+                    del os.environ["TAINTED_HISTORY"]
+                else:
+                    os.environ["TAINTED_HISTORY"] = old
+        placed = dict(bound)
+        self.assertNotIn("master", placed.values())
+        self.assertEqual(placed["db"], "a")
+        self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
+        self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,36 @@
+# Sleep sort, the honest way: every number becomes a soul that waits
+# as long as it is large, then goes to meet a listener it has never seen.
+# The smallest speak first. The listener keeps count in a note: it waits
+# between meetings, and a number held in memory would fade.
+kind sleeper
+    meet sorter
+    hear sorter into n
+    note "n" = n
+    note "left" = n * 10
+    while note "left" > 0
+        note "left" = note "left" - 1
+    end
+    meet listener
+    tell listener note "n"
+end
+
+soul sorter
+    let numbers = "5 3 9 1 7 2 8"
+    let i = 1
+    while i <= words of numbers
+        bring sleeper named "sleeper " + i
+        meet soul named ("sleeper " + i)
+        tell soul named ("sleeper " + i) number of word i of numbers
+        i = i + 1
+    end
+end
+
+soul listener
+    note "heard" = 0
+    while note "heard" < 7
+        meet anyone as who
+        hear soul named who into n
+        say n
+        note "heard" = note "heard" + 1
+    end
+end
