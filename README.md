@@ -198,13 +198,19 @@ kubectl --context <ctx> annotate node worker-3 taintednetes.io/leaving=true
 ```
 
 Run next to the scheduler, the whole cycle is in Tainted: the operator lets a
-pod go and the scheduler finds its replacement a new home.
+pod go and the scheduler finds its replacement a new home. This is a node of a
+three-node cluster leaving while both run as pods inside it; the bare pod `db`
+has no owner to bring it back, so the node stays and says why:
 
 ```
-19:47:35 > evict scarcity/crowd-6d4fb9dc84-l2j8d
-19:47:35 taintednetes-worker3 lets scarcity/crowd-6d4fb9dc84-l2j8d go
-19:47:39 > annotate node taintednetes-worker3 taintednetes.io/left=true
-19:47:39 taintednetes-worker3 has left; it let go of 1 pod
+08:03:26 > cordon cw2gd
+08:03:26 cw2gd is leaving and takes no one new
+08:03:26 > evict cozy-cilium/cilium-operator-697848cbf7-2bjzl
+08:03:31 > evict cozy-monitoring/metrics-server-5c5559f4c6-krjgz
+08:03:57 > evict kube-system/coredns-77b6676859-bmbz2
+08:04:34 > evict scarcity/crowd-5bb975f679-5564z
+08:04:44 > evict scarcity/crowd-5bb975f679-76b5c
+08:04:54 cw2gd cannot leave: its last pod has nowhere to come back from
 ```
 
 ## The compiler written in Tainted
@@ -284,26 +290,47 @@ out; nodes prefer pods with higher priority, then the ones waiting longest.
 
 ```
 kubectl --context <ctx> create namespace demo
-kubectl --context <ctx> -n demo apply -f kube/demo.yaml
+sed -e s/NODE_A/<node>/ -e s/NODE_B/<node>/ kube/demo.yaml \
+  | kubectl --context <ctx> -n demo apply -f -
 python3 kube/bridge.py --context <ctx> --once     # or leave it running
 ```
 
-On a kind cluster with three workers limited to two seats each, seven pods
-compete for six places:
+On a cluster with three workers limited to two seats each, seven pods compete
+for six places:
 
 ```
-scarcity/db settles on taintednetes-worker
-scarcity/web settles on taintednetes-worker
-scarcity/crowd-6d4fb9dc84-gkc7j is sent away from taintednetes-worker
-scarcity/crowd-6d4fb9dc84-gkc7j settles on taintednetes-worker3
-scarcity/crowd-6d4fb9dc84-qm6qc is sent away from taintednetes-worker3
-scarcity/crowd-6d4fb9dc84-qm6qc has nowhere to live
+scarcity/cache settles on 9bwmk
+scarcity/db settles on cw2gd
+scarcity/web settles on 9bwmk
+scarcity/crowd-5bb975f679-7ldmw is sent away from 9bwmk
+scarcity/crowd-5bb975f679-7ldmw settles on qtrkn
+scarcity/crowd-5bb975f679-srctc is sent away from qtrkn
+scarcity/crowd-5bb975f679-srctc has nowhere to live
 ...
 the cluster is at rest
 ```
 
 The six who found a home are running; the seventh stays pending until a seat
 opens.
+
+### Inside the cluster
+
+`kube/deploy.yaml` runs the scheduler and the parting operator as pods of the
+cluster they look after, each with a service account that may do no more than
+its job: the scheduler reads pods and nodes and creates bindings, the operator
+reads them, patches nodes and evicts pods. The code is mounted from a
+ConfigMap built from this repository:
+
+```
+kubectl --context <ctx> create namespace taintednetes
+kubectl --context <ctx> -n taintednetes create configmap taintednetes-code \
+  --from-file=tainted.py --from-file=taintednetes.tainted \
+  --from-file=kube/bridge.py --from-file=kube/world.py \
+  --from-file=kube/parting.tainted --dry-run=client -o yaml \
+  | kubectl --context <ctx> apply -f -
+kubectl --context <ctx> apply -f kube/deploy.yaml
+kubectl --context <ctx> -n taintednetes logs -f deploy/scheduler
+```
 
 ## Examples
 
