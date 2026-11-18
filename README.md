@@ -204,3 +204,7 @@ cache lives on gamma; sent away 1 time(s)
 | `first-time.tainted` | run it twice |
 | `penelope.tainted` | memory fades while she waits |
 | `multiply.tainted` | 6 × 7 computed on trust alone |
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).
