@@ -118,7 +118,7 @@ def run(prog, given, history, patience=None, cwd=None):
             f.write(res.stdout)
         subprocess.run(["cc", "-std=c11", "-D_POSIX_C_SOURCE=200809L", "-D_DEFAULT_SOURCE", "-O1", "-w",
                         "-I" + os.path.join(ROOT, "runtime"), binary + ".c",
-                        os.path.join(ROOT, "runtime", "tainted.c"), "-o", binary], check=True)
+                        os.path.join(ROOT, "runtime", "tainted.c"), "-o", binary, "-lm"], check=True)
     args = [binary, "--feelings"]
     if patience:
         args.append(f"--patience={patience}")

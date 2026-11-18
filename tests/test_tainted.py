@@ -61,7 +61,7 @@ def compile_source(source, history=None):
         c = os.path.join(d, "p.c")
         with open(c, "w") as f:
             f.write(res.stdout)
-        subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", program], check=True)
+        subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", program, "-lm"], check=True)
     return program, None
 
 
@@ -445,7 +445,7 @@ class SelfHosting(unittest.TestCase):
             with open(c, "w") as f:
                 f.write(res.stdout)
             core = os.path.join(d, "forgetful")
-            subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", core], check=True)
+            subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", core, "-lm"], check=True)
             again = self.compile_with(core, self.compiler)
         self.assertNotEqual(again.stdout, self.seed)
         self.assertRegex(again.stdout, r"Value v = E\(w, s\)|\.a=E,")

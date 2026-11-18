@@ -19,14 +19,14 @@ $(BUILD):
 	mkdir -p $@
 
 $(BUILD)/tc-core: boot/tc.c $(RUNTIME) | $(BUILD)
-	$(CC) $(CFLAGS) -Iruntime boot/tc.c runtime/tainted.c -o $@
+	$(CC) $(CFLAGS) -Iruntime boot/tc.c runtime/tainted.c -o $@ -lm
 
 # Generation 1 is compiled by the seed, generation 2 by generation 1, and so on.
 $(BUILD)/gen1.c: compiler.tainted $(BUILD)/tc-core
 	TAINTED_HISTORY=$(HISTORY) $(BUILD)/tc-core < compiler.tainted > $@
 
 $(BUILD)/gen%: $(BUILD)/gen%.c $(RUNTIME)
-	$(CC) $(CFLAGS) -Iruntime $< runtime/tainted.c -o $@
+	$(CC) $(CFLAGS) -Iruntime $< runtime/tainted.c -o $@ -lm
 
 $(BUILD)/gen2.c: $(BUILD)/gen1
 	TAINTED_HISTORY=$(HISTORY) $(BUILD)/gen1 < compiler.tainted > $@
