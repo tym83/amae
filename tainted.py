@@ -37,7 +37,7 @@ KEYWORDS = {
     "passion", "commitment", "bond", "with", "scars", "scar", "of", "runs",
     "afraid", "world", "recall", "length", "part", "me", "note", "word",
     "words", "place", "in", "number", "named", "kind", "bring", "from",
-    "silence", "for", "as",
+    "silence", "for", "as", "ritual", "perform", "back",
 }
 
 
@@ -49,7 +49,7 @@ class TaintedError(Exception):
 
 TOKEN = re.compile(
     r'\s*(?:(\d+)|("(?:[^"\\]|\\.)*")|([A-Za-z_][A-Za-z0-9_]*)'
-    r'|(==|!=|<=|>=|[-+*/%<>=()]))'
+    r'|(==|!=|<=|>=|[-+*/%<>=(),]))'
 )
 
 
@@ -266,16 +266,22 @@ class Parser:
                 decl = 'soul'
             elif c.word('kind'):
                 decl = 'kind'
+            elif c.word('ritual'):
+                decl = 'ritual'
             else:
-                c.fail("everything must belong to a soul or a kind of soul")
+                c.fail("everything must belong to a soul, a kind of soul or a ritual")
             name = c.name()
+            params = []
+            while decl == 'ritual' and c.peek()[0] is not None:
+                params.append(c.name())
+                c.op(',')
             c.done()
             self.i += 1
             body = self.block(('end',))
             self.i += 1
             if any(s[:2] == (decl, name) for s in souls):
                 c.fail(f"there is already a {decl} called {name}")
-            souls.append((decl, name, body))
+            souls.append((decl, name, body, params))
         if not souls:
             raise TaintedError("a program needs at least one soul")
         return souls
@@ -348,6 +354,17 @@ class Parser:
         elif head in ('warm', 'cool'):
             c.expect_word('to')
             st = (head, n, c.target())
+        elif head == 'give' and c.word('back'):
+            st = ('giveback', n, c.expr())
+        elif head == 'perform':
+            name = c.name()
+            args = []
+            if c.word('with'):
+                args.append(c.expr())
+                while c.op(','):
+                    args.append(c.expr())
+            into = c.name() if c.word('into') else None
+            st = ('perform', n, name, args, into)
         elif head == 'give':
             c.expect_word('heart')
             c.expect_word('to')
@@ -450,7 +467,7 @@ def compile_soul(name, body):
 
 
 def compile_program(source):
-    return [(d, n, compile_soul(n, b)) for d, n, b in Parser(source).parse()]
+    return [(d, n, compile_soul(n, b), ps) for d, n, b, ps in Parser(source).parse()]
 
 
 # ------------------------------------------------------- tainted assembly
@@ -474,7 +491,7 @@ def to_tas(source):
         rest = text[len(word) + 1:]
         if not word or word.startswith('#'):
             continue
-        if word in ('soul', 'kind'):
+        if word in ('soul', 'kind', 'ritual'):
             out.append(text)
         elif word in ('end', 'else'):
             if not stack:
@@ -517,13 +534,17 @@ def load_tas(text):
             continue
         if soul is None:
             c = Cursor(tokenize(line, n), n)
-            decl = 'kind' if c.word('kind') else 'soul'
+            decl = next((d for d in ('kind', 'ritual') if c.word(d)), 'soul')
             if decl == 'soul':
                 c.expect_word('soul')
-            soul = (decl, c.name(), [], {})
+            name, params = c.name(), []
+            while decl == 'ritual' and c.peek()[0] is not None:
+                params.append(c.name())
+                c.op(',')
             c.done()
+            soul = (decl, name, [], {}, params)
             continue
-        decl, name, code, labels = soul
+        decl, name, code, labels, params = soul
         if line == 'end':
             for ins in code:
                 slot = {'jz': 3, 'jmp': 2, 'first': 2}.get(ins[0])
@@ -531,7 +552,7 @@ def load_tas(text):
                     if ins[slot] not in labels:
                         raise TaintedError(f"line {ins[1]}: no label {ins[slot]}")
                     ins[slot] = labels[ins[slot]]
-            program.append((decl, name, code))
+            program.append((decl, name, code, params))
             soul = None
             continue
         m = LABEL.match(line)
@@ -590,6 +611,7 @@ class Soul:
         self.pc = 0
         self.mem = {}
         self.notes = {}
+        self.frames = []
         self.step = 0
         self.arrived = 0
         self.done = False
@@ -619,8 +641,9 @@ def show(v):
 class World:
     def __init__(self, program, runs=0, out=sys.stdout, patience=DEFAULT_PATIENCE,
                  err=None, inp=None):
-        self.kinds = {n: code for d, n, code in program if d == 'kind'}
-        self.order = [Soul(n, code) for d, n, code in program if d == 'soul']
+        self.kinds = {n: code for d, n, code, _ in program if d == 'kind'}
+        self.rituals = {n: (code, ps) for d, n, code, ps in program if d == 'ritual'}
+        self.order = [Soul(n, code) for d, n, code, _ in program if d == 'soul']
         if not self.order:
             raise TaintedError("a program needs at least one soul")
         self.souls = {s.name: s for s in self.order}
@@ -631,6 +654,8 @@ class World:
         self.patience = patience
         self.err = err or sys.stderr
         self.input = inp or sys.stdin
+        self.streaming = hasattr(self.input, "get_nowait")
+        self.heard_from_world = []
         self.rels = {}
         self.mine = {}
         self.round = 0
@@ -839,12 +864,43 @@ class World:
         self.advance(rcv)
         return True
 
+    def finish_ritual(self, s, value):
+        """Memories left outside a ritual are held, not aged, while it lasts."""
+        code, pc, mem, into, began = s.frames.pop()
+        held = s.step - began
+        s.code, s.pc = code, pc
+        s.mem = {k: (v, t + held) for k, (v, t) in mem.items()}
+        if into:
+            s.mem[into] = (value, s.step)
+
     def step(self, s):
         ins = s.current()
         if ins is None:
+            if s.frames:
+                self.finish_ritual(s, 0)
+                return True
             s.done = True
             return True
         op = ins[0]
+        if op == 'perform':
+            if ins[2] not in self.rituals:
+                raise TaintedError(f"{s.name} knows no ritual called {ins[2]}")
+            code, params = self.rituals[ins[2]]
+            if len(ins[3]) != len(params):
+                raise TaintedError(f"the ritual {ins[2]} takes {len(params)} things, "
+                                   f"not {len(ins[3])}")
+            values = [self.ev(s, a) for a in ins[3]]
+            if len(s.frames) > 10_000:
+                raise TaintedError(f"{s.name} is lost in rituals inside rituals")
+            s.frames.append((s.code, s.pc + 1, s.mem, ins[4], s.step))
+            s.code, s.pc = code, 0
+            s.mem = {p: (v, s.step) for p, v in zip(params, values)}
+            return True
+        if op == 'giveback':
+            if not s.frames:
+                raise TaintedError(f"{s.name} has nothing to give back outside a ritual")
+            self.finish_ritual(s, self.ev(s, ins[2]))
+            return True
         if op == 'let':
             s.mem[ins[2]] = (self.ev(s, ins[3]), s.step)
         elif op == 'say':
@@ -908,8 +964,17 @@ class World:
             for name in ins[2]:
                 self.read(s, name)
         elif op == 'hear' and ins[2] == 'world':
-            line = self.input.readline()
-            s.mem[ins[3]] = (line.rstrip('\r\n') if line else 0, s.step)
+            if self.streaming:
+                if not self.heard_from_world:
+                    try:
+                        self.heard_from_world.append(self.input.get_nowait())
+                    except Exception:
+                        return False
+                line = self.heard_from_world.pop(0)
+                s.mem[ins[3]] = (0 if line is None else line, s.step)
+            else:
+                line = self.input.readline()
+                s.mem[ins[3]] = (line.rstrip('\r\n') if line else 0, s.step)
         elif op == 'hear':
             if ins[2] is not None:
                 b = self.other(s, self.resolve(s, ins[2]))
@@ -990,6 +1055,11 @@ class World:
                     if s.afraid[k] <= 0:
                         del s.afraid[k]
             if not moved:
+                if self.streaming and any(s.current()[0] == 'hear' and s.current()[2] == 'world'
+                                          for s in alive):
+                    # The world is slow, not silent: wait for it to speak.
+                    self.heard_from_world.append(self.input.get())
+                    continue
                 listening = [s for s in alive if s.current()[0] == 'silence']
                 if listening:
                     for s in listening:

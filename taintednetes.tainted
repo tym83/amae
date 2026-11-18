@@ -19,19 +19,57 @@
 # Everything that has to survive a wait is written down with note:
 # a soul that waits forgets, and a scheduler that forgets loses its pods.
 
+# Being handed something by the cluster, and thanking it, so that the
+# cluster never says too much unanswered.
+ritual receive
+    hear cluster into gift
+    tell cluster "thank you"
+    give back gift
+end
+
+# Handing something over and waiting for the thanks.
+ritual hand_over who, what
+    tell soul named who what
+    hear soul named who into thanks
+end
+
+# Meeting everyone on a list, in the order of the list. The place in the list
+# is kept in a note: every meeting is a wait.
+ritual meet_everyone list
+    note "meeting" = 1
+    while note "meeting" <= words of note list
+        meet soul named word (note "meeting") of note list
+        note "meeting" = note "meeting" + 1
+    end
+end
+
+# The words of a line from the n-th on.
+ritual words_from line, n
+    let rest = ""
+    let i = n
+    while i <= words of line
+        rest = rest + " " + word i of line
+        i = i + 1
+    end
+    give back rest
+end
+
+# Saying the same thing to everyone on a list.
+ritual tell_everyone list, what
+    let i = 1
+    while i <= words of note list
+        tell soul named word i of note list what
+        i = i + 1
+    end
+end
+
 kind pod
     meet cluster
-    hear cluster into likes
+    perform receive into likes
     note "likes" = likes
-    tell cluster "thank you"
-    hear cluster into nodes
+    perform receive into nodes
     note "nodes" = nodes
-    tell cluster "thank you"
-    note "i" = 1
-    while note "i" <= words of note "nodes"
-        meet soul named word (note "i") of note "nodes"
-        note "i" = note "i" + 1
-    end
+    perform meet_everyone with "nodes"
     note "k" = 1
     while note "k" <= words of note "likes"
         note "there" = word (note "k") of note "likes"
@@ -65,20 +103,13 @@ end
 
 kind node
     meet cluster
-    hear cluster into seats
+    perform receive into seats
     note "seats" = number of seats
-    tell cluster "thank you"
-    hear cluster into likes
+    perform receive into likes
     note "likes" = likes
-    tell cluster "thank you"
-    hear cluster into pods
+    perform receive into pods
     note "pods" = pods
-    tell cluster "thank you"
-    note "i" = 1
-    while note "i" <= words of note "pods"
-        meet soul named word (note "i") of note "pods"
-        note "i" = note "i" + 1
-    end
+    perform meet_everyone with "pods"
     note "held" = 0
     mark listen
     hear anyone into asking from who
@@ -119,22 +150,17 @@ soul cluster
     note "nodes" = ""
     hear world into line
     while line != 0
-        if word 1 of line == "pod" or word 1 of line == "node"
-            let start = 3
-            if word 1 of line == "node"
-                start = 4
-                note "nodes" = note "nodes" + " " + word 2 of line
-                note ("seats " + word 2 of line) = word 3 of line
-            else
-                note "pods" = note "pods" + " " + word 2 of line
-            end
-            let rest = ""
-            let i = start
-            while i <= words of line
-                rest = rest + " " + word i of line
-                i = i + 1
-            end
-            note ("likes " + word 2 of line) = rest
+        let name = word 2 of line
+        if word 1 of line == "pod"
+            note "pods" = note "pods" + " " + name
+            perform words_from with line, 3 into likes
+            note ("likes " + name) = likes
+        end
+        if word 1 of line == "node"
+            note "nodes" = note "nodes" + " " + name
+            note ("seats " + name) = word 3 of line
+            perform words_from with line, 4 into likes
+            note ("likes " + name) = likes
         end
         hear world into line
     end
@@ -154,22 +180,17 @@ soul cluster
     while note "i" <= words of note "pods"
         note "p" = word (note "i") of note "pods"
         meet soul named note "p"
-        tell soul named note "p" note ("likes " + note "p")
-        hear soul named note "p" into thanks
-        tell soul named note "p" note "nodes"
-        hear soul named note "p" into thanks
+        perform hand_over with note "p", note ("likes " + note "p")
+        perform hand_over with note "p", note "nodes"
         note "i" = note "i" + 1
     end
     note "i" = 1
     while note "i" <= words of note "nodes"
         note "n" = word (note "i") of note "nodes"
         meet soul named note "n"
-        tell soul named note "n" note ("seats " + note "n")
-        hear soul named note "n" into thanks
-        tell soul named note "n" note ("likes " + note "n")
-        hear soul named note "n" into thanks
-        tell soul named note "n" note "pods"
-        hear soul named note "n" into thanks
+        perform hand_over with note "n", note ("seats " + note "n")
+        perform hand_over with note "n", note ("likes " + note "n")
+        perform hand_over with note "n", note "pods"
         note "i" = note "i" + 1
     end
 
@@ -188,10 +209,6 @@ soul cluster
         tell soul named note "p" "rest"
         note "i" = note "i" + 1
     end
-    note "i" = 1
-    while note "i" <= words of note "nodes"
-        tell soul named word (note "i") of note "nodes" "rest"
-        note "i" = note "i" + 1
-    end
+    perform tell_everyone with "nodes", "rest"
     say "the cluster is at rest"
 end

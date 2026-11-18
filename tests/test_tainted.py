@@ -1,4 +1,7 @@
 import contextlib
+import queue
+import threading
+import time
 import io
 import os
 import random
@@ -13,6 +16,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "kube"))
 
 import bridge  # noqa: E402
+import world as kube_world  # noqa: E402
 import minsky  # noqa: E402
 import tainted  # noqa: E402
 
@@ -78,6 +82,37 @@ class Examples(unittest.TestCase):
     def test_multiply(self):
         _, lines, _ = run(example("multiply.tainted"))
         self.assertIn("c = 42", lines)
+
+
+class ALife(unittest.TestCase):
+    def test_every_rule_changes_the_story(self):
+        code, lines, _ = run(example("a-life.tainted"))
+        self.assertEqual(code, 2)
+        self.assertEqual(lines[0], "ana: I have never met anyone like this.")
+        self.assertIn("ana sees ben: infatuation", lines)
+        self.assertIn("ana is afraid of ben: 1", lines)
+        self.assertIn("ana's calculated trust in ben is 0 now", lines)
+        self.assertIn("ana remembers they met in 1990", lines)
+        self.assertEqual(lines[-1], "ana keeps 12 scars; the last one says: ben left")
+        _, again, _ = run(example("a-life.tainted"), runs=3)
+        self.assertEqual(again[0], "ana: it feels as if this has happened 3 times before.")
+
+
+class Rituals(unittest.TestCase):
+    def test_recursion_and_values(self):
+        src = ("ritual f n\n if n <= 1\n give back 1\n end\n"
+               " perform f with n - 1 into m\n give back n * m\nend\n"
+               "soul s\n perform f with 12 into x\n say x\nend\n")
+        self.assertEqual(run(src)[1], ["479001600"])
+
+    def test_memories_outside_are_held(self):
+        src = ("ritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
+               "soul s\n let year = 1999\n perform long\n say year\nend\n")
+        self.assertEqual(run(src)[1], ["1999"])
+
+    def test_wrong_number_of_things(self):
+        with self.assertRaisesRegex(tainted.TaintedError, "takes 1 things"):
+            run("ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n")
 
 
 class Rules(unittest.TestCase):
@@ -264,6 +299,11 @@ class Classics(unittest.TestCase):
         self.assertEqual(classic("producer-consumer")[1],
                          ["sum 45, afraid of the producer: 1"])
 
+    def test_hanoi(self):
+        lines = classic("hanoi")[1]
+        self.assertEqual(len(lines), 15)
+        self.assertEqual(lines[7], "disk 4: A -> C")
+
     def test_philosophers(self):
         code, lines, _ = classic("philosophers")
         self.assertEqual(code, 0)
@@ -402,6 +442,85 @@ class Bridge(unittest.TestCase):
         self.assertEqual(placed["db"], "a")
         self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
         self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
+
+
+class Parting(unittest.TestCase):
+    """The operator in kube/parting.tainted, against a cluster that is only imagined."""
+
+    def live(self, nodes, pods, ticks, slow=0):
+        lines = []
+        hands = kube_world.Hands("none", log=lines.append)
+        said = []
+        hands.act = lambda line: said.append(line)
+        voice = queue.Queue()
+        with open(os.path.join(ROOT, "kube", "parting.tainted")) as f:
+            program = tainted.compile_program(f.read())
+        w = tainted.World(program, out=hands, inp=voice, err=io.StringIO(),
+                          patience=float("inf"))
+        threading.Thread(target=w.run, daemon=True).start()
+        history, born = [], 0
+        for tick in range(1, ticks + 1):
+            for line in (["tick %d" % tick]
+                         + ["node %s %s" % (k, " ".join(v)) for k, v in nodes.items()]
+                         + ["pod %s %s" % (k, " ".join(v)) for k, v in pods.items()]
+                         + ["end"]):
+                voice.put(line)
+            deadline = time.time() + 10
+            while "done" not in said and time.time() < deadline:
+                time.sleep(0.005)
+            self.assertIn("done", said)
+            cmds = [c for c in said if c != "done" and not c.startswith("log ")]
+            history.append(cmds)
+            said.clear()
+            for c in cmds:
+                w_ = c.split()
+                if w_[0] == "cordon":
+                    nodes[w_[1]][1] = "cordoned"
+                elif w_[0] == "evict":
+                    owner = pods.pop(w_[1])[2]
+                    born += 1
+                    pods["a/new%d" % born] = ["w1", "waiting", owner]
+                elif w_[0] == "annotate":
+                    nodes[w_[2]][2] = "left"
+            for pod in [p for p in pods if pods[p][1] == "waiting" and tick % (slow + 1) == 0]:
+                pods[pod][1] = "ready"
+        voice.put(None)
+        return history
+
+    def test_lets_go_one_at_a_time_and_leaves(self):
+        nodes = {"w1": ["ready", "schedulable", "staying"],
+                 "w2": ["ready", "schedulable", "leaving"]}
+        pods = {"a/x": ["w2", "ready", "a/RS/x"], "a/y": ["w2", "ready", "a/RS/x"]}
+        history = self.live(nodes, pods, 5)
+        self.assertEqual(history[0], ["cordon w2", "evict a/x"])
+        self.assertEqual(history[1], ["evict a/y"])
+        self.assertEqual(history[2], ["annotate node w2 taintednetes.io/left=true"])
+        self.assertEqual(history[3:], [[], []])
+
+    def test_waits_for_the_replacement(self):
+        nodes = {"w1": ["ready", "schedulable", "staying"],
+                 "w2": ["ready", "cordoned", "leaving"]}
+        pods = {"a/x": ["w2", "ready", "a/RS/x"], "a/y": ["w2", "ready", "a/RS/x"]}
+        history = self.live(nodes, pods, 6, slow=2)
+        evictions = [i for i, h in enumerate(history) if any(c.startswith("evict") for c in h)]
+        self.assertEqual(len(evictions), 2)
+        self.assertGreaterEqual(evictions[1] - evictions[0], 2)
+
+    def test_a_crowded_cluster_does_not_make_it_forget(self):
+        nodes = {"w1": ["ready", "schedulable", "staying"],
+                 "w2": ["ready", "cordoned", "leaving"]}
+        pods = {"a/p%02d" % i: ["w1", "ready", "a/RS/p"] for i in range(40)}
+        pods["a/p00"] = ["w2", "ready", "a/RS/q"]
+        pods["a/p01"] = ["w2", "ready", "a/RS/q"]
+        history = self.live(nodes, pods, 4)
+        self.assertEqual(history[0], ["evict a/p00"])
+        self.assertEqual(history[1], ["evict a/p01"])
+        self.assertEqual(history[2], ["annotate node w2 taintednetes.io/left=true"])
+
+    def test_does_not_send_away_a_pod_with_no_owner(self):
+        nodes = {"w2": ["ready", "cordoned", "leaving"]}
+        pods = {"a/bare": ["w2", "ready", "none"]}
+        self.assertEqual(self.live(nodes, pods, 3), [[], [], []])
 
 
 if __name__ == "__main__":

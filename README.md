@@ -41,9 +41,10 @@ first time twice.
 
 ## The language
 
-A program is a list of souls, each written as `soul <name>` … `end`, and of
+A program is a list of souls, each written as `soul <name>` … `end`, of
 kinds of souls, written as `kind <name>` … `end`, from which new souls are
-born while the program runs. Each round, every soul that is still alive takes one step, in the order the souls are
+born while the program runs, and of rituals, written as
+`ritual <name> <a>, <b>` … `end`, which any soul can perform. Each round, every soul that is still alive takes one step, in the order the souls are
 written; the starting soul shifts with every past run of the program.
 
 ### Words a soul can say to itself
@@ -61,6 +62,8 @@ written; the starting soul shifts with every past run of the program.
 | `note key = expr` | write something down; notes never fade |
 | `bring k named expr` | bring a new soul of kind `k` into the world |
 | `wait for silence` | wait until nobody else has anything left to do |
+| `perform r with a, b into x` | perform a ritual; `with` and `into` are optional |
+| `give back expr` | end a ritual and hand back what it was for |
 | `hear world into x` | read a line from standard input; at the end of input `x` becomes `0` |
 | `goodbye` | end this soul |
 
@@ -93,6 +96,26 @@ and `part i j of x`, the letters from `i` to `j`, counting from 1. A line is
 also a list of words: `words of x`, `word i of x`, `place of w in x` (0 when
 `w` is not there) and `number of x`. A soul knows its own name as `me` and
 reads its notes with `note key`.
+
+### Rituals
+
+A ritual is performed by the soul that calls it: it has the soul's notes and
+relationships but a memory of its own, so it can perform itself.
+
+```
+ritual move n, from_peg, to_peg, spare
+    if n == 0
+        give back 0
+    end
+    perform move with n - 1, from_peg, spare, to_peg
+    say "disk " + n + ": " + from_peg + " -> " + to_peg
+    perform move with n - 1, spare, to_peg, from_peg
+end
+```
+
+A ritual is done in one breath: the memories the soul left outside do not
+fade while it lasts. Its own memories fade like any other, so a counter that
+a long loop touches only now and then should be recalled on every turn.
 
 ## How feelings work
 
@@ -142,6 +165,46 @@ simulator.
 ```
 python3 tools/minsky.py examples/multiply.minsky > examples/multiply.tainted
 python3 tainted.py examples/multiply.tainted     # c = 42
+```
+
+## Operators
+
+`kube/world.py` lets a Tainted program live in a Kubernetes cluster. The
+cluster becomes the program's world: every tick it says what it looks like,
+one line per node and pod, and the program, which listens with `hear world`,
+answers with `say`. A soul that waits for the world is not stuck, the world is
+only slow, so the program lives as long as the cluster talks to it. Only a few
+answers change the cluster: `cordon`, `uncordon`, `evict`,
+`annotate node` and `log`.
+
+```
+tick 7
+node worker-2 ready cordoned leaving
+pod shop/web-5d8f worker-2 ready shop/ReplicaSet/web-5d8f
+end
+```
+
+`kube/parting.tainted` is the first operator written in Tainted. A node
+annotated `taintednetes.io/leaving: "true"` leaves the cluster gently: it stops
+taking anyone new and lets its pods go one at a time, the next one only when
+the last is gone and its owner has brought a replacement up. A pod that belongs
+to no controller has nowhere to come back from, so the node does not send it
+away and waits instead. When the node is empty it is marked
+`taintednetes.io/left: "true"`.
+
+```
+python3 kube/world.py --context <ctx> kube/parting.tainted
+kubectl --context <ctx> annotate node worker-3 taintednetes.io/leaving=true
+```
+
+Run next to the scheduler, the whole cycle is in Tainted: the operator lets a
+pod go and the scheduler finds its replacement a new home.
+
+```
+19:47:35 > evict scarcity/crowd-6d4fb9dc84-l2j8d
+19:47:35 taintednetes-worker3 lets scarcity/crowd-6d4fb9dc84-l2j8d go
+19:47:39 > annotate node taintednetes-worker3 taintednetes.io/left=true
+19:47:39 taintednetes-worker3 has left; it let go of 1 pod
 ```
 
 ## The compiler written in Tainted
@@ -256,6 +319,33 @@ opens.
 | `penelope.tainted` | memory fades while she waits |
 | `multiply.tainted` | 6 × 7 computed on trust alone |
 
+### A life
+
+`a-life.tainted` is the one to run first. Two souls meet at first sight, one
+says too much and frightens the other, they talk until they trust each other,
+make promises, one gives her heart and is wounded and still listens, waits
+while he is at sea and forgets the year they met, and is left. Every line of
+its output depends on a different rule of the language, and the second run
+begins differently from the first.
+
+```
+ana: I have never met anyone like this.
+ana sees ben: infatuation
+ana is afraid of ben: 1
+ana, later: sorry, that was too much
+ana has heard enough to trust ben 3 times over
+ana feels companionate love
+ana carries a scar: wounded by ben
+ana still listens, because she gave her heart: the sea is nothing to be afraid of
+ana's calculated trust in ben is 0 now
+ben, back from the sea: companionate love
+ana remembers they met in 1990
+ben left and keeps 4 scars
+ana keeps 12 scars; the last one says: ben left
+the end.
+ana is still waiting for ben, who left
+```
+
 ### Classic programs
 
 The usual programs, the way souls would write them, in `examples/classics/`.
@@ -271,6 +361,7 @@ The usual programs, the way souls would write them, in `examples/classics/`.
 | `ping-pong.tainted` | answered messages grow into romantic love |
 | `producer-consumer.tainted` | a producer that never waits for an answer frightens its consumer |
 | `sleep-sort.tainted` | every number becomes a soul that waits as long as it is large |
+| `hanoi.tainted` | towers of Hanoi, a ritual that performs itself |
 | `philosophers.tainted` | dining philosophers: forks are souls, and the host listens for silence |
 
 ## License

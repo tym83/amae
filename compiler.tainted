@@ -30,7 +30,7 @@ soul compiler
         if head == "" or part 1 1 of head == "#"
             return to next
         end
-        if head == "soul" or head == "kind"
+        if head == "soul" or head == "kind" or head == "ritual"
             say text
             return to next
         end

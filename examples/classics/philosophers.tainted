@@ -41,7 +41,7 @@ kind fork
     end
     note "holder" = who
     tell soul named note "holder" "yours"
-    hear soul named note "holder" into back
+    hear soul named note "holder" into returned
     return to free
 end
 
