@@ -12,13 +12,60 @@
 # with many pods to look through, an untouched count would fade before the
 # loop ends, and a node would be declared empty while someone still lives on it.
 #
-# The world (kube/world.py) tells the operator what the cluster looks like on
-# every tick, and the operator answers with what should change.
+# With KUBE_CONTEXT set, the operator looks after that cluster itself: it
+# watches nodes and pods through kubectl, looks at the cluster on every change
+# and every PARTING_INTERVAL seconds (5 if not set), and cordons, evicts and
+# annotates through kubectl. With PARTING_TICKS set it rests after that many
+# of the timed looks.
+#
+# Without it, the world tells it on standard input what the cluster looks
+# like on every tick, one line each:
+#     tick 7
+#     node worker-1 ready schedulable staying
+#     node worker-2 ready cordoned leaving       (staying | leaving | left)
+#     pod shop/web-5d8f worker-2 ready shop/ReplicaSet/web-5d8f
+#     pod shop/debug worker-2 waiting none       (ready | waiting; owner or none)
+#     end
+# and it says what should change: cordon NODE, evict NS/POD,
+# annotate node NODE KEY=VALUE, log TEXT, and done at the end of every tick.
+# DaemonSet pods and mirror pods are not told: they belong to their nodes.
 
 written by "tainted"
 
 # Infrastructure lives the same life every run: no chemistry.
 deterministic
+
+learn "kube.tainted"
+
+# Doing what should change: told to the world on standard input, done in the
+# cluster when the operator looks after one.
+ritual act what
+    if not note "live"
+        say what
+        give back 0
+    end
+    if what == "done"
+        give back 0
+    end
+    if word 1 of what == "log"
+        say part 5 (length of what) of what
+        give back 0
+    end
+    endure
+        if word 1 of what == "cordon"
+            perform kubectl with "cordon " + word 2 of what into said
+        end
+        if word 1 of what == "evict"
+            perform evict with word 2 of what into said
+        end
+        if word 1 of what == "annotate"
+            perform kubectl with "annotate node " + word 3 of what + " " + word 4 of what + " --overwrite" into said
+        end
+        say "> " + what
+    when it hurts as pain
+        say "failed: " + what + ": " + pain
+    end
+end
 
 ritual count_pods_on node
     let count = 0
@@ -89,11 +136,11 @@ ritual calm
     end
     perform still_here with note "let go", note "let go from" into here
     if here == 2
-        note "refused" = note "refused" + 1
+        note "refused" = note "refused" + note "ticking"
         if note "refused" >= 6
             note "refused" = 0
-            say "evict " + note "let go"
-            say "log " + note "let go" + " has not gone yet; asking again"
+            perform act with "evict " + note "let go"
+            perform act with "log " + note "let go" + " has not gone yet; asking again"
         end
         note "why" = "waits for " + note "let go" + " to be let go"
         give back 0
@@ -131,7 +178,7 @@ end
 # A node that is stuck says why once, and again only when the reason changes.
 ritual complain name, what
     if note ("said " + name) != what
-        say "log " + what
+        perform act with "log " + what
         note ("said " + name) = what
     end
 end
@@ -147,14 +194,14 @@ ritual reconcile
         perform remember_node with name
         if word 5 of line == "leaving"
             if word 4 of line == "schedulable"
-                say "cordon " + name
-                say "log " + name + " is leaving and takes no one new"
+                perform act with "cordon " + name
+                perform act with "log " + name + " is leaving and takes no one new"
             end
             perform count_pods_on with name into count
             if count == 0
-                say "annotate node " + name + " taintednetes.io/left=true"
+                perform act with "annotate node " + name + " taintednetes.io/left=true"
                 perform pods with note ("let go " + name) into many
-                say "log " + name + " has left; it let go of " + many
+                perform act with "log " + name + " has left; it let go of " + many
             else
                 if sent == 0 and not calm and note "why" != ""
                     if note "let go from" == name
@@ -176,8 +223,8 @@ ritual reconcile
                         note "owner" = word 4 of pod
                         perform waiting_of with word 4 of pod into waiting_before
                         note "before" = waiting_before
-                        say "evict " + word 1 of pod
-                        say "log " + name + " lets " + word 1 of pod + " go"
+                        perform act with "evict " + word 1 of pod
+                        perform act with "log " + name + " lets " + word 1 of pod + " go"
                         perform farewell with name, 1
                         note ("said " + name) = ""
                         sent = 1
@@ -187,29 +234,154 @@ ritual reconcile
         end
         i = i + 1
     end
-    say "done"
+    perform act with "done"
+end
+
+# One line of what the cluster looks like.
+ritual take_in line
+    if word 1 of line == "tick"
+        note "nodes" = 0
+        note "pods" = 0
+    end
+    if word 1 of line == "node"
+        note "nodes" = note "nodes" + 1
+        note ("node " + note "nodes") = line
+    end
+    if word 1 of line == "pod"
+        note "pods" = note "pods" + 1
+        note ("pod " + note "pods") = part 5 (length of line) of line
+    end
+    if word 1 of line == "end"
+        perform reconcile
+    end
+end
+
+ritual condition_true thing, kind_
+    perform field with thing["status"], "conditions", [] into conditions
+    let i = 1
+    while i <= length of conditions
+        if conditions[i]["type"] == kind_
+            give back conditions[i]["status"] == "True"
+        end
+        i = i + 1
+    end
+    give back 0
+end
+
+# The cluster as kubectl tells it, taken in as the lines of one tick.
+ritual look_at_cluster
+    perform get_all with "nodes" into all_nodes
+    perform get_all with "pods -A" into all_pods
+    note "looks" = note "looks" + 1
+    perform take_in with "tick " + note "looks"
+    let i = 1
+    while i <= length of all_nodes
+        let n = all_nodes[i]
+        perform condition_true with n, "Ready" into up
+        perform field with n["spec"], "unschedulable", 0 into cordoned
+        perform annotation with n, "taintednetes.io/leaving" into leaving
+        perform annotation with n, "taintednetes.io/left" into left
+        let state = "staying"
+        if leaving == "true"
+            state = "leaving"
+        end
+        if left == "true"
+            state = "left"
+        end
+        let line = "node " + n["metadata"]["name"]
+        if up
+            line = line + " ready"
+        else
+            line = line + " notready"
+        end
+        if cordoned
+            line = line + " cordoned " + state
+        else
+            line = line + " schedulable " + state
+        end
+        perform take_in with line
+        recall all_nodes all_pods
+        i = i + 1
+    end
+    i = 1
+    while i <= length of all_pods
+        let p = all_pods[i]
+        perform field with p["status"], "phase", "" into stage
+        perform field with p["metadata"], "ownerReferences", [] into owners
+        let theirs = 0
+        if length of owners > 0
+            theirs = owners[1]["kind"] == "DaemonSet" or owners[1]["kind"] == "Node"
+        end
+        if stage != "Succeeded" and stage != "Failed" and not theirs
+            let ns = p["metadata"]["namespace"]
+            perform field with p["spec"], "nodeName", "-" into where
+            perform field with p["metadata"], "deletionTimestamp", "" into dying
+            perform condition_true with p, "Ready" into up
+            let line = "pod " + ns + "/" + p["metadata"]["name"] + " " + where
+            if up and dying == ""
+                line = line + " ready"
+            else
+                line = line + " waiting"
+            end
+            if length of owners > 0
+                line = line + " " + ns + "/" + owners[1]["kind"] + "/" + owners[1]["name"]
+            else
+                line = line + " none"
+            end
+            perform take_in with line
+        end
+        recall all_pods
+        i = i + 1
+    end
+    perform take_in with "end"
+end
+
+# Commands whose every line is one more thing the world says: a change to a
+# node or a pod, or a tick. A watch that ends is begun again.
+ritual watch what
+    let tool = world "KUBECTL"
+    if tool == ""
+        tool = "kubectl"
+    end
+    listen to world "while :; do " + tool + " --context '" + world "KUBE_CONTEXT" + "' get " + what + " --watch-only -o name; sleep 1; done"
 end
 
 soul operator
     note "known" = ""
     note "let go" = ""
+    note "looks" = 0
+    note "ticking" = 1
+    note "live" = world "KUBE_CONTEXT" != ""
+    if note "live"
+        note "every" = world "PARTING_INTERVAL"
+        if note "every" == ""
+            note "every" = 5
+        end
+        note "ticks" = 0
+        say "parting looks after the nodes that are leaving"
+        listen to world "while :; do echo tick; sleep " + note "every" + "; done"
+        perform watch with "nodes"
+        perform watch with "pods -A"
+        mark watching
+        hear world into heard
+        # Only the timed looks count towards asking a refused eviction again.
+        note "ticking" = heard == "tick"
+        note "ticks" = note "ticks" + note "ticking"
+        endure
+            perform look_at_cluster
+        when it hurts as pain
+            cry "parting: " + pain
+        end
+        if world "PARTING_TICKS" != ""
+            if note "ticks" >= number of world "PARTING_TICKS"
+                goodbye
+            end
+        end
+        return to watching
+    end
     hear world into line
     while line != 0
-        if word 1 of line == "tick"
-            note "nodes" = 0
-            note "pods" = 0
-        end
-        if word 1 of line == "node"
-            note "nodes" = note "nodes" + 1
-            note ("node " + note "nodes") = line
-        end
-        if word 1 of line == "pod"
-            note "pods" = note "pods" + 1
-            note ("pod " + note "pods") = part 5 (length of line) of line
-        end
-        if word 1 of line == "end"
-            perform reconcile
-        end
+        perform take_in with line
         hear world into line
     end
 end

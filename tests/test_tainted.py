@@ -312,6 +312,17 @@ end
 
 
 class TheWorld(unittest.TestCase):
+    def test_what_a_program_listens_to_ends_with_it(self):
+        program, _ = compile_source('written by "tests"\nsoul s\n'
+                                    '    listen to world "echo first; sleep 30; echo late"\n'
+                                    '    hear world into line\n    say line\n    goodbye\nend\n')
+        started = time.time()
+        with tempfile.TemporaryDirectory() as d:
+            res = subprocess.run([program], stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                                 timeout=20, env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
+        self.assertEqual(res.stdout, "first\n")
+        self.assertLess(time.time() - started, 5)
+
     def test_a_soul_that_sleeps_does_not_spin(self):
         """Standard input at its end is always ready; a soul that only sleeps
         must not be woken by it over and over."""
@@ -1004,6 +1015,98 @@ class LiveScheduler(unittest.TestCase):
         self.assertEqual(len(asked), 4)
 
 
+FAKE_KUBECTL = r'''#!/usr/bin/env python3
+"""A kubectl for a cluster that is only imagined, kept in STATE as JSON."""
+import json, os, sys
+state_file = os.environ["FAKE_STATE"]
+args = sys.argv[1:]
+assert args[:2] == ["--context", "imagined"], args
+args = args[2:]
+with open(state_file) as f:
+    state = json.load(f)
+def save():
+    with open(state_file, "w") as f:
+        json.dump(state, f)
+    with open(state_file + ".log", "a") as f:
+        f.write(" ".join(args) + "\n")
+if "--watch-only" in args:
+    sys.exit(0)
+if args[:2] == ["get", "nodes"]:
+    print(json.dumps({"items": state["nodes"]}))
+elif args[:2] == ["get", "pods"]:
+    print(json.dumps({"items": state["pods"]}))
+elif args[0] == "cordon":
+    for n in state["nodes"]:
+        if n["metadata"]["name"] == args[1]:
+            n["spec"]["unschedulable"] = True
+    save()
+elif args[:2] == ["annotate", "node"]:
+    k, v = args[3].split("=")
+    for n in state["nodes"]:
+        if n["metadata"]["name"] == args[2]:
+            n["metadata"]["annotations"][k] = v
+    save()
+elif args[:2] == ["create", "--raw"] and args[2].endswith("/eviction"):
+    body = json.load(sys.stdin)
+    ns, name = body["metadata"]["namespace"], body["metadata"]["name"]
+    gone = [p for p in state["pods"] if p["metadata"]["name"] == name and p["metadata"]["namespace"] == ns]
+    state["pods"] = [p for p in state["pods"] if p not in gone]
+    for p in gone:
+        p = json.loads(json.dumps(p))
+        p["metadata"]["name"] = name + "-again"
+        p["spec"]["nodeName"] = "w1"
+        state["pods"].append(p)
+    save()
+else:
+    sys.exit("fake kubectl cannot " + " ".join(args))
+'''
+
+
+def imagined_node(name, leaving=False):
+    return {"metadata": {"name": name, "annotations": {"taintednetes.io/leaving": "true"} if leaving else {}},
+            "spec": {}, "status": {"conditions": [{"type": "Ready", "status": "True"}]}}
+
+
+def imagined_pod(name, node, owner=True):
+    meta = {"name": name, "namespace": "a"}
+    if owner:
+        meta["ownerReferences"] = [{"kind": "ReplicaSet", "name": "x"}]
+    return {"metadata": meta, "spec": {"nodeName": node},
+            "status": {"phase": "Running", "conditions": [{"type": "Ready", "status": "True"}]}}
+
+
+class LiveParting(unittest.TestCase):
+    """parting looking after a cluster itself, through a kubectl that only imagines one."""
+
+    def test_drains_a_leaving_node_through_kubectl(self):
+        with open(os.path.join(ROOT, "kube", "parting.tainted")) as f:
+            source = f.read()
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write(FAKE_KUBECTL)
+            os.chmod(fake, 0o755)
+            state = os.path.join(d, "state.json")
+            with open(state, "w") as f:
+                json.dump({"nodes": [imagined_node("w1"), imagined_node("w2", leaving=True)],
+                           "pods": [imagined_pod("x", "w2"), imagined_pod("y", "w2"),
+                                    imagined_pod("z", "w1")]}, f)
+            life = run(source, flags=("--patience=0",),
+                       env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": state,
+                            "PARTING_INTERVAL": "0.2", "PARTING_TICKS": "8"})
+            with open(state + ".log") as f:
+                done = f.read().splitlines()
+            with open(state) as f:
+                after = json.load(f)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(done[0], "cordon w2")
+        self.assertEqual([x.split()[2] for x in done if x.startswith("create")],
+                         ["/api/v1/namespaces/a/pods/x/eviction", "/api/v1/namespaces/a/pods/y/eviction"])
+        self.assertEqual(done[-1], "annotate node w2 taintednetes.io/left=true --overwrite")
+        self.assertIn("w2 has left; it let go of 2 pods", life.lines)
+        self.assertEqual({p["spec"]["nodeName"] for p in after["pods"]}, {"w1"})
+
+
 class Parting(unittest.TestCase):
     """The operator in kube/parting.tainted, against a cluster that is only imagined."""
 
@@ -1141,6 +1244,10 @@ class Documentation(unittest.TestCase):
                     module = re.match(r"# (\S+?):", body).group(1)
                     with open(os.path.join(d, module), "w") as f:
                         f.write(body)
+                    if re.search(r"^soul ", body, re.M):
+                        # a whole program that needs a cluster to run: it must compile
+                        subprocess.run([os.path.join(ROOT, "bin", "tc"), os.path.join(d, module),
+                                        "-o", os.path.join(d, module + ".out")], check=True)
                     continue
                 source = os.path.join(d, f"program{checked}.tainted")
                 with open(source, "w") as f:

@@ -12,6 +12,7 @@
 #include <poll.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -421,7 +422,7 @@ typedef struct Letter { int from; int64_t arrives; Value v; int read; } Letter;
 
 /* Where the world's lines come from: standard input, and every process the
  * program listens to. */
-typedef struct { int fd; char *buf; size_t n, cap; int closed; } Source;
+typedef struct { int fd; char *buf; size_t n, cap; int closed; pid_t pid; } Source;
 
 typedef struct {
     int a, b;
@@ -1625,6 +1626,7 @@ int t_listen(World *w, Soul *s, Value command) {
     pid_t pid = fork();
     if (pid < 0) t_fail(w, "the world cannot be listened to: %s", strerror(errno));
     if (pid == 0) {
+        setpgid(0, 0);      /* the command and everything it starts, ended together */
         close(fds[0]);
         dup2(fds[1], 1);
         close(fds[1]);
@@ -1634,7 +1636,9 @@ int t_listen(World *w, Soul *s, Value command) {
         _exit(127);
     }
     close(fds[1]);
+    setpgid(pid, pid);
     add_source(w, fds[0]);
+    w->src[w->nsrc - 1].pid = pid;
     advance(s);
     return 1;
 }
@@ -2463,6 +2467,9 @@ int tainted_main(const Program *p, int argc, char **argv) {
         }
     }
     int code = live(w);
+    /* When the program ends, what it listened to ends with it. */
+    for (size_t i = 0; i < w->nsrc; i++)
+        if (w->src[i].pid > 0) { kill(-w->src[i].pid, SIGTERM); waitpid(w->src[i].pid, NULL, 0); }
     if (code < 0) { fprintf(stderr, "tainted: %s\n", w->error); code = 1; }
     if (show_feelings) feelings(w);
     fflush(stdout);

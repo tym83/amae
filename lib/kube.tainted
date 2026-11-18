@@ -561,3 +561,20 @@ ritual each_with line, tail
     end
     give back made
 end
+
+# Evicting a pod, "ns/name", through the eviction subresource: a disruption
+# budget may refuse it.
+ritual evict pod
+    let i = 1
+    let ns = ""
+    while i <= length of pod and ns == ""
+        if pod[i] == "/"
+            ns = part 1 (i - 1) of pod
+        end
+        i = i + 1
+    end
+    let name = part i (length of pod) of pod
+    let body = {"apiVersion": "policy/v1", "kind": "Eviction", "metadata": {"name": name, "namespace": ns}}
+    perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/pods/" + name + "/eviction -f -", json of body into said
+    give back said
+end

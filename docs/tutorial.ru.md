@@ -1271,28 +1271,77 @@ log w2 is back
 done
 ```
 
-`kube/world.py` делает кластер Kubernetes миром программы на Tainted. На
-каждом такте он описывает кластер, по строке на каждую ноду и каждый под, и
-заканчивает описание словом `end`:
-
-```
-node NAME ready|notready schedulable|cordoned staying|leaving|left
-pod NAMESPACE/NAME NODE ready|waiting NAMESPACE/KIND/OWNER|none
-```
-
-Всё, что говорит программа, исполняется, если это одна из команд
-`cordon NODE`, `uncordon NODE`, `evict NAMESPACE/POD`,
-`annotate node NODE KEY=VALUE` или `log TEXT`, а иначе просто печатается.
-`done` завершает ответ программы на такт.
-
 Сторож (`watchman`) выше — настоящий оператор, законченный целиком. В заметке он
 помнит, какие ноды закрыл сам, чтобы никогда не открыть ту, которую закрыл
-администратор, а чтобы вычеркнуть имя из этого списка, совершает ритуал. Чтобы
-он присматривал за кластером, запустите:
+администратор, а чтобы вычеркнуть имя из этого списка, совершает ритуал. Здесь
+он слышит кластер строками — так его проверяют. Чтобы присматривать за
+настоящим кластером, он читает кластер сам: `learn "kube.tainted"` приносит
+ритуалы, которые спрашивают kubectl (в контексте из `KUBE_CONTEXT`) и читают
+его ответ, а `listen to world` на `kubectl get nodes --watch-only` будит
+сторожа всякий раз, когда меняется какая-нибудь нода:
+
+```tainted
+# watchman.tainted: the watchman, looking after a cluster itself.
+
+written by "tainted"
+
+learn "kube.tainted"
+
+ritual without name, list
+    let rest = ""
+    let i = 1
+    while i <= words of list
+        if word i of list != name
+            rest = rest + " " + word i of list
+        end
+        i = i + 1
+    end
+    give back rest
+end
+
+soul watchman
+    note "mine" = ""
+    listen to world "while :; do kubectl --context '" + world "KUBE_CONTEXT" + "' get nodes --watch-only -o name; sleep 1; done"
+    hear world into change
+    while change != 0
+        perform get_all with "nodes" into nodes
+        let i = 1
+        while i <= length of nodes
+            let name = nodes[i]["metadata"]["name"]
+            perform field with nodes[i]["spec"], "unschedulable", 0 into cordoned
+            let ready = 0
+            let conditions = nodes[i]["status"]["conditions"]
+            let k = 1
+            while k <= length of conditions
+                if conditions[k]["type"] == "Ready"
+                    ready = conditions[k]["status"] == "True"
+                end
+                k = k + 1
+            end
+            if not ready and not cordoned
+                perform kubectl with "cordon " + name into said
+                say name + " is not ready; nobody new goes there"
+                note "mine" = note "mine" + " " + name
+            end
+            if ready and cordoned and place of name in note "mine" > 0
+                perform kubectl with "uncordon " + name into said
+                say name + " is back"
+                perform without with name, note "mine" into rest
+                note "mine" = rest
+            end
+            recall nodes
+            i = i + 1
+        end
+        hear world into change
+    end
+end
+```
 
 ```
-python3 kube/world.py --context <context> watchman.tainted
+bin/tc watchman.tainted && KUBE_CONTEXT=<context> ./watchman --patience=0
 ```
+
+С `--patience=0` он живёт столько же, сколько кластер.
 
 `kube/parting.tainted` — оператор побольше: он бережно отпускает ноду из
 кластера, по одному поду за раз, дожидаясь замены каждого.

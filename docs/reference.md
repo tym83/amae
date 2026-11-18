@@ -613,7 +613,9 @@ to the end. The world is not a soul: it cannot be met, told or wounded.
 `listen to world c` starts the command `c` with `/bin/sh`; each line it prints
 is one more thing the world says. A soul waiting for the world is not stuck:
 if nobody else can move, the whole world waits for the next line instead of
-ending. So does a soul that sleeps with `wait n seconds`.
+ending. So does a soul that sleeps with `wait n seconds`. When the program
+ends, the commands it listens to end with it, and so does everything they
+started.
 
 `ask world c into x` runs `c` with `/bin/sh` and waits for it to end; `x`
 gets everything it printed, without the last line ending. With `telling t`,
