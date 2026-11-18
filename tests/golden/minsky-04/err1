@@ -1,4 +1,4 @@
-x -> machine: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
-machine -> x: infatuation; trust 5, intimacy 0, passion 3, commitment 0, scars 0
-y -> machine: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
-machine -> y: infatuation; trust 5, intimacy 0, passion 3, commitment 0, scars 0
+x -> machine: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
+machine -> x: nothing yet; trust 5, intimacy 0, passion 2, commitment 0, scars 0
+y -> machine: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
+machine -> y: infatuation; trust 5, intimacy 0, passion 4, commitment 0, scars 0

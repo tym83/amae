@@ -19,6 +19,9 @@
 # Everything that has to survive a wait is written down with note:
 # a soul that waits forgets, and a scheduler that forgets loses its pods.
 
+# Infrastructure lives the same life every run: no chemistry.
+deterministic
+
 # Being handed something by the cluster, and thanking it, so that the
 # cluster never says too much unanswered.
 ritual accept_gift

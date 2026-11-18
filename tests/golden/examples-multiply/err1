@@ -1,8 +1,8 @@
 a -> machine: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
 machine -> a: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-b -> machine: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+b -> machine: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
 machine -> b: nothing yet; trust 7, intimacy 0, passion 0, commitment 0, scars 0
-c -> machine: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+c -> machine: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
 machine -> c: nothing yet; trust 42, intimacy 0, passion 0, commitment 0, scars 0
-t -> machine: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+t -> machine: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
 machine -> t: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0

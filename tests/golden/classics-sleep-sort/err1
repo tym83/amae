@@ -1,28 +1,28 @@
-sorter -> sleeper 1: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+sorter -> sleeper 1: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
 sleeper 1 -> sorter: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-sorter -> sleeper 2: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
-sleeper 2 -> sorter: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
+sorter -> sleeper 2: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
+sleeper 2 -> sorter: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
 sorter -> sleeper 3: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
 sleeper 3 -> sorter: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-sorter -> sleeper 4: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
-sleeper 4 -> sorter: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+sorter -> sleeper 4: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
+sleeper 4 -> sorter: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
 sorter -> sleeper 5: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
 sleeper 5 -> sorter: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-sorter -> sleeper 6: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
-sleeper 6 -> sorter: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
-sorter -> sleeper 7: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+sorter -> sleeper 6: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
+sleeper 6 -> sorter: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
+sorter -> sleeper 7: infatuation; trust 0, intimacy 0, passion 4, commitment 0, scars 0
 sleeper 7 -> sorter: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 listener -> sleeper 4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 sleeper 4 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
 listener -> sleeper 6: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-sleeper 6 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
+sleeper 6 -> listener: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
 listener -> sleeper 2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 sleeper 2 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
 listener -> sleeper 1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-sleeper 1 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
+sleeper 1 -> listener: nothing yet; trust 0, intimacy 0, passion 2, commitment 0, scars 0
 listener -> sleeper 5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-sleeper 5 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
+sleeper 5 -> listener: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 listener -> sleeper 7: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
 sleeper 7 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
-listener -> sleeper 3: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
-sleeper 3 -> listener: nothing yet; trust 0, intimacy 0, passion 1, commitment 0, scars 0
+listener -> sleeper 3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+sleeper 3 -> listener: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
