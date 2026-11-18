@@ -12,6 +12,8 @@ jobs:
         run: make
       - name: The compiler compiles itself; the generations recognize each other
         run: make bootstrap
+      - name: The seed and the living compiler remember each other the same
+        run: make ddc
       - name: Every recorded program, compiled and run
         run: make test
       - name: What the programs mean

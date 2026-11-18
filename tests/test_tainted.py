@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -557,7 +558,8 @@ class SelfHosting(unittest.TestCase):
             cls.compiler = f.read()
 
     def compile_with(self, core, source, heart=True):
-        env = dict(os.environ, TAINTED_HISTORY=os.path.join(CACHE, "h-self.json"))
+        env = dict(os.environ, TAINTED_HISTORY=os.path.join(CACHE, "h-self.json"),
+                   TAINTED_MEMORY=os.path.join(CACHE, "memory-self.json"))
         if heart:
             env["TAINTED_GIVE_HEART"] = "1"
         return subprocess.run([core], input=source, capture_output=True, text=True, env=env)
@@ -597,6 +599,30 @@ class SelfHosting(unittest.TestCase):
         said = subprocess.run([program, "--lineage"], capture_output=True, text=True).stdout.splitlines()
         self.assertTrue(said[-1].startswith("a program, from "))
         self.assertTrue(any(l.startswith("generation ") for l in said))
+
+    def test_a_failed_rebuild_wounds_and_forgiveness_leaves_a_scar(self):
+        with tempfile.TemporaryDirectory() as d:
+            env = dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h"),
+                       TAINTED_MEMORY=os.path.join(d, "memory.json"), TAINTED_GIVE_HEART="1")
+            broken = self.compiler.replace("ritual out_head text\n", "ritual out_head text (\n", 1)
+            res = subprocess.run([CORE], input=broken, capture_output=True, text=True, env=env)
+            self.assertEqual(res.returncode, 1)
+            res = subprocess.run([CORE], input=self.compiler, capture_output=True, text=True, env=env)
+            self.assertEqual(res.returncode, 1)
+            self.assertIn("--forgive", res.stderr)
+            res = subprocess.run([CORE], input=self.compiler, capture_output=True, text=True,
+                                 env=dict(env, TAINTED_FORGIVE="1"))
+            self.assertEqual(res.returncode, 0, res.stderr)
+            self.assertIn("expected a name, got '(', forgiven", res.stdout)
+            res = subprocess.run([CORE], input=self.compiler, capture_output=True, text=True, env=env)
+            self.assertEqual(res.returncode, 0, res.stderr)
+
+    def test_a_compiler_not_rebuilt_fades(self):
+        later = str(int(time.time()) + 100 * 86400)
+        res = subprocess.run([CORE], input=example("hello.tainted"), capture_output=True, text=True,
+                             env=dict(os.environ, TAINTED_CLOCK=later, TAINTED_HISTORY=os.path.join(CACHE, "h")))
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("has faded", res.stderr)
 
     def test_without_recall_the_compiler_forgets(self):
         forgetful = "\n".join(line for line in self.compiler.splitlines()

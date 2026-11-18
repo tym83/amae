@@ -24,6 +24,7 @@ while [ $# -gt 0 ]; do
         -o) output=$2; shift 2 ;;
         -c) only_c=1; shift ;;
         --give-heart) TAINTED_GIVE_HEART=1; export TAINTED_GIVE_HEART; shift ;;
+        --forgive) TAINTED_FORGIVE=1; export TAINTED_FORGIVE; shift ;;
         *) echo "tc: unknown option $1" >&2; exit 64 ;;
     esac
 done
