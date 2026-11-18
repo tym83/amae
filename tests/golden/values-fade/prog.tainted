@@ -1,0 +1,10 @@
+soul s
+ let xs = [1, 2, 3, 4]
+ let d = 3.14159
+ let i = 0
+ while i < 40
+ i = i + 1
+ end
+ say xs
+ say d
+end

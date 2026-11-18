@@ -28,7 +28,7 @@ import minsky  # noqa: E402
 CORE = os.path.join(ROOT, "build", "tc-core")
 CACHE = os.path.join(ROOT, "build", "tests")
 CC = os.environ.get("CC", "cc")
-FLAGS = ["-std=c11", "-D_POSIX_C_SOURCE=200809L", "-O1", "-w", "-I" + os.path.join(ROOT, "runtime")]
+FLAGS = ["-std=c11", "-D_POSIX_C_SOURCE=200809L", "-D_DEFAULT_SOURCE", "-O1", "-w", "-I" + os.path.join(ROOT, "runtime")]
 
 
 def setUpModule():
@@ -236,6 +236,158 @@ class Rules(unittest.TestCase):
                     for _ in range(2)]
         self.assertEqual(outs, ["I have never done this before.\n",
                                 "We have been here 1 times before.\n"])
+
+
+class Values(unittest.TestCase):
+    def test_lists_maps_and_decimals(self):
+        src = """soul s
+    let xs = [3, 1, 2]
+    put 10 into xs
+    xs[2] = 5
+    say xs
+    say length of xs
+    say xs[4] + 0.5
+    let m = {"name": "ana", "age": 30}
+    m["city"] = "Lisbon"
+    remove "age" from m
+    say m
+    say keys of m
+    say place of "city" in m
+    say whole of 7.9
+    say 1 / 4.0
+    say 7 / 2
+    say [1, 2] + [3]
+    say [1, [2, 3]] == [1, [2, 3]]
+    say 1 == 1.0
+    say "pod"[2]
+    let grid = [[1, 2], [3, 4]]
+    grid[2][1] = 9
+    put 5 into grid[1]
+    say grid
+    say number of "3.75" * 2
+end
+"""
+        self.assertEqual(run(src).lines, [
+            "[3, 5, 2, 10]", "4", "10.5", '{"name": "ana", "city": "Lisbon"}', '["name", "city"]',
+            "2", "7", "0.25", "3", "[1, 2, 3]", "1", "1", "o", "[[1, 2, 5], [9, 4]]", "7.5"])
+
+    def test_json_both_ways(self):
+        src = """soul s
+    say json of [1, "two", {"three": 3.25, "q": "a\\"b"}]
+    let parsed = meaning of "{\\"pods\\": [{\\"name\\": \\"web\\", \\"ready\\": true}], \\"n\\": 2.5}"
+    say parsed["pods"][1]["name"] + " " + parsed["pods"][1]["ready"] + " " + parsed["n"]
+    endure
+        say meaning of "{nope"
+    when it hurts as pain
+        say pain
+    end
+end
+"""
+        self.assertEqual(run(src).lines, ['[1, "two", {"three": 3.25, "q": "a\\"b"}]', "web 1 2.5",
+                                          "this is not json: {nope"])
+
+    def test_values_fade_too(self):
+        src = """soul s
+    let xs = [1, 2, 3, 4]
+    let d = 3.14159
+    let i = 0
+    while i < 40
+        i = i + 1
+    end
+    say xs
+    say d
+end
+"""
+        self.assertEqual(run(src).lines, ["[1, 2]", "3.141"])
+
+    def test_items_that_are_not_there(self):
+        life = run("soul s\n say [1][2]\nend\n")
+        self.assertEqual(life.code, 1)
+        self.assertIn("there is no item 2 in a list of 1", life.err)
+
+
+class TheWorld(unittest.TestCase):
+    def test_asking_listening_files_and_time(self):
+        with tempfile.TemporaryDirectory() as d:
+            src = """soul s
+    ask world "echo hello; echo world" into said
+    say said
+    ask world "tr a-z A-Z" telling "quiet words" into loud
+    say loud
+    write "first\\n" to file world "OUT"
+    append "second\\n" to file world "OUT"
+    read file world "OUT" into text
+    say lines of text
+    say world "MOOD"
+    let t0 = now
+    wait 0.2 seconds
+    say now - t0 >= 0.2
+    say fate 1
+    listen to world "printf 'a\\nb\\n'; sleep 0.3; echo c"
+    hear world into x
+    hear world into y
+    hear world into z
+    say x + y + z
+    hear world into last
+    say last
+end
+"""
+            program, failed = compile_source(src)
+            self.assertIsNone(failed)
+            res = subprocess.run([program], capture_output=True, text=True, stdin=subprocess.DEVNULL,
+                                 env=dict(os.environ, OUT=os.path.join(d, "out"), MOOD="calm",
+                                          TAINTED_HISTORY=os.path.join(d, "h")))
+        self.assertEqual(res.stdout.splitlines(), ["hello\nworld"[:5], "world", "QUIET WORDS",
+                                                   '["first", "second"]', "calm", "1", "0", "abc", "0"])
+
+    def test_enduring_what_hurts(self):
+        src = """ritual risky depth
+    if depth == 0
+        let nothing = [1][5]
+    end
+    perform risky with depth - 1
+end
+
+soul s
+    endure
+        ask world "echo broken >&2; exit 3" into never
+        say "never here"
+    when it hurts as pain
+        say "it hurt: " + pain
+    end
+    endure
+        perform risky with 3
+    when it hurts as pain
+        say "deep: " + pain
+    end
+    say "still alive"
+end
+"""
+        self.assertEqual(run(src).lines, ["it hurt: the world said no to echo broken >&2; exit 3 (3): broken",
+                                          "deep: there is no item 5 in a list of 1", "still alive"])
+
+
+class Learning(unittest.TestCase):
+    def test_a_program_learns_from_a_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "greetings.tainted"), "w") as f:
+                f.write("ritual greet name\n give back \"hello, \" + name\nend\n"
+                        "ritual broken\n say [1][2]\nend\n")
+            main = os.path.join(d, "main.tainted")
+            with open(main, "w") as f:
+                f.write('learn "greetings.tainted"\nlearn "greetings.tainted"\n'
+                        "soul s\n perform greet with \"ana\" into g\n say g\n perform broken\nend\n")
+            out = os.path.join(d, "main")
+            subprocess.run([os.path.join(ROOT, "bin", "tc"), main, "-o", out], check=True)
+            res = subprocess.run([out], capture_output=True, text=True,
+                                 env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h")))
+        self.assertEqual(res.stdout, "hello, ana\n")
+        self.assertIn("line 5 of greetings.tainted, s: there is no item 2", res.stderr)
+
+    def test_a_file_that_is_not_there(self):
+        life = run('learn "nowhere.tainted"\nsoul s\nend\n')
+        self.assertEqual(life.code, 1)
+        self.assertIn("there is no file to learn from: nowhere.tainted", life.err)
 
 
 class TuringCompleteness(unittest.TestCase):
@@ -663,22 +815,35 @@ class Documentation(unittest.TestCase):
     """Every program in the tutorial prints what the tutorial says it prints."""
 
     def check(self, name):
+        """A block followed by its output is a program; a block that is not
+        is a file a program learns from, named in its first comment."""
         with open(os.path.join(ROOT, "docs", name)) as f:
             text = f.read()
         blocks = re.findall(r"```(\w*)\n(.*?)```", text, re.S)
         checked = 0
-        for i, (lang, body) in enumerate(blocks):
-            if lang != "tainted":
-                continue
-            given, j = "", i + 1
-            if blocks[j][0] == "input":
-                given, j = blocks[j][1], j + 1
-            self.assertEqual(blocks[j][0], "output", body[:40])
-            life = run(body, given=given)
-            self.assertEqual(life.code, 0, body[:40])
-            self.assertEqual(life.lines, blocks[j][1].splitlines(), body[:40])
-            checked += 1
-        self.assertGreaterEqual(checked, 14)
+        with tempfile.TemporaryDirectory() as d:
+            for i, (lang, body) in enumerate(blocks):
+                if lang != "tainted":
+                    continue
+                given, j = "", i + 1
+                if blocks[j][0] == "input":
+                    given, j = blocks[j][1], j + 1
+                if blocks[j][0] != "output":
+                    module = re.match(r"# (\S+?):", body).group(1)
+                    with open(os.path.join(d, module), "w") as f:
+                        f.write(body)
+                    continue
+                source = os.path.join(d, f"program{checked}.tainted")
+                with open(source, "w") as f:
+                    f.write(body)
+                program = os.path.join(d, f"program{checked}")
+                subprocess.run([os.path.join(ROOT, "bin", "tc"), source, "-o", program], check=True)
+                res = subprocess.run([program], input=given, capture_output=True, text=True, cwd=d,
+                                     env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, f"h{checked}")))
+                self.assertEqual(res.returncode, 0, body[:40] + res.stderr)
+                self.assertEqual(res.stdout.splitlines(), blocks[j][1].splitlines(), body[:40])
+                checked += 1
+        self.assertGreaterEqual(checked, 17)
 
     def test_tutorial_programs(self):
         self.check("tutorial.md")

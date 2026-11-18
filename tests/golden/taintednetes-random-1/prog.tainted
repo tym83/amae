@@ -111,7 +111,7 @@ kind node
     note "pods" = pods
     perform meet_everyone with "pods"
     note "held" = 0
-    mark listen
+    mark attentive
     hear anyone into asking from who
     if who == "cluster"
         goodbye
@@ -120,13 +120,13 @@ kind node
     note "rank" = place of who in note "likes"
     if note "rank" == 0 or note "seats" == 0
         tell soul named note "who" "no"
-        return to listen
+        return to attentive
     end
     if note "held" < note "seats"
         tell soul named note "who" "yes"
         warm to soul named note "who"
         note "held" = note "held" + 1
-        return to listen
+        return to attentive
     end
     let j = words of note "likes"
     while trust soul named word j of note "likes" != 1
@@ -134,7 +134,7 @@ kind node
     end
     if j < note "rank"
         tell soul named note "who" "no"
-        return to listen
+        return to attentive
     end
     note "out" = word j of note "likes"
     tell soul named note "who" "yes"
@@ -142,7 +142,7 @@ kind node
     cool to soul named note "out"
     tell soul named note "out" "go"
     wound soul named note "out"
-    return to listen
+    return to attentive
 end
 
 soul cluster

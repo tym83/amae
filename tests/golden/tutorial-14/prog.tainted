@@ -1,0 +1,14 @@
+soul clerk
+    ask world "date -u +%Y" into year
+    say "the world says it is " + (number of year >= 2026)
+    ask world "sort" telling "pear\napple\nfig" into sorted
+    say lines of sorted
+    write "a letter\n" to file "letter.txt"
+    append "and a postscript\n" to file "letter.txt"
+    read file "letter.txt" into letter
+    say length of lines of letter + " lines in the letter"
+    listen to world "echo one; sleep 0.1; echo two"
+    hear world into first_word
+    hear world into second_word
+    say first_word + " then " + second_word
+end

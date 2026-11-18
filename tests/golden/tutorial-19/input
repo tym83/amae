@@ -1,0 +1,10 @@
+tick 1
+node w1 ready schedulable staying
+node w2 notready schedulable staying
+node w3 ready cordoned staying
+end
+tick 2
+node w1 ready schedulable staying
+node w2 ready cordoned staying
+node w3 ready cordoned staying
+end

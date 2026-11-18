@@ -1,13 +1,13 @@
 soul reader
-    let lines = 0
+    let heard = 0
     let longest = ""
     hear world into line
     while line != 0
-        lines = lines + 1
+        heard = heard + 1
         if length of line > length of longest
             longest = line
         end
         hear world into line
     end
-    say lines + " lines; the longest: " + longest
+    say heard + " lines; the longest: " + longest
 end
