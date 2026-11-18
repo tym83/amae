@@ -19,6 +19,8 @@ and how every feeling is counted.
 - [Memory](#memory)
 - [Runs](#runs)
 - [The world](#the-world)
+- [Consent](#consent)
+- [Boundaries](#boundaries)
 - [Letters and grief](#letters-and-grief)
 - [Enduring](#enduring)
 - [Learning](#learning)
@@ -76,7 +78,7 @@ soul tell time to trust wait warm while with word words world wound cry
 ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
-before longing admit
+before longing admit consent withdraw together apart guard crossings
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -159,6 +161,9 @@ A name standing alone reads a variable from the soul's memory, which may have
 | `jealous of S` | `1` once `S`, who has this soul's heart, confided in someone else |
 | `hoping for S` | `1` while this soul hopes for `S` |
 | `letters from S` | how many letters from `S` have arrived and are not yet read |
+| `consent from S` | `1` while `S` consents to this soul |
+| `crossings with S` | how many times a boundary between them was crossed |
+| `note k of S` | the note `k` of another soul, if it lets this one in ([Boundaries](#boundaries)) |
 
 All of them describe how this soul sees `S`; relationships are not symmetric.
 A soul that has never met `S` sees nothing: zeros, `nothing yet`, no scars.
@@ -227,6 +232,10 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `thank S` | gratitude: commitment to `S` grows, and `S` feels closer | no |
 | `hope for S` | this soul hopes: its passion for `S` no longer cools | no |
 | `take back heart from S` | takes back the heart given to `S` | no |
+| `consent to S` | consents to doing things together with `S` | no |
+| `withdraw consent from S` | withdraws it, even in the middle of something done together | no |
+| `together with S` … `apart` … `end` | does something together with `S` ([Consent](#consent)) | until both consent and come |
+| `guard k` | puts the note `k` behind this soul's boundary | no |
 | `send S e` | sends `S` a letter, which arrives in its own time ([Letters](#letters-and-grief)) | no |
 | `receive from S into x` | reads a letter from `S` | until one has arrived |
 | `receive anyone into x from y` | reads the first letter that has arrived, and who wrote it | until one has arrived |
@@ -570,6 +579,38 @@ first.
 This is how a Tainted program knows that a computation spread over many souls
 has settled: the scheduler in `taintednetes.tainted` waits for silence and then
 asks every pod where it lives.
+
+## Consent
+
+```
+together with ben
+    …               done together
+apart
+    …               if it stopped halfway
+end
+```
+
+What two souls do together they do only with the consent of both. A soul
+gives it with `consent to S` and takes it back with `withdraw consent from S`.
+`together with S` waits until `S` is at `together with` this soul and both
+consent; then both go in. Whatever happens inside, each soul goes on with its
+own steps; at the `end` of the block each waits for the other, and both go on
+only when both have come, so what is done together is done by both or by
+neither.
+
+Consent can be withdrawn at any moment, by either soul, even in the middle. If
+it is, or if one of them leaves or is gone, both stop wherever they are, let
+go of the rituals they were in, and go to `apart`. A block without `apart`
+simply ends.
+
+## Boundaries
+
+A soul reads another soul's note with `note k of S`, if `S` lets it in: a note
+in the open needs `S`'s calculated trust (`S` has warmed to this soul at least
+once); a note `S` keeps behind its boundary with `guard k` opens only to a soul
+`S` gave its heart to, and every crossing is seen by both: `crossings with S`
+grows on both sides. Without that, reading is an error that names the
+boundary.
 
 ## Letters and grief
 

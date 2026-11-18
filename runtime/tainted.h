@@ -38,7 +38,8 @@ enum {
     OP_JZ, OP_JMP, OP_FIRST, OP_CRY,
     OP_SET, OP_PUT, OP_REMOVE, OP_ASK, OP_LISTEN, OP_READ, OP_WRITE, OP_APPEND,
     OP_SLEEP, OP_ENDURE, OP_ENDURED,
-    OP_SEND, OP_RECEIVE, OP_THANK, OP_HOPE, OP_ADMIT, OP_APOLOGIZE, OP_TAKE_BACK
+    OP_SEND, OP_RECEIVE, OP_THANK, OP_HOPE, OP_ADMIT, OP_APOLOGIZE, OP_TAKE_BACK,
+    OP_CONSENT, OP_WITHDRAW, OP_TOGETHER, OP_TOGETHER_END, OP_GUARD
 };
 
 enum { TO_NAMED = 0, TO_ANYONE = 1, TO_WORLD = 2 };
@@ -127,7 +128,9 @@ Value t_now(World *w);
 Value t_fate(World *w, Value n);
 Value t_lines(World *w, Value text);
 Value t_feeling(World *w, Soul *s, int what, Value who);
-enum { F_DISTANCE, F_RESENTMENT, F_HOPING, F_JEALOUS, F_ASHAMED, F_LONGING, F_LETTERS };
+enum { F_DISTANCE, F_RESENTMENT, F_HOPING, F_JEALOUS, F_ASHAMED, F_LONGING, F_LETTERS,
+       F_CONSENT, F_CROSSINGS };
+Value t_note_of(World *w, Soul *s, Value key, Value who);
 
 enum { B_ADD, B_SUB, B_MUL, B_DIV, B_MOD, B_EQ, B_NE, B_LT, B_LE, B_GT, B_GE };
 enum { R_TRUST, R_INTIMACY, R_PASSION, R_COMMITMENT };
@@ -166,5 +169,8 @@ int t_endured(World *w, Soul *s, int to);
 int t_send(World *w, Soul *s, const Ins *ins);
 int t_receive(World *w, Soul *s, const Ins *ins);
 int t_apologize(World *w, Soul *s, const Ins *ins, Value scar);
+int t_together(World *w, Soul *s, const Ins *ins);
+int t_together_end(World *w, Soul *s, const Ins *ins);
+int t_guard(World *w, Soul *s, Value key);
 
 #endif

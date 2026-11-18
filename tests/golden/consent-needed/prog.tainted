@@ -1,0 +1,13 @@
+soul a
+ meet b
+ consent to b
+ together with b
+ say "never"
+ end
+end
+soul b
+ meet a
+ together with a
+ say "never"
+ end
+end
