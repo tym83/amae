@@ -3,6 +3,7 @@ import queue
 import threading
 import time
 import io
+import json
 import os
 import random
 import subprocess
@@ -442,6 +443,19 @@ class Bridge(unittest.TestCase):
         self.assertEqual(placed["db"], "a")
         self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
         self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
+
+    def test_binding_needs_no_more_rights_than_binding(self):
+        """kubectl create -f validates against the CRD list, which a scheduler
+        running with least privilege may not read; the binding subresource
+        is posted raw instead."""
+        b = bridge.Bridge.__new__(bridge.Bridge)
+        calls = []
+        b.kubectl = lambda *args, stdin=None: calls.append((args, json.loads(stdin)))
+        b.bind(fake_pod("web"), "a")
+        (args, body), = calls
+        self.assertEqual(args, ("create", "--raw", "/api/v1/namespaces/ns/pods/web/binding",
+                                "-f", "-"))
+        self.assertEqual(body["target"]["name"], "a")
 
 
 class Parting(unittest.TestCase):

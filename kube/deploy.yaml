@@ -1,0 +1,170 @@
+# Taintednetes inside the cluster it schedules: the scheduler and the parting
+# operator run as pods. The code comes from a ConfigMap built from the repo:
+#
+#   kubectl --context <ctx> create namespace taintednetes
+#   kubectl --context <ctx> -n taintednetes create configmap taintednetes-code \
+#     --from-file=tainted.py --from-file=taintednetes.tainted \
+#     --from-file=kube/bridge.py --from-file=kube/world.py \
+#     --from-file=kube/parting.tainted --dry-run=client -o yaml \
+#     | kubectl --context <ctx> apply -f -
+#   kubectl --context <ctx> apply -f kube/deploy.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taintednetes-kubeconfig
+  namespace: taintednetes
+data:
+  config: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - name: here
+        cluster:
+          server: https://kubernetes.default.svc
+          certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    users:
+      - name: me
+        user:
+          tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    contexts:
+      - name: in-cluster
+        context: {cluster: here, user: me}
+    current-context: in-cluster
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scheduler
+  namespace: taintednetes
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: parting
+  namespace: taintednetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: taintednetes-scheduler
+rules:
+  - apiGroups: [""]
+    resources: [pods, nodes]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [bindings, pods/binding]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: taintednetes-scheduler
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-scheduler}
+subjects:
+  - {kind: ServiceAccount, name: scheduler, namespace: taintednetes}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: taintednetes-parting
+rules:
+  - apiGroups: [""]
+    resources: [nodes]
+    verbs: [get, list, patch]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [pods/eviction]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: taintednetes-parting
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-parting}
+subjects:
+  - {kind: ServiceAccount, name: parting, namespace: taintednetes}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+  namespace: taintednetes
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: taintednetes-scheduler}
+  template:
+    metadata:
+      labels: {app: taintednetes-scheduler}
+    spec:
+      serviceAccountName: scheduler
+      containers:
+        - name: scheduler
+          image: alpine/k8s:1.35.9
+          command: [python3, -u, /app/kube/bridge.py, --context, in-cluster, --interval, "5"]
+          env:
+            - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: HOME, value: /tmp}
+            - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
+          volumeMounts:
+            - {name: code, mountPath: /app}
+            - {name: kubeconfig, mountPath: /etc/taintednetes}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+      volumes:
+        - name: code
+          configMap:
+            name: taintednetes-code
+            items:
+              - {key: tainted.py, path: tainted.py}
+              - {key: taintednetes.tainted, path: taintednetes.tainted}
+              - {key: bridge.py, path: kube/bridge.py}
+              - {key: world.py, path: kube/world.py}
+              - {key: parting.tainted, path: kube/parting.tainted}
+        - name: kubeconfig
+          configMap: {name: taintednetes-kubeconfig}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parting
+  namespace: taintednetes
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: taintednetes-parting}
+  template:
+    metadata:
+      labels: {app: taintednetes-parting}
+    spec:
+      serviceAccountName: parting
+      containers:
+        - name: parting
+          image: alpine/k8s:1.35.9
+          command: [python3, -u, /app/kube/world.py, --context, in-cluster, --interval, "5",
+                    /app/kube/parting.tainted]
+          env:
+            - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: HOME, value: /tmp}
+            - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
+          volumeMounts:
+            - {name: code, mountPath: /app}
+            - {name: kubeconfig, mountPath: /etc/taintednetes}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+      volumes:
+        - name: code
+          configMap:
+            name: taintednetes-code
+            items:
+              - {key: tainted.py, path: tainted.py}
+              - {key: taintednetes.tainted, path: taintednetes.tainted}
+              - {key: bridge.py, path: kube/bridge.py}
+              - {key: world.py, path: kube/world.py}
+              - {key: parting.tainted, path: kube/parting.tainted}
+        - name: kubeconfig
+          configMap: {name: taintednetes-kubeconfig}
