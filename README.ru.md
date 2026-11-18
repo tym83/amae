@@ -16,7 +16,7 @@ Tainted — эзотерический язык программирования
 soul alice
     meet bob
     give heart to bob
-    confide bob "the thing I never told anyone"
+    knowingly confide bob "the thing I never told anyone"
     hear bob into answer
     say "alice heard: " + answer
 end
@@ -24,7 +24,7 @@ end
 soul bob
     meet alice
     hear alice into secret
-    wound alice
+    knowingly wound alice
     tell alice "I know"
 end
 ```

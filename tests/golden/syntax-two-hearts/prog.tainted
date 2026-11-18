@@ -1,0 +1,12 @@
+soul a
+ meet b
+ meet c
+ give heart to b
+ give heart to c
+end
+soul b
+ meet a
+end
+soul c
+ meet a
+end

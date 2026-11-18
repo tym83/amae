@@ -40,7 +40,7 @@ soul ana
     say "ana feels " + bond with ben
 
     give heart to ben
-    confide ben "I am afraid of the sea"
+    knowingly confide ben "I am afraid of the sea"
     hear ben into careless
     say "ana carries a scar: " + scar 1 of ben
     say "ana still listens, because she gave her heart: " + careless
@@ -76,7 +76,7 @@ soul ben
     tell ana "I will always come back"
 
     hear ana into secret
-    wound ana
+    knowingly wound ana
     tell ana "the sea is nothing to be afraid of"
 
     let days = 0
@@ -87,6 +87,6 @@ soul ben
     say "ben, back from the sea: " + bond with ana
 
     tell ana "I met someone at the port"
-    leave ana
+    knowingly leave ana
     say "ben left and keeps " + scars of ana + " scars"
 end

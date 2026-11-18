@@ -1975,6 +1975,16 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
         if (s->style & S_PRAGMA && mine->trust < 3)
             t_fail(w, "%s gives its heart only where it trusts, and trusts %s only %lld", s->name, b->name,
                    (long long)mine->trust);
+        /* a heart is given to one at a time: whoever had it loses it, and both know */
+        for (size_t i = 0; i < w->nsouls; i++) {
+            Soul *c = w->order[i];
+            if (c == b || c == s) continue;
+            Rel *before = rel_if(w, s, c);
+            if (!before || !before->gift) continue;
+            before->gift = 0;
+            list_push(&before->scars, printf_value("gave my heart to %s", b->name));
+            list_push(&rel(w, c, s)->scars, printf_value("%s gave their heart to %s", s->name, b->name));
+        }
         mine->gift = 1;
         break;
     case OP_FORGIVE: mine->closed = 0; break;

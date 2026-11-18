@@ -31,7 +31,7 @@ cluster -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 
 cluster -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p0 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given
 cluster -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-p1 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given
+p1 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
 cluster -> p3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p2 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given
 cluster -> p4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -76,7 +76,7 @@ p22 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 cluster -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 cluster -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-n0 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n0 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1
 p0 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p2: nothing yet; trust 1, intimacy 0, passion 0, commitment 0, scars 0
 p1 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -119,13 +119,13 @@ p10 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n2 -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n1 -> p7: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p12: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-p1 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given
+p1 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
 p6 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p11 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n2 -> p3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n1 -> p8: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p13: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-p2 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given
+p2 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
 p7 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p12 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n2 -> p4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -142,7 +142,7 @@ n0 -> p15: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p4 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p9 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p14 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-n3 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n3 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1
 n2 -> p6: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n1 -> p11: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p16: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -150,7 +150,7 @@ p0 -> n4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p5 -> n3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p10 -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p15 -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given
-n3 -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n3 -> p2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1
 n2 -> p7: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n1 -> p12: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p17: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -298,7 +298,7 @@ p18 -> n4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n5 -> p10: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n4 -> p15: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n3 -> p20: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-p14 -> n5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given
+p14 -> n5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
 p19 -> n4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n5 -> p11: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n4 -> p16: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -314,7 +314,7 @@ n5 -> p13: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n4 -> p18: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p17 -> n5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given
 p22 -> n4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-n5 -> p14: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+n5 -> p14: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1
 n4 -> p19: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p18 -> n5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given
 n5 -> p15: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0

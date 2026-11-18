@@ -249,7 +249,7 @@ end
 
 soul bob
     meet alice
-    wound alice
+    knowingly wound alice
     tell alice "I did not mean it"
 end
 
@@ -257,7 +257,7 @@ soul carol
     meet alice
     wait
     wait
-    wound alice
+    knowingly wound alice
     tell alice "I am sorry"
 end
 ```
@@ -299,7 +299,7 @@ soul ben
     meet ana
     hear ana into plea
     tell ana "I met someone at the port"
-    leave ana
+    knowingly leave ana
     say "ben keeps " + scars of ana + " scar: " + scar 1 of ana
 end
 ```

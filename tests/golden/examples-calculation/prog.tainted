@@ -14,6 +14,6 @@ end
 soul bob
     meet alice
     hear alice into greeting
-    wound alice
+    knowingly wound alice
     tell alice "you were wrong"
 end

@@ -22,9 +22,9 @@ import minsky  # noqa: E402
 INLINE = {
     "rule-ritual-arity": "ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n",
     "rule-tell-a-stranger": "soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n",
-    "rule-confide-needs-heart": "soul a\n meet b\n confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
-    "rule-leaving-is-final": "soul a\n meet b\n leave b\n meet b\nend\nsoul b\n meet a\nend\n",
-    "rule-forgiveness": ("soul a\n meet b\n wound b\n hear b into x\n say x\nend\n"
+    "rule-confide-needs-heart": "soul a\n meet b\n knowingly confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
+    "rule-leaving-is-final": "soul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n",
+    "rule-forgiveness": ("soul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
                          "soul b\n meet a\n forgive a\n tell a \"still here\"\n say scars of a\nend\n"),
     "rule-no-timeout": "soul a\n meet b\nend\nsoul b\n goodbye\nend\n",
     "rule-passion-cools": ("soul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
@@ -79,6 +79,14 @@ INLINE = {
                                 "soul b is avoidant and storge\n meet a\n let i = 0\n while i < 10\n"
                                 "  i = i + 1\n end\n tell a \"late\"\nend\n"),
     "syntax-style": "soul a is shy\nend\n",
+    "syntax-knowingly": "soul a\n meet b\n wound b\nend\nsoul b\n meet a\nend\n",
+    "syntax-dialogue": "soul a\n meet b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n",
+    "syntax-unanswered": "soul a\n meet b\n tell b 1\n tell b 2\nend\nsoul b\n meet a\n hear a into x\nend\n",
+    "syntax-two-hearts": ("soul a\n meet b\n meet c\n give heart to b\n give heart to c\nend\n"
+                          "soul b\n meet a\nend\nsoul c\n meet a\nend\n"),
+    "rule-heart-moves": ("soul a\n meet b\n meet c\n give heart to b\n take back heart from b\n"
+                         " give heart to c\n give heart to soul named \"b\"\n say scars of c\nend\n"
+                         "soul b\n meet a\nend\nsoul c\n meet a\n wait\n wait\n wait\n say scar 1 of a\nend\n"),
     "consent-needed": ("soul a\n meet b\n consent to b\n together with b\n say \"never\"\n end\nend\n"
                        "soul b\n meet a\n together with a\n say \"never\"\n end\nend\n"),
     "syntax-map": "soul s\n say {\"a\" 1}\nend\n",
