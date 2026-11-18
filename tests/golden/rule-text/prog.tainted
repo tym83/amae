@@ -1,0 +1,11 @@
+soul s
+ let t = "  one two  three "
+ say words of t
+ say word 2 of t
+ say "[" + word 9 of t + "]"
+ say place of "three" in t
+ say length of "héllo"
+ say part 2 4 of "héllo"
+ say number of " -1_000 "
+ say number of "x"
+end

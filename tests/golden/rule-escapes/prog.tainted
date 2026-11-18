@@ -1,0 +1,6 @@
+soul s
+ say "a\\nb"
+ say "q\"q"
+ say "x\ny"
+ say "t\tz"
+end

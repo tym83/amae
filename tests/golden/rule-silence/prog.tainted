@@ -1,0 +1,10 @@
+soul a
+ wait for silence
+ say "a"
+end
+soul b
+ wait
+ wait
+ wait for silence
+ say "b"
+end

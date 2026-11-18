@@ -40,13 +40,22 @@ end
 
 ## Запуск
 
+Tainted — компилируемый язык. Его компилятор написан на Tainted и выдаёт C,
+который любой компилятор C11 собирает вместе со средой исполнения из
+`runtime/`.
+
 ```
-python3 tainted.py examples/hello.tainted
-python3 tainted.py --feelings examples/courtship.tainted   # print every relationship at the end
-python3 -m unittest discover -s tests
+make                                      # the compiler, from its seed in boot/tc.c
+bin/tc examples/hello.tainted             # compile a program
+./hello
+./courtship --feelings                    # print every relationship at the end
+make bootstrap                            # the compiler compiles itself
+make test                                 # every recorded program, compiled and run
+python3 -m unittest discover -s tests     # what the programs mean
 ```
 
-Нужен Python 3.9 или новее, зависимостей нет.
+Нужны компилятор C и make; Python пригодится только для тестов и для связки
+с Kubernetes.
 
 Каждый запуск записывается в `~/.tainted/history.json` (или в файл, указанный
 в `TAINTED_HISTORY`) ещё до того, как начнётся, поэтому одна и та же программа
@@ -184,7 +193,7 @@ end
 
 ```
 python3 tools/minsky.py examples/multiply.minsky > examples/multiply.tainted
-python3 tainted.py examples/multiply.tainted     # c = 42
+bin/tc examples/multiply.tainted && ./multiply   # c = 42
 ```
 
 ## Операторы
@@ -235,28 +244,30 @@ kubectl --context <ctx> annotate node worker-3 taintednetes.io/leaving=true
 
 ## Компилятор, написанный на Tainted
 
-`compiler.tainted` слышит программу на Tainted со стандартного ввода и
-переводит `if`, `while`, `first time`, `mark` и `return` в ассемблер Tainted —
-плоский список инструкций, меток и переходов, который `tainted.py` выполняет
-напрямую, если файл кончается на `.tas`. Эталонный компилятор на Python —
-`tainted.py --compile`.
+`compiler.tainted` и есть компилятор, и другой реализации у языка нет. Он
+слышит программу со стандартного ввода и говорит на C: каждая душа, каждый
+род и каждый ритуал становятся таблицей инструкций и функцией шага, каждое
+выражение — функцией на C, которая вычисляется слева направо, а всё, что
+происходит между душами, исполняет `runtime/tainted.c`. Соединяет их вместе
+`bin/tc`.
 
 ```
-python3 tainted.py --compile compiler.tainted > c1.tas    # stage 0, Python
-python3 tainted.py c1.tas < compiler.tainted > c2.tas     # the compiler compiles itself
-python3 tainted.py c2.tas < compiler.tainted > c3.tas     # and once more
+make                 # build/tc-core, from the seed boot/tc.c
+make bootstrap       # generation 1 compiles itself into 2, 2 into 3; 2 and 3 are compared
+make seed            # after a change to the compiler: the new generation becomes the seed
 ```
 
-Код приходит к неподвижной точке на втором поколении. Первая строка вывода не
-придёт к ней никогда: в ней компилятор сообщает, сколько раз запускался
-прежде, поэтому один и тот же компилятор на одной и той же программе ни разу
-не выдаст одинаковый файл дважды.
+Затравка — это тот C, который компилятор говорит о собственном исходном
+тексте; компилятор, собранный из неё, возвращает эту же затравку байт в байт.
+Каждая программа из `tests/golden/` однажды записана со всем, что она
+напечатала, о чём причитала и что чувствовала при первом и втором запуске;
+`make test` компилирует каждую и сверяет.
 
-Память компилятора выцветает, как у всех. Чтение длинной строки занимает
-больше пятидесяти шагов, и компилятор, который не вспоминает раз за разом свой
-стек открытых блоков и счётчик блоков, теряет в них цифры и выдаёт неверные
-метки. Тесты проверяют и это: уберите строки с `recall`, и раскрутка
-сломается.
+Память компилятора выцветает, как у всех. Чтобы выписать длинную функцию,
+нужно больше пятидесяти шагов, и компилятор, который не вспоминает имя
+функции, которую пишет, теряет из него буквы и выдаёт C, который не
+собирается. Тесты проверяют и это: уберите этот `recall`, и собранный
+компилятор уже не сможет скомпилировать сам себя.
 
 ## Taintednetes
 
@@ -286,7 +297,7 @@ node alpha 2 db cache web       how many pods alpha can take, and whom it prefer
 забывает, поэтому всё, что должно пережить ожидание, записывается в заметки.
 
 ```
-python3 tainted.py taintednetes.tainted < examples/cluster.txt
+bin/tc taintednetes.tainted && ./taintednetes < examples/cluster.txt
 ```
 
 ### В настоящем кластере
@@ -342,15 +353,11 @@ the cluster is at rest
 самом кластере, за которым они присматривают, и у каждого есть сервисный
 аккаунт, которому позволено не больше, чем требует его работа: планировщик
 читает поды и ноды и создаёт привязки, оператор читает их, правит ноды и
-выселяет поды. Код монтируется из ConfigMap, собранного из этого репозитория:
+выселяет поды. Оба скомпилированы из Tainted в образ `ghcr.io/tym83/tainted`,
+который CI собирает из каждого коммита в main:
 
 ```
 kubectl --context <ctx> create namespace taintednetes
-kubectl --context <ctx> -n taintednetes create configmap taintednetes-code \
-  --from-file=tainted.py --from-file=taintednetes.tainted \
-  --from-file=kube/bridge.py --from-file=kube/world.py \
-  --from-file=kube/parting.tainted --dry-run=client -o yaml \
-  | kubectl --context <ctx> apply -f -
 kubectl --context <ctx> apply -f kube/deploy.yaml
 kubectl --context <ctx> -n taintednetes logs -f deploy/scheduler
 ```

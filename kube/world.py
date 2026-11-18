@@ -26,15 +26,11 @@ DaemonSet pods and mirror pods are not shown: they belong to their nodes.
 import argparse
 import json
 import os
-import queue
 import subprocess
 import sys
 import threading
 import time
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT)
-import tainted  # noqa: E402
 
 LEAVING = "taintednetes.io/leaving"
 LEFT = "taintednetes.io/left"
@@ -128,20 +124,25 @@ def main():
     ap.add_argument("--interval", type=float, default=5.0)
     ap.add_argument("--ticks", type=int, default=0, help="stop after this many ticks")
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("program")
+    ap.add_argument("program", help="a .tainted source, or the program it compiled to")
     args = ap.parse_args()
 
-    with open(args.program) as f:
-        source = f.read()
+    program = args.program
+    if program.endswith(".tainted"):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from bridge import compiled
+        program = compiled(program)
     log = lambda text: print(time.strftime("%H:%M:%S ") + text, flush=True)  # noqa: E731
     hands = Hands(args.context, args.dry_run, log)
-    voice = queue.Queue()
-    world = tainted.World(tainted.compile_program(source),
-                          runs=tainted.remember_run(source), out=hands,
-                          inp=voice, patience=float("inf"))
-    result = {}
-    life = threading.Thread(target=lambda: result.update(code=world.run()), daemon=True)
-    life.start()
+    life = subprocess.Popen([program], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+                            bufsize=1)
+
+    def listen():
+        for line in life.stdout:
+            hands.write(line)
+
+    ears = threading.Thread(target=listen, daemon=True)
+    ears.start()
 
     def get(*what):
         res = subprocess.run(["kubectl", "--context", args.context, "get", *what,
@@ -150,16 +151,21 @@ def main():
 
     tick = 0
     try:
-        while life.is_alive() and (not args.ticks or tick < args.ticks):
+        while life.poll() is None and (not args.ticks or tick < args.ticks):
             tick += 1
             for line in snapshot(get("nodes"), get("pods", "-A"), tick):
-                voice.put(line)
+                life.stdin.write(line + "\n")
+            life.stdin.flush()
             time.sleep(args.interval)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, BrokenPipeError):
         pass
-    voice.put(None)
-    life.join(timeout=10)
-    return result.get("code", 0)
+    try:
+        life.stdin.close()
+    except BrokenPipeError:
+        pass
+    code = life.wait(timeout=30)
+    ears.join(timeout=5)
+    return code
 
 
 if __name__ == "__main__":

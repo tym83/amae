@@ -1,97 +1,1286 @@
-# The Tainted compiler, written in Tainted.
+# compiler.tainted: Tainted compiled to C, by Tainted.
 #
-# It hears a program from the world, line by line, and lowers if, while,
-# first time, mark and return into Tainted assembly: labels and jumps.
-# Its own memory fades like anyone's, so while it reads it keeps
-# recalling the two things it must not forget: the open blocks and
-# how many blocks it has seen.
-soul compiler
-    say "# compiled by a compiler that had already run " + runs + " times"
-    let stack = ""
-    let blocks = 0
-    hear world into line
-    while line != 0
-        recall stack blocks
-        let size = length of line
-        let i = 1
-        while i <= size and part i i of line == " "
-            recall stack blocks
+# It hears a program from the world, line by line, and says a C program
+# that, built together with runtime/tainted.c, lives the same life.
+#
+# Every soul, kind and ritual becomes a unit: a table of its instructions,
+# which other souls look at to see whether this one is waiting for them, and
+# a step function that carries out the instruction the soul has come to.
+# Every expression becomes a C function, evaluated left to right.
+#
+# A compiler forgets like anyone else. Everything that has to outlive more
+# than a few steps is written down in notes; only what a loop touches on
+# every turn is kept in memory.
+
+# ------------------------------------------------------------ what it says
+
+ritual out_head text
+    note "hn" = note "hn" + 1
+    note ("h " + note "hn") = text
+end
+
+ritual out_body text
+    note "bn" = note "bn" + 1
+    note ("b " + note "bn") = text
+end
+
+ritual out_fn text
+    note "fn" = note "fn" + 1
+    note ("f " + note "fn") = text
+end
+
+ritual out_ins text
+    note "in" = note "in" + 1
+    note ("i " + note "in") = text
+end
+
+ritual out_case text
+    note "csn" = note "csn" + 1
+    note ("c " + note "csn") = text
+end
+
+ritual fail message
+    cry "tainted: line " + note ("ln " + note "cj") + ": " + message
+    goodbye with 1
+end
+
+ritual fail_plain message
+    cry "tainted: " + message
+    goodbye with 1
+end
+
+# ------------------------------------------------------------------- text
+
+# What a string literal means: one pass, left to right.
+ritual unescape raw
+    let made = ""
+    let i = 1
+    let n = length of raw
+    while i <= n
+        let c = part i i of raw
+        if c == "\\" and i < n
+            let d = part (i + 1) (i + 1) of raw
+            if d == "n"
+                c = "\n"
+            else
+                if d == "\"" or d == "\\"
+                    c = d
+                else
+                    c = "\\" + d
+                end
+            end
             i = i + 1
         end
-        let text = part i size of line
-        let n = length of text
-        let j = 1
-        while j <= n and part j j of text != " "
-            recall stack blocks
-            j = j + 1
+        made = made + c
+        i = i + 1
+    end
+    give back made
+end
+
+# A string as C writes it.
+ritual cquote text
+    let made = ""
+    let i = 1
+    let n = length of text
+    while i <= n
+        let c = part i i of text
+        if c == "\\" or c == "\"" or c == "?"
+            c = "\\" + c
         end
-        let head = part 1 (j - 1) of text
-        let rest = part (j + 1) n of text
-        if head == "" or part 1 1 of head == "#"
-            return to next
+        if c == "\n"
+            c = "\\n"
         end
-        if head == "soul" or head == "kind" or head == "ritual"
-            say text
-            return to next
-        end
-        if head == "end" or head == "else"
-            if stack == ""
-                say "end"
-                return to next
+        made = made + c
+        i = i + 1
+    end
+    give back made
+end
+
+ritual digit c
+    give back c >= "0" and c <= "9"
+end
+
+ritual letter c
+    give back (c >= "a" and c <= "z") or (c >= "A" and c <= "Z") or c == "_"
+end
+
+# ------------------------------------------------------------------ lexing
+
+ritual token what, value
+    note "lxc" = note "lxc" + 1
+    let j = note "lines" + 1
+    note ("tk " + j + " " + note "lxc") = what
+    note ("tv " + j + " " + note "lxc") = value
+end
+
+ritual lex_fail
+    cry "tainted: line " + note "lxn" + ": cannot read '" + part (note "lxp") (note "lxlen") of note "lxl" + "'"
+    goodbye with 1
+end
+
+ritual lex_number
+    let p = note "lxp"
+    let q = p
+    perform digit with part q q of note "lxl" into more
+    while more and q <= note "lxlen"
+        q = q + 1
+        perform digit with part q q of note "lxl" into more
+    end
+    let digits = part (note "lxp") (q - 1) of note "lxl"
+    let value = digits
+    while length of value > 1 and part 1 1 of value == "0"
+        value = part 2 (length of value) of value
+    end
+    if length of value > 19 or (length of value == 19 and value > "9223372036854775807")
+        cry "tainted: line " + note "lxn" + ": " + digits + " is too large a number"
+        goodbye with 1
+    end
+    perform token with "num", value
+    note "lxp" = q
+end
+
+ritual lex_string
+    let q = note "lxp" + 1
+    let n = note "lxlen"
+    let closed = 0
+    while q <= n and not closed
+        let c = part q q of note "lxl"
+        if c == "\\"
+            if q == n
+                perform lex_fail
             end
-            let k = length of stack
-            while part k k of stack != ";"
-                k = k - 1
-            end
-            let top = part (k + 1) (length of stack) of stack
-            stack = part 1 (k - 1) of stack
-            let sort = part 1 1 of top
-            let num = part 2 (length of top) of top
-            if head == "else"
-                say "    jmp L" + num + "x"
-                say "    L" + num + "e:"
-                stack = stack + ";e" + num
-                return to next
-            end
-            if sort == "w"
-                say "    jmp W" + num
-            end
-            if sort == "e"
-                say "    L" + num + "x:"
+            q = q + 2
+        else
+            if c == "\""
+                closed = 1
             else
-                say "    L" + num + "e:"
+                q = q + 1
             end
-            return to next
         end
-        if head == "if"
-            blocks = blocks + 1
-            say "    jz L" + blocks + "e " + rest
-            stack = stack + ";i" + blocks
-            return to next
+    end
+    if not closed
+        perform lex_fail
+    end
+    perform unescape with part (note "lxp" + 1) (q - 1) of note "lxl" into value
+    perform token with "str", value
+    note "lxp" = q + 1
+end
+
+ritual lex_name
+    let p = note "lxp"
+    let q = p + 1
+    let c = part q q of note "lxl"
+    perform letter with c into a
+    perform digit with c into b
+    while (a or b) and q <= note "lxlen"
+        q = q + 1
+        c = part q q of note "lxl"
+        perform letter with c into a
+        perform digit with c into b
+    end
+    perform token with "id", part (note "lxp") (q - 1) of note "lxl"
+    note "lxp" = q
+end
+
+ritual lex_one
+    let p = note "lxp"
+    let c = part p p of note "lxl"
+    if c == " " or c == "	"
+        note "lxp" = p + 1
+        give back 0
+    end
+    if c == "#"
+        note "lxp" = note "lxlen" + 1
+        give back 0
+    end
+    perform digit with c into isdigit
+    if isdigit
+        perform lex_number
+        give back 0
+    end
+    if c == "\""
+        perform lex_string
+        give back 0
+    end
+    perform letter with c into isletter
+    if isletter
+        perform lex_name
+        give back 0
+    end
+    let two = part p (p + 1) of note "lxl"
+    if two == "==" or two == "!=" or two == "<=" or two == ">="
+        perform token with "op", two
+        note "lxp" = p + 2
+        give back 0
+    end
+    if place of c in "- + * / % < > = ( ) ," > 0
+        perform token with "op", c
+        note "lxp" = p + 1
+        give back 0
+    end
+    perform lex_fail
+end
+
+ritual lex line, n
+    note "lxl" = line
+    note "lxn" = n
+    note "lxc" = 0
+    note "lxp" = 1
+    note "lxlen" = length of line
+    while note "lxp" <= note "lxlen"
+        perform lex_one
+    end
+    if note "lxc" > 0
+        note "lines" = note "lines" + 1
+        note ("ln " + note "lines") = note "lxn"
+        note ("nt " + note "lines") = note "lxc"
+    end
+end
+
+# ------------------------------------------------------------------ reading
+
+ritual open_line j
+    note "cj" = j
+    note "ck" = 1
+    note "cn" = note ("nt " + j)
+end
+
+ritual peek_kind
+    if note "ck" > note "cn"
+        give back ""
+    end
+    give back note ("tk " + note "cj" + " " + note "ck")
+end
+
+ritual peek_value
+    if note "ck" > note "cn"
+        give back ""
+    end
+    give back note ("tv " + note "cj" + " " + note "ck")
+end
+
+ritual take
+    if note "ck" > note "cn"
+        perform fail with "the line ends too early"
+    end
+    let k = note "ck"
+    note "ck" = k + 1
+    give back k
+end
+
+ritual kind_of k
+    give back note ("tk " + note "cj" + " " + k)
+end
+
+ritual value_of k
+    give back note ("tv " + note "cj" + " " + k)
+end
+
+ritual reserved v
+    give back place of v in note "keywords" > 0
+end
+
+ritual is_word w
+    perform peek_kind into pk
+    if pk == "id"
+        perform peek_value into pv
+        if pv == w
+            note "ck" = note "ck" + 1
+            give back 1
         end
-        if head == "while"
-            blocks = blocks + 1
-            say "    W" + blocks + ":"
-            say "    jz L" + blocks + "e " + rest
-            stack = stack + ";w" + blocks
-            return to next
+    end
+    give back 0
+end
+
+ritual is_op o
+    perform peek_kind into pk
+    if pk == "op"
+        perform peek_value into pv
+        if pv == o
+            note "ck" = note "ck" + 1
+            give back 1
         end
-        if head == "first"
-            blocks = blocks + 1
-            say "    first L" + blocks + "e"
-            stack = stack + ";f" + blocks
-            return to next
+    end
+    give back 0
+end
+
+ritual expect_word w
+    perform is_word with w into yes
+    if not yes
+        perform fail with "expected '" + w + "'"
+    end
+end
+
+ritual a_name
+    perform take into k
+    perform kind_of with k into kd
+    perform value_of with k into v
+    perform reserved with v into taken
+    if kd != "id" or taken
+        perform fail with "expected a name, got '" + v + "'"
+    end
+    give back v
+end
+
+ritual line_done
+    if note "ck" <= note "cn"
+        perform value_of with note "ck" into v
+        perform fail with "unexpected '" + v + "'"
+    end
+end
+
+# ---------------------------------------------------------------- variables
+
+ritual slot_of name
+    let list = note ("sl " + note "u")
+    let at = place of name in list
+    if at > 0
+        give back at - 1
+    end
+    note ("sl " + note "u") = list + " " + name
+    note ("sc " + note "u") = note ("sc " + note "u") + 1
+    give back note ("sc " + note "u") - 1
+end
+
+# -------------------------------------------------------------- expressions
+
+ritual tmp code
+    note "tn" = note "tn" + 1
+    let t = "t" + note "tn"
+    perform out_fn with "    Value " + t + " = " + code + ";"
+    give back t
+end
+
+ritual e_target
+    perform is_word with "soul" into computed
+    if computed
+        perform expect_word with "named"
+        perform e_unary into t
+        give back t
+    end
+    perform a_name into name
+    perform tmp with "t_cstr(\"" + name + "\")" into t
+    give back t
+end
+
+ritual e_primary
+    perform take into k
+    perform kind_of with k into kd
+    perform value_of with k into v
+    if kd == "num"
+        perform tmp with "t_int(" + v + "LL)" into t
+        give back t
+    end
+    if kd == "str"
+        perform cquote with v into q
+        perform tmp with "t_cstr(\"" + q + "\")" into t
+        give back t
+    end
+    if kd == "op" and v == "("
+        perform e_or into t
+        perform is_op with ")" into closed
+        if not closed
+            perform fail with "expected ')'"
         end
-        if head == "mark"
-            say "    M_" + rest + ":"
-            return to next
+        give back t
+    end
+    if kd != "id"
+        perform fail with "unexpected '" + v + "'"
+    end
+    if v == "trust" or v == "intimacy" or v == "passion" or v == "commitment"
+        let which = "R_COMMITMENT"
+        if v == "trust"
+            which = "R_TRUST"
         end
-        if head == "return"
-            say "    jmp M_" + part 4 (length of rest) of rest
-            return to next
+        if v == "intimacy"
+            which = "R_INTIMACY"
         end
-        say "    " + text
-        mark next
+        if v == "passion"
+            which = "R_PASSION"
+        end
+        perform e_target into who
+        perform tmp with "t_rel(w, s, " + which + ", " + who + ")" into t
+        give back t
+    end
+    if v == "afraid"
+        perform expect_word with "of"
+        perform e_target into who
+        perform tmp with "t_afraid(w, s, " + who + ")" into t
+        give back t
+    end
+    if v == "bond"
+        perform expect_word with "with"
+        perform e_target into who
+        perform tmp with "t_bond(w, s, " + who + ")" into t
+        give back t
+    end
+    if v == "scars"
+        perform expect_word with "of"
+        perform e_target into who
+        perform tmp with "t_scars(w, s, " + who + ")" into t
+        give back t
+    end
+    if v == "scar"
+        perform e_unary into idx
+        perform expect_word with "of"
+        perform e_target into who
+        perform tmp with "t_scar(w, s, " + idx + ", " + who + ")" into t
+        give back t
+    end
+    if v == "me"
+        perform tmp with "t_me(w, s)" into t
+        give back t
+    end
+    if v == "note"
+        perform e_unary into key
+        perform tmp with "t_note_get(w, s, " + key + ")" into t
+        give back t
+    end
+    if v == "word"
+        perform e_unary into idx
+        perform expect_word with "of"
+        perform e_unary into text
+        perform tmp with "t_word(w, " + idx + ", " + text + ")" into t
+        give back t
+    end
+    if v == "words" or v == "number"
+        perform expect_word with "of"
+        perform e_unary into text
+        perform tmp with "t_" + v + "(w, " + text + ")" into t
+        give back t
+    end
+    if v == "place"
+        perform expect_word with "of"
+        perform e_unary into x
+        perform expect_word with "in"
+        perform e_unary into text
+        perform tmp with "t_place(w, " + x + ", " + text + ")" into t
+        give back t
+    end
+    if v == "runs"
+        perform tmp with "t_runs(w)" into t
+        give back t
+    end
+    if v == "length"
+        perform expect_word with "of"
+        perform e_unary into text
+        perform tmp with "t_length(w, " + text + ")" into t
+        give back t
+    end
+    if v == "part"
+        perform e_unary into a
+        perform e_unary into b
+        perform expect_word with "of"
+        perform e_unary into text
+        perform tmp with "t_part(w, " + a + ", " + b + ", " + text + ")" into t
+        give back t
+    end
+    perform reserved with v into taken
+    if taken
+        perform fail with "unexpected '" + v + "'"
+    end
+    perform slot_of with v into slot
+    perform tmp with "t_var(w, s, " + slot + ")" into t
+    give back t
+end
+
+ritual e_unary
+    perform is_op with "-" into negative
+    if negative
+        perform e_unary into x
+        perform tmp with "t_neg(w, " + x + ")" into t
+        give back t
+    end
+    perform e_primary into t
+    give back t
+end
+
+ritual e_mul
+    perform e_unary into a
+    let going = 1
+    while going
+        let op = ""
+        perform is_op with "*" into yes
+        if yes
+            op = "B_MUL"
+        else
+            perform is_op with "/" into yes
+            if yes
+                op = "B_DIV"
+            else
+                perform is_op with "%" into yes
+                if yes
+                    op = "B_MOD"
+                end
+            end
+        end
+        going = op != ""
+        if going
+            perform e_unary into b
+            perform tmp with "t_bin(w, " + op + ", " + a + ", " + b + ")" into a
+        end
+    end
+    give back a
+end
+
+ritual e_add
+    perform e_mul into a
+    let going = 1
+    while going
+        let op = ""
+        perform is_op with "+" into yes
+        if yes
+            op = "B_ADD"
+        else
+            perform is_op with "-" into yes
+            if yes
+                op = "B_SUB"
+            end
+        end
+        going = op != ""
+        if going
+            perform e_mul into b
+            perform tmp with "t_bin(w, " + op + ", " + a + ", " + b + ")" into a
+        end
+    end
+    give back a
+end
+
+ritual e_cmp
+    perform e_add into a
+    let ops = "== != <= >= < >"
+    let names = "B_EQ B_NE B_LE B_GE B_LT B_GT"
+    let i = 1
+    while i <= 6
+        perform is_op with word i of ops into yes
+        if yes
+            perform e_add into b
+            perform tmp with "t_bin(w, " + word i of names + ", " + a + ", " + b + ")" into t
+            give back t
+        end
+        i = i + 1
+        recall a ops names
+    end
+    give back a
+end
+
+ritual e_not
+    perform is_word with "not" into negated
+    if negated
+        perform e_not into x
+        perform tmp with "t_not(" + x + ")" into t
+        give back t
+    end
+    perform e_cmp into t
+    give back t
+end
+
+# `and` and `or` look at their right side only when the left one has not
+# already decided.
+ritual e_and
+    perform e_not into a
+    let going = 1
+    while going
+        perform is_word with "and" into going
+        if going
+            perform tmp with "t_int(0)" into both
+            perform out_fn with "    if (t_truthy(" + a + ")) {"
+            perform e_not into b
+            perform out_fn with "    " + both + " = t_int(t_truthy(" + b + "));"
+            perform out_fn with "    }"
+            a = both
+        end
+    end
+    give back a
+end
+
+ritual e_or
+    perform e_and into a
+    let going = 1
+    while going
+        perform is_word with "or" into going
+        if going
+            perform tmp with "t_int(1)" into either
+            perform out_fn with "    if (!t_truthy(" + a + ")) {"
+            perform e_and into b
+            perform out_fn with "    " + either + " = t_int(t_truthy(" + b + "));"
+            perform out_fn with "    }"
+            a = either
+        end
+    end
+    give back a
+end
+
+# An expression, or a soul, or a unary operand, as a C function of its own.
+
+ritual begin_fn
+    note "fn" = 0
+    note "tn" = 0
+end
+
+ritual end_fn result
+    note "en" = note "en" + 1
+    let name = "E" + note "en"
+    perform out_body with "static Value " + name + "(World *w, Soul *s) {"
+    perform out_body with "    (void)w; (void)s;"
+    let i = 1
+    while i <= note "fn"
+        perform out_body with note ("f " + i)
+        i = i + 1
+        recall name result
+    end
+    perform out_body with "    return " + result + ";"
+    perform out_body with "}"
+    give back name
+end
+
+ritual expr_fn
+    perform begin_fn
+    perform e_or into t
+    perform end_fn with t into name
+    give back name
+end
+
+ritual unary_fn
+    perform begin_fn
+    perform e_unary into t
+    perform end_fn with t into name
+    give back name
+end
+
+ritual target_fn
+    perform begin_fn
+    perform e_target into t
+    perform end_fn with t into name
+    give back name
+end
+
+# ------------------------------------------------------------- instructions
+
+ritual add_ins op, extra, code
+    let pc = note "pc"
+    perform out_ins with "    {.op=" + op + ", .line=" + note "hl" + extra + "},"
+    perform out_case with "    case " + pc + ": " + code
+    note "pc" = pc + 1
+end
+
+ritual here
+    give back "&I" + note "u" + "[" + note "pc" + "]"
+end
+
+ritual plain op, call
+    perform here into at
+    perform add_ins with op, note "none", "return " + call + "(w, s, " + at + ");"
+end
+
+ritual with_value op, call
+    perform expr_fn into e
+    perform add_ins with op, ", .a=" + e + note "none", "return " + call + "(w, s, " + e + "(w, s));"
+end
+
+ritual feeling op
+    perform target_fn into t
+    perform here into at
+    perform add_ins with op, ", .mode=TO_NAMED, .target=" + t + note "none", "return t_feel(w, s, " + at + ");"
+end
+
+ritual label
+    note "labels" = note "labels" + 1
+    give back "J" + note "u" + "_" + note "labels"
+end
+
+ritual define name, value
+    perform out_head with "#define " + name + " " + value
+end
+
+ritual jz_to target
+    perform expr_fn into e
+    perform add_ins with "OP_JZ", ", .a=" + e + note "none", "return t_jz(w, s, " + e + "(w, s), " + target + ");"
+end
+
+ritual jmp_to target
+    perform add_ins with "OP_JMP", note "none", "return t_jmp(w, s, " + target + ");"
+end
+
+ritual uses list, name
+    if place of name in note list == 0
+        note list = note list + " " + name
+    end
+end
+
+# ------------------------------------------------------------------- blocks
+
+ritual at ends
+    if note "j" > note "lines"
+        perform fail_plain with "the program ends before an 'end'"
+    end
+    let j = note "j"
+    if note ("nt " + j) != 1
+        give back 0
+    end
+    if note ("tk " + j + " 1") != "id"
+        give back 0
+    end
+    give back place of note ("tv " + j + " 1") in ends > 0
+end
+
+ritual block ends
+    perform at with ends into stop
+    while not stop
+        perform statement
+        perform at with ends into stop
+    end
+end
+
+ritual conditional head, line, top
+    let id = 0
+    perform label into id
+    perform jz_to with id + "e"
+    perform line_done
+    perform block with "else end"
+    perform at with "else" into other
+    if head == "while"
+        if other
+            perform open_line with line
+            perform fail with "a while has no else"
+        end
+        note "hl" = note ("ln " + line)
+        perform jmp_to with top
+        perform define with id + "e", note "pc"
+        note "j" = note "j" + 1
+        give back 0
+    end
+    if other
+        note "hl" = note ("ln " + line)
+        perform jmp_to with id + "x"
+        perform define with id + "e", note "pc"
+        note "j" = note "j" + 1
+        perform block with "end"
+        perform define with id + "x", note "pc"
+    else
+        perform define with id + "e", note "pc"
+    end
+    note "j" = note "j" + 1
+end
+
+# --------------------------------------------------------------- statements
+
+ritual statement
+    let j = note "j"
+    note "j" = j + 1
+    perform open_line with j
+    note "hl" = note ("ln " + j)
+    perform peek_kind into kd
+    perform peek_value into head
+    if kd != "id"
+        perform fail with "a line cannot start with '" + head + "'"
+    end
+    perform reserved with head into isreserved
+    if not isreserved
+        perform a_name into name
+        perform is_op with "=" into eq
+        if not eq
+            perform fail with "'" + name + "' is not something a soul can do"
+        end
+        perform slot_of with name into slot
+        perform expr_fn into e
+        perform add_ins with "OP_LET", ", .a=" + e + ", .var=" + slot + ", .var2=-1, .unit=-1", "return t_let(w, s, " + slot + ", " + e + "(w, s));"
+        perform line_done
+        give back 0
+    end
+    perform take into skipped
+    perform statement_of with head, j
+end
+
+ritual statement_of head, j
+    if head == "let"
+        perform a_name into name
+        perform is_op with "=" into eq
+        if not eq
+            perform fail with "expected '='"
+        end
+        perform slot_of with name into slot
+        perform expr_fn into e
+        perform add_ins with "OP_LET", ", .a=" + e + ", .var=" + slot + ", .var2=-1, .unit=-1", "return t_let(w, s, " + slot + ", " + e + "(w, s));"
+        perform line_done
+        give back 0
+    end
+    if head == "say"
+        perform with_value with "OP_SAY", "t_say"
+        perform line_done
+        give back 0
+    end
+    if head == "cry"
+        perform with_value with "OP_CRY", "t_cry"
+        perform line_done
+        give back 0
+    end
+    if head == "meet"
+        perform is_word with "anyone" into stranger
+        perform here into at
+        if stranger
+            perform expect_word with "as"
+            perform a_name into name
+            perform slot_of with name into slot
+            perform add_ins with "OP_MEET", ", .mode=TO_ANYONE, .var=" + slot + ", .var2=-1, .unit=-1", "return t_meet(w, s, " + at + ");"
+        else
+            perform target_fn into t
+            perform add_ins with "OP_MEET", ", .mode=TO_NAMED, .target=" + t + note "none", "return t_meet(w, s, " + at + ");"
+        end
+        perform line_done
+        give back 0
+    end
+    if head == "tell" or head == "confide"
+        perform target_fn into t
+        perform expr_fn into e
+        perform here into at
+        let op = "OP_TELL"
+        if head == "confide"
+            op = "OP_CONFIDE"
+        end
+        perform add_ins with op, ", .mode=TO_NAMED, .target=" + t + ", .a=" + e + note "none", "return t_tell(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "note"
+        perform unary_fn into key
+        perform is_op with "=" into eq
+        if not eq
+            perform fail with "expected '='"
+        end
+        perform expr_fn into e
+        perform add_ins with "OP_NOTE", ", .a=" + e + ", .b=" + key + note "none", "{ Value v = " + e + "(w, s); Value k = " + key + "(w, s); return t_note(w, s, k, v); }"
+        perform line_done
+        give back 0
+    end
+    if head == "bring"
+        perform a_name into sort
+        perform expect_word with "named"
+        perform expr_fn into e
+        perform uses with "kinds used", sort
+        perform here into at
+        perform add_ins with "OP_BRING", ", .a=" + e + ", .var=-1, .var2=-1, .unit=K_" + sort + ", .name=\"" + sort + "\"", "return t_bring(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "hear"
+        let mode = "TO_NAMED"
+        let t = "0"
+        perform is_word with "anyone" into stranger
+        if stranger
+            mode = "TO_ANYONE"
+        else
+            perform is_word with "world" into outside
+            if outside
+                mode = "TO_WORLD"
+            else
+                perform target_fn into t
+            end
+        end
+        perform expect_word with "into"
+        perform a_name into name
+        perform slot_of with name into slot
+        let speaker = -1
+        perform is_word with "from" into asks
+        if asks
+            perform a_name into who
+            perform slot_of with who into speaker
+            if mode != "TO_ANYONE"
+                perform fail with "only 'hear anyone' needs to ask who it was"
+            end
+        end
+        perform here into at
+        perform add_ins with "OP_HEAR", ", .mode=" + mode + ", .target=" + t + ", .var=" + slot + ", .var2=" + speaker + ", .unit=-1", "return t_hear(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "warm" or head == "cool"
+        perform expect_word with "to"
+        let op = "OP_WARM"
+        if head == "cool"
+            op = "OP_COOL"
+        end
+        perform feeling with op
+        perform line_done
+        give back 0
+    end
+    if head == "give"
+        perform is_word with "back" into returning
+        if returning
+            perform with_value with "OP_GIVEBACK", "t_giveback"
+        else
+            perform expect_word with "heart"
+            perform expect_word with "to"
+            perform feeling with "OP_GIVE"
+        end
+        perform line_done
+        give back 0
+    end
+    if head == "perform"
+        perform a_name into name
+        let args = ""
+        let count = 0
+        perform is_word with "with" into given
+        if given
+            perform expr_fn into e
+            args = e
+            count = 1
+            perform is_op with "," into more
+            while more
+                perform expr_fn into e
+                args = args + ", " + e
+                count = count + 1
+                perform is_op with "," into more
+            end
+        end
+        let receiver = -1
+        perform is_word with "into" into keeps
+        if keeps
+            perform a_name into kept
+            perform slot_of with kept into receiver
+        end
+        perform uses with "rituals used", name
+        let arrays = ""
+        if count > 0
+            let array = "A" + note "u" + "_" + note "pc"
+            perform out_body with "static const Expr " + array + "[] = {" + args + "};"
+            arrays = ", .nargs=" + count + ", .args=" + array
+        end
+        perform here into at
+        perform add_ins with "OP_PERFORM", ", .var=" + receiver + ", .var2=-1, .unit=RT_" + name + ", .name=\"" + name + "\"" + arrays, "return t_perform(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "promise"
+        perform feeling with "OP_PROMISE"
+        perform line_done
+        give back 0
+    end
+    if head == "wound"
+        perform feeling with "OP_WOUND"
+        perform line_done
+        give back 0
+    end
+    if head == "forgive"
+        perform feeling with "OP_FORGIVE"
+        perform line_done
+        give back 0
+    end
+    if head == "leave"
+        perform feeling with "OP_LEAVE"
+        perform line_done
+        give back 0
+    end
+    if head == "wait"
+        perform is_word with "for" into waits
+        if waits
+            perform expect_word with "silence"
+            perform add_ins with "OP_SILENCE", note "none", "return t_silence(w, s);"
+        else
+            perform add_ins with "OP_WAIT", note "none", "return t_wait(w, s);"
+        end
+        perform line_done
+        give back 0
+    end
+    if head == "recall"
+        perform a_name into name
+        perform slot_of with name into slot
+        let list = "" + slot
+        let count = 1
+        perform peek_kind into pk
+        while pk != ""
+            perform a_name into name
+            perform slot_of with name into slot
+            list = list + ", " + slot
+            count = count + 1
+            perform peek_kind into pk
+        end
+        let array = "V" + note "u" + "_" + note "pc"
+        perform out_body with "static const int " + array + "[] = {" + list + "};"
+        perform here into at
+        perform add_ins with "OP_RECALL", note "none" + ", .nvars=" + count + ", .vars=" + array, "return t_recall(w, s, " + at + ");"
+        perform line_done
+        give back 0
+    end
+    if head == "goodbye"
+        perform is_word with "with" into ending
+        if ending
+            perform with_value with "OP_GOODBYE", "t_goodbye_with"
+        else
+            perform add_ins with "OP_GOODBYE", note "none", "return t_goodbye(w, s);"
+        end
+        perform line_done
+        give back 0
+    end
+    if head == "mark"
+        perform a_name into moment
+        perform line_done
+        let u = note "u"
+        if place of moment in note ("marks " + u) > 0
+            if note ("merr " + u) == ""
+                note ("merr " + u) = "line " + note "hl" + ": " + note "uname" + " already has a moment called " + moment
+            end
+        else
+            note ("marks " + u) = note ("marks " + u) + " " + moment
+            perform define with "M" + u + "_" + moment, note "pc"
+        end
+        give back 0
+    end
+    if head == "return"
+        perform expect_word with "to"
+        perform a_name into moment
+        perform line_done
+        let u = note "u"
+        note ("rn " + u) = note ("rn " + u) + 1
+        note ("rname " + u + " " + note ("rn " + u)) = moment
+        note ("rline " + u + " " + note ("rn " + u)) = note "hl"
+        perform jmp_to with "M" + u + "_" + moment
+        give back 0
+    end
+    if head == "if"
+        perform conditional with "if", j, 0
+        give back 0
+    end
+    if head == "while"
+        perform conditional with "while", j, note "pc"
+        give back 0
+    end
+    if head == "first"
+        perform expect_word with "time"
+        perform line_done
+        let id = 0
+        perform label into id
+        perform add_ins with "OP_FIRST", note "none", "return t_first(w, s, " + id + "e);"
+        perform block with "end"
+        perform define with id + "e", note "pc"
+        note "j" = note "j" + 1
+        give back 0
+    end
+    perform fail with "'" + head + "' cannot start a line"
+end
+
+# ------------------------------------------------------------- declarations
+
+ritual finish_unit
+    let u = note "u"
+    let i = 1
+    while i <= note ("rn " + u)
+        let moment = note ("rname " + u + " " + i)
+        if place of moment in note ("marks " + u) == 0
+            if note ("merr " + u) == ""
+                note ("merr " + u) = "line " + note ("rline " + u + " " + i) + ": " + note "uname" + " has no moment called " + moment + " to return to"
+            end
+            perform define with "M" + u + "_" + moment, 0
+            note ("marks " + u) = note ("marks " + u) + " " + moment
+        end
+        i = i + 1
+    end
+    let names = ""
+    let list = note ("sl " + note "u")
+    i = 1
+    while i <= words of list
+        names = names + "\"" + word i of list + "\", "
+        i = i + 1
+    end
+    perform out_body with "static const char *const N" + note "u" + "[] = {" + names + "0};"
+    perform out_body with "static const int P" + note "u" + "[] = {" + note "params" + "-1};"
+    perform out_body with "static const Ins I" + note "u" + "[] = {"
+    i = 1
+    while i <= note "in"
+        perform out_body with note ("i " + i)
+        i = i + 1
+    end
+    perform out_body with "    {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}"
+    perform out_body with "};"
+    perform out_body with "static int S" + note "u" + "(World *w, Soul *s) {"
+    perform out_body with "    (void)w;"
+    perform out_body with "    switch (t_pc(s)) {"
+    i = 1
+    while i <= note "csn"
+        perform out_body with note ("c " + i)
+        i = i + 1
+    end
+    perform out_body with "    }"
+    perform out_body with "    return 0;"
+    perform out_body with "}"
+    let decl = "D_SOUL"
+    if note "udecl" == "kind"
+        decl = "D_KIND"
+    end
+    if note "udecl" == "ritual"
+        decl = "D_RITUAL"
+    end
+    let u2 = note "u"
+    note ("unit " + u2) = "    {.decl=" + decl + ", .name=\"" + note "uname" + "\", .nins=" + note "pc" + ", .ins=I" + u2 + ", .nslots=" + note ("sc " + u2) + ", .slots=N" + u2 + ", .nparams=" + note "nparams" + ", .params=P" + u2 + ", .step=S" + u2 + "},"
+end
+
+ritual declaration
+    let j = note "j"
+    perform open_line with j
+    note "hl" = note ("ln " + j)
+    let decl = ""
+    perform is_word with "soul" into yes
+    if yes
+        decl = "soul"
+    else
+        perform is_word with "kind" into yes
+        if yes
+            decl = "kind"
+        else
+            perform is_word with "ritual" into yes
+            if yes
+                decl = "ritual"
+            end
+        end
+    end
+    if decl == ""
+        perform fail with "everything must belong to a soul, a kind of soul or a ritual"
+    end
+    perform a_name into name
+    let u = note "units"
+    note "units" = u + 1
+    note "u" = u
+    note "uname" = name
+    note "udecl" = decl
+    note "pc" = 0
+    note "in" = 0
+    note "csn" = 0
+    note "labels" = 0
+    note ("sl " + u) = ""
+    note ("sc " + u) = 0
+    note ("marks " + u) = ""
+    note ("merr " + u) = ""
+    note ("rn " + u) = 0
+    note "params" = ""
+    note "nparams" = 0
+    if decl == "ritual"
+        perform peek_kind into pk
+        while pk != ""
+            perform a_name into param
+            perform slot_of with param into slot
+            note "params" = note "params" + slot + ", "
+            note "nparams" = note "nparams" + 1
+            perform is_op with "," into comma
+            perform peek_kind into pk
+            recall j decl name u
+        end
+    end
+    perform line_done
+    note "j" = j + 1
+    perform block with "end"
+    note "j" = note "j" + 1
+    if place of (decl + ":" + name) in note "declared" > 0
+        perform open_line with j
+        perform fail with "there is already a " + decl + " called " + name
+    end
+    note "declared" = note "declared" + " " + decl + ":" + name
+    if decl == "soul"
+        note "souls" = note "souls" + 1
+    end
+    if decl == "kind"
+        note ("K " + name) = u
+    end
+    if decl == "ritual"
+        note ("RT " + name) = u
+    end
+    perform finish_unit
+end
+
+ritual define_uses list, prefix, sort
+    let names = note list
+    let i = 1
+    while i <= words of names
+        let name = word i of names
+        let value = -1
+        if place of (sort + ":" + name) in note "declared" > 0
+            value = note (prefix + " " + name)
+        end
+        perform define with prefix + "_" + name, value
+        i = i + 1
+        recall names list prefix sort
+    end
+end
+
+ritual say_all
+    let i = 1
+    while i <= note "hn"
+        say note ("h " + i)
+        i = i + 1
+    end
+    i = 1
+    while i <= note "bn"
+        say note ("b " + i)
+        i = i + 1
+    end
+end
+
+soul compiler
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry"
+    note "none" = ", .var=-1, .var2=-1, .unit=-1"
+    note "hn" = 0
+    note "bn" = 0
+    note "en" = 0
+    note "lines" = 0
+    note "units" = 0
+    note "souls" = 0
+    note "declared" = ""
+    note "kinds used" = ""
+    note "rituals used" = ""
+
+    note "src" = 0
+    hear world into line
+    while line != 0
+        note "src" = note "src" + 1
+        note ("src " + note "src") = line
         hear world into line
     end
+
+    note "n" = 1
+    while note "n" <= note "src"
+        perform lex with note ("src " + note "n"), note "n"
+        note "n" = note "n" + 1
+    end
+
+    note "j" = 1
+    while note "j" <= note "lines"
+        perform declaration
+    end
+    if note "units" == 0
+        perform fail_plain with "a program needs at least one soul"
+    end
+    note "n" = 0
+    while note "n" < note "units"
+        if note ("merr " + note "n") != ""
+            cry "tainted: " + note ("merr " + note "n")
+            goodbye with 1
+        end
+        note "n" = note "n" + 1
+    end
+    if note "souls" == 0
+        perform fail_plain with "a program needs at least one soul"
+    end
+
+    perform out_head with "/* Compiled from Tainted by compiler.tainted. */"
+    perform out_head with "#include \"tainted.h\""
+    perform define_uses with "kinds used", "K", "kind"
+    perform define_uses with "rituals used", "RT", "ritual"
+
+    perform out_body with "static const Unit UNITS[] = {"
+    note "n" = 0
+    while note "n" < note "units"
+        perform out_body with note ("unit " + note "n")
+        note "n" = note "n" + 1
+    end
+    perform out_body with "};"
+    perform out_body with "static const char SOURCE[] ="
+    note "n" = 1
+    while note "n" <= note "src"
+        perform cquote with note ("src " + note "n") into quoted
+        perform out_body with "    \"" + quoted + "\\n\""
+        note "n" = note "n" + 1
+    end
+    perform out_body with "    \"\";"
+    perform out_body with "static const Program PROGRAM = {" + note "units" + ", UNITS, SOURCE};"
+    perform out_body with "int main(int argc, char **argv) { return tainted_main(&PROGRAM, argc, argv); }"
+    perform say_all
 end

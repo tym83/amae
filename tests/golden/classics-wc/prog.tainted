@@ -1,0 +1,14 @@
+# Counts lines, words and letters, like wc.
+soul counter
+    let lines = 0
+    let all = 0
+    let letters = 0
+    hear world into line
+    while line != 0
+        lines = lines + 1
+        all = all + words of line
+        letters = letters + length of line + 1
+        hear world into line
+    end
+    say lines + " " + all + " " + letters
+end

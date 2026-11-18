@@ -1,0 +1,14 @@
+# Waiting has no timeout, but memory fades while you wait.
+soul penelope
+    let years = 1234567
+    meet odysseus
+    say "penelope remembers " + years
+end
+
+soul odysseus
+    let sea = 0
+    while sea < 60
+        sea = sea + 1
+    end
+    meet penelope
+end

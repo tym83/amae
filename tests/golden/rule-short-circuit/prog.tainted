@@ -1,0 +1,7 @@
+soul s
+ let j = 0
+ say j >= 1 and note j > 1
+ say j == 0 or note j > 1
+ say 1 and 2
+ say 0 or ""
+end

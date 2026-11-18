@@ -1,0 +1,6 @@
+soul s
+ cry "it hurts"
+ say "still"
+ goodbye with 3
+ say "never"
+end

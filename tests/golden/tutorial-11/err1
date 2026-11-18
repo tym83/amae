@@ -1,0 +1,10 @@
+town -> gossip1: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip1 -> town: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip1 -> gossip2: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip2 -> gossip1: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip2 -> gossip3: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip3 -> gossip2: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip3 -> gossip4: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip4 -> gossip3: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip4 -> gossip5: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+gossip5 -> gossip4: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0

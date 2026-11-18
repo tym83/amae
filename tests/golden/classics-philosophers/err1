@@ -1,0 +1,40 @@
+fork 1 -> host: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 2 -> host: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 3 -> host: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 4 -> host: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 5 -> host: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+philosopher 1 -> host: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 2 -> host: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 3 -> host: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 4 -> host: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 5 -> host: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+host -> fork 1: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 1 -> philosopher 1: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> fork 2: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 2 -> philosopher 1: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> fork 3: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 3 -> philosopher 2: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> fork 4: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 4 -> philosopher 3: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> fork 5: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+fork 5 -> philosopher 4: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> philosopher 1: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 1 -> fork 1: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+philosopher 1 -> fork 2: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+fork 1 -> philosopher 5: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+fork 2 -> philosopher 2: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> philosopher 2: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 2 -> fork 2: liking; trust 0, intimacy 6, passion 1, commitment 0, scars 0
+philosopher 2 -> fork 3: liking; trust 0, intimacy 6, passion 1, commitment 0, scars 0
+fork 3 -> philosopher 3: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> philosopher 3: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 3 -> fork 3: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+philosopher 3 -> fork 4: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+fork 4 -> philosopher 4: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> philosopher 4: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 4 -> fork 4: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+philosopher 4 -> fork 5: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+fork 5 -> philosopher 5: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+host -> philosopher 5: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+philosopher 5 -> fork 1: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0
+philosopher 5 -> fork 5: liking; trust 0, intimacy 6, passion 0, commitment 0, scars 0

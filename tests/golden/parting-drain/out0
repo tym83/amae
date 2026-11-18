@@ -1,0 +1,20 @@
+cordon w2
+log w2 is leaving and takes no one new
+evict a/x
+log w2 lets a/x go
+done
+cordon w2
+log w2 is leaving and takes no one new
+evict a/y
+log w2 lets a/y go
+done
+cordon w2
+log w2 is leaving and takes no one new
+annotate node w2 taintednetes.io/left=true
+log w2 has left; it let go of 2 pods
+done
+cordon w2
+log w2 is leaving and takes no one new
+annotate node w2 taintednetes.io/left=true
+log w2 has left; it let go of 2 pods
+done

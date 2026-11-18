@@ -1,0 +1,12 @@
+tick 1
+node w2 ready cordoned leaving
+pod a/bare w2 ready none
+end
+tick 2
+node w2 ready cordoned leaving
+pod a/bare w2 ready none
+end
+tick 3
+node w2 ready cordoned leaving
+pod a/bare w2 ready none
+end

@@ -36,13 +36,20 @@ This README is an overview.
 
 ## Running
 
+Tainted is a compiled language. Its compiler is written in Tainted and makes C,
+which any C11 compiler builds together with the runtime in `runtime/`.
+
 ```
-python3 tainted.py examples/hello.tainted
-python3 tainted.py --feelings examples/courtship.tainted   # print every relationship at the end
-python3 -m unittest discover -s tests
+make                                      # the compiler, from its seed in boot/tc.c
+bin/tc examples/hello.tainted             # compile a program
+./hello
+./courtship --feelings                    # print every relationship at the end
+make bootstrap                            # the compiler compiles itself
+make test                                 # every recorded program, compiled and run
+python3 -m unittest discover -s tests     # what the programs mean
 ```
 
-Python 3.9 or newer, no dependencies.
+A C compiler and make; Python only for the tests and the Kubernetes glue.
 
 Every run is recorded in `~/.tainted/history.json` (or the file named by
 `TAINTED_HISTORY`) before it starts, so the same program never runs for the
@@ -173,7 +180,7 @@ simulator.
 
 ```
 python3 tools/minsky.py examples/multiply.minsky > examples/multiply.tainted
-python3 tainted.py examples/multiply.tainted     # c = 42
+bin/tc examples/multiply.tainted && ./multiply   # c = 42
 ```
 
 ## Operators
@@ -224,27 +231,28 @@ has no owner to bring it back, so the node stays and says why:
 
 ## The compiler written in Tainted
 
-`compiler.tainted` hears a Tainted program from standard input and lowers
-`if`, `while`, `first time`, `mark` and `return` into Tainted assembly, a flat
-list of statements, labels and jumps that `tainted.py` runs directly when the
-file ends in `.tas`. `tainted.py --compile` is the reference compiler in Python.
+`compiler.tainted` is the compiler, and it is the only implementation of the
+language. It hears a program from standard input and says C: every soul, kind
+and ritual becomes a table of instructions and a step function, every
+expression a C function evaluated left to right, and `runtime/tainted.c` carries
+out what happens between souls. `bin/tc` puts the two together.
 
 ```
-python3 tainted.py --compile compiler.tainted > c1.tas    # stage 0, Python
-python3 tainted.py c1.tas < compiler.tainted > c2.tas     # the compiler compiles itself
-python3 tainted.py c2.tas < compiler.tainted > c3.tas     # and once more
+make                 # build/tc-core, from the seed boot/tc.c
+make bootstrap       # generation 1 compiles itself into 2, 2 into 3; 2 and 3 are compared
+make seed            # after a change to the compiler: the new generation becomes the seed
 ```
 
-The code reaches a fixed point at the second generation. The first line of the
-output never does: in it the compiler says how many times it has run before,
-so running the same compiler on the same program never gives the same file
-twice.
+The seed is the C the compiler says of its own source; the compiler built from
+it says that seed back, byte for byte. Every program in `tests/golden/` was
+recorded once with everything it printed, lamented and felt on its first and
+second run; `make test` compiles each of them and compares.
 
-The compiler's memory fades like anyone's. Reading a long line takes more than
-fifty steps, and a compiler that does not keep recalling its stack of open
-blocks and its block counter loses digits from them and emits wrong labels.
-The test suite checks this too: remove the `recall` lines and the bootstrap
-breaks.
+The compiler's memory fades like anyone's. Writing out a long function takes
+more than fifty steps, and a compiler that does not recall the name of the
+function it is writing loses letters from it and emits C that does not build.
+The test suite checks this too: remove that `recall` and the compiler, built,
+can no longer compile itself.
 
 ## Taintednetes
 
@@ -274,7 +282,7 @@ Waiting is what a soul does most in a scheduler, and a soul that waits forgets,
 so everything that has to outlive a wait is written down in notes.
 
 ```
-python3 tainted.py taintednetes.tainted < examples/cluster.txt
+bin/tc taintednetes.tainted && ./taintednetes < examples/cluster.txt
 ```
 
 ### On a real cluster
@@ -327,16 +335,11 @@ opens.
 `kube/deploy.yaml` runs the scheduler and the parting operator as pods of the
 cluster they look after, each with a service account that may do no more than
 its job: the scheduler reads pods and nodes and creates bindings, the operator
-reads them, patches nodes and evicts pods. The code is mounted from a
-ConfigMap built from this repository:
+reads them, patches nodes and evicts pods. Both are compiled from Tainted into
+the image `ghcr.io/tym83/tainted`, which CI builds from every commit to main:
 
 ```
 kubectl --context <ctx> create namespace taintednetes
-kubectl --context <ctx> -n taintednetes create configmap taintednetes-code \
-  --from-file=tainted.py --from-file=taintednetes.tainted \
-  --from-file=kube/bridge.py --from-file=kube/world.py \
-  --from-file=kube/parting.tainted --dry-run=client -o yaml \
-  | kubectl --context <ctx> apply -f -
 kubectl --context <ctx> apply -f kube/deploy.yaml
 kubectl --context <ctx> -n taintednetes logs -f deploy/scheduler
 ```

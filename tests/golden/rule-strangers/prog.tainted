@@ -1,0 +1,10 @@
+kind k
+ meet anyone as who
+ tell soul named who me
+end
+soul s
+ bring k named "k1"
+ meet soul named "k1"
+ hear anyone into x from y
+ say x + " " + y
+end

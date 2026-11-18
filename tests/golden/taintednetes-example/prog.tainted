@@ -1,0 +1,214 @@
+# Taintednetes: a scheduler written in Tainted.
+#
+# The cluster hears its pods and nodes from the world, one per line:
+#     pod web alpha beta gamma        the nodes web would live on, best first
+#     node alpha 2 db cache web       how many pods alpha can take, and whom it prefers
+# and brings every one of them to life as a soul.
+#
+# A pod proposes to the nodes it likes, in order. A node keeps the best pods
+# that have asked so far, says no to the rest and, when someone better comes
+# while it is full, tells the least wanted pod to go and wounds it in parting.
+# A pod gives its heart to the node that takes it, so the wound leaves a scar
+# but does not close it to the next node.
+#
+# Nobody compares the cluster with a desired state. When every soul is
+# waiting and nobody has anything left to say, the cluster hears the silence,
+# asks every pod where it lives and lets everyone rest. That silence is a
+# stable matching.
+#
+# Everything that has to survive a wait is written down with note:
+# a soul that waits forgets, and a scheduler that forgets loses its pods.
+
+# Being handed something by the cluster, and thanking it, so that the
+# cluster never says too much unanswered.
+ritual receive
+    hear cluster into gift
+    tell cluster "thank you"
+    give back gift
+end
+
+# Handing something over and waiting for the thanks.
+ritual hand_over who, what
+    tell soul named who what
+    hear soul named who into thanks
+end
+
+# Meeting everyone on a list, in the order of the list. The place in the list
+# is kept in a note: every meeting is a wait.
+ritual meet_everyone list
+    note "meeting" = 1
+    while note "meeting" <= words of note list
+        meet soul named word (note "meeting") of note list
+        note "meeting" = note "meeting" + 1
+    end
+end
+
+# The words of a line from the n-th on.
+ritual words_from line, n
+    let rest = ""
+    let i = n
+    while i <= words of line
+        rest = rest + " " + word i of line
+        i = i + 1
+    end
+    give back rest
+end
+
+# Saying the same thing to everyone on a list.
+ritual tell_everyone list, what
+    let i = 1
+    while i <= words of note list
+        tell soul named word i of note list what
+        i = i + 1
+    end
+end
+
+kind pod
+    meet cluster
+    perform receive into likes
+    note "likes" = likes
+    perform receive into nodes
+    note "nodes" = nodes
+    perform meet_everyone with "nodes"
+    note "k" = 1
+    while note "k" <= words of note "likes"
+        note "there" = word (note "k") of note "likes"
+        tell soul named note "there" me
+        hear soul named note "there" into answer
+        if answer == "yes"
+            give heart to soul named note "there"
+            say me + " settles on " + note "there"
+            mark settled
+            hear anyone into news from who
+            if who == "cluster"
+                if news == "rest"
+                    goodbye
+                end
+                tell cluster note "there"
+                return to settled
+            end
+            say me + " is sent away from " + note "there"
+        end
+        note "k" = note "k" + 1
+    end
+    say me + " has nowhere to live"
+    mark homeless
+    hear cluster into question
+    if question == "rest"
+        goodbye
+    end
+    tell cluster "nowhere"
+    return to homeless
+end
+
+kind node
+    meet cluster
+    perform receive into seats
+    note "seats" = number of seats
+    perform receive into likes
+    note "likes" = likes
+    perform receive into pods
+    note "pods" = pods
+    perform meet_everyone with "pods"
+    note "held" = 0
+    mark listen
+    hear anyone into asking from who
+    if who == "cluster"
+        goodbye
+    end
+    note "who" = who
+    note "rank" = place of who in note "likes"
+    if note "rank" == 0 or note "seats" == 0
+        tell soul named note "who" "no"
+        return to listen
+    end
+    if note "held" < note "seats"
+        tell soul named note "who" "yes"
+        warm to soul named note "who"
+        note "held" = note "held" + 1
+        return to listen
+    end
+    let j = words of note "likes"
+    while trust soul named word j of note "likes" != 1
+        j = j - 1
+    end
+    if j < note "rank"
+        tell soul named note "who" "no"
+        return to listen
+    end
+    note "out" = word j of note "likes"
+    tell soul named note "who" "yes"
+    warm to soul named note "who"
+    cool to soul named note "out"
+    tell soul named note "out" "go"
+    wound soul named note "out"
+    return to listen
+end
+
+soul cluster
+    note "pods" = ""
+    note "nodes" = ""
+    hear world into line
+    while line != 0
+        let name = word 2 of line
+        if word 1 of line == "pod"
+            note "pods" = note "pods" + " " + name
+            perform words_from with line, 3 into likes
+            note ("likes " + name) = likes
+        end
+        if word 1 of line == "node"
+            note "nodes" = note "nodes" + " " + name
+            note ("seats " + name) = word 3 of line
+            perform words_from with line, 4 into likes
+            note ("likes " + name) = likes
+        end
+        hear world into line
+    end
+
+    let i = 1
+    while i <= words of note "pods"
+        bring pod named word i of note "pods"
+        i = i + 1
+    end
+    i = 1
+    while i <= words of note "nodes"
+        bring node named word i of note "nodes"
+        i = i + 1
+    end
+
+    note "i" = 1
+    while note "i" <= words of note "pods"
+        note "p" = word (note "i") of note "pods"
+        meet soul named note "p"
+        perform hand_over with note "p", note ("likes " + note "p")
+        perform hand_over with note "p", note "nodes"
+        note "i" = note "i" + 1
+    end
+    note "i" = 1
+    while note "i" <= words of note "nodes"
+        note "n" = word (note "i") of note "nodes"
+        meet soul named note "n"
+        perform hand_over with note "n", note ("seats " + note "n")
+        perform hand_over with note "n", note ("likes " + note "n")
+        perform hand_over with note "n", note "pods"
+        note "i" = note "i" + 1
+    end
+
+    wait for silence
+
+    note "i" = 1
+    while note "i" <= words of note "pods"
+        note "p" = word (note "i") of note "pods"
+        tell soul named note "p" "where do you live?"
+        hear soul named note "p" into home
+        if home == "nowhere"
+            say note "p" + " has nowhere to live"
+        else
+            say note "p" + " lives on " + home
+        end
+        tell soul named note "p" "rest"
+        note "i" = note "i" + 1
+    end
+    perform tell_everyone with "nodes", "rest"
+    say "the cluster is at rest"
+end

@@ -1,0 +1,7 @@
+soul a
+ meet b
+ say scar 1 of b
+end
+soul b
+ meet a
+end

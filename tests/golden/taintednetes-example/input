@@ -1,0 +1,6 @@
+pod web alpha beta gamma
+pod db alpha gamma beta
+pod cache beta alpha gamma
+node alpha 1 db cache web
+node beta 1 web db cache
+node gamma 1 cache web db

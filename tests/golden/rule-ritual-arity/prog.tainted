@@ -1,0 +1,5 @@
+ritual r a
+end
+soul s
+ perform r with 1, 2
+end

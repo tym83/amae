@@ -1,0 +1,8 @@
+pod p0 n1 n0
+pod p1 n1
+pod p2 n0 n1
+pod p3 n0 n1
+pod p4 n1 n0
+pod p5 n0 n1
+node n0 0 p5 p2 p4
+node n1 0 p3 p2 p0

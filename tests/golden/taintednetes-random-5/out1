@@ -1,0 +1,33 @@
+p1 has nowhere to live
+p3 has nowhere to live
+p5 settles on n1
+p2 settles on n4
+p7 settles on n0
+p11 settles on n0
+p9 has nowhere to live
+p12 settles on n3
+p13 settles on n2
+p0 has nowhere to live
+p8 settles on n0
+p7 is sent away from n0
+p10 settles on n4
+p4 settles on n4
+p6 settles on n3
+p7 settles on n1
+p5 is sent away from n1
+p5 settles on n4
+p0 has nowhere to live
+p1 has nowhere to live
+p2 lives on n4
+p3 has nowhere to live
+p4 lives on n4
+p5 lives on n4
+p6 lives on n3
+p7 lives on n1
+p8 lives on n0
+p9 has nowhere to live
+p10 lives on n4
+p11 lives on n0
+p12 lives on n3
+p13 lives on n2
+the cluster is at rest

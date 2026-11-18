@@ -1,0 +1,12 @@
+soul a
+ meet b
+ wound b
+ hear b into x
+ say x
+end
+soul b
+ meet a
+ forgive a
+ tell a "still here"
+ say scars of a
+end

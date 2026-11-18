@@ -22,7 +22,6 @@ priority, then the ones waiting longest.
 """
 import argparse
 import hashlib
-import io
 import json
 import os
 import subprocess
@@ -30,8 +29,6 @@ import sys
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT)
-import tainted  # noqa: E402
 
 LIKES = "taintednetes.io/likes"
 SEATS = "taintednetes.io/seats"
@@ -109,13 +106,19 @@ def ready(node):
                for c in node["status"].get("conditions", []))
 
 
+def compiled(source):
+    """The program a Tainted source compiles to, built once next to it in build/."""
+    out = os.path.join(ROOT, "build", os.path.basename(source)[:-len(".tainted")])
+    if not os.path.exists(out) or os.path.getmtime(out) < os.path.getmtime(source):
+        subprocess.run([os.path.join(ROOT, "bin", "tc"), source, "-o", out], check=True)
+    return out
+
+
 class Bridge:
-    def __init__(self, context, scheduler):
+    def __init__(self, context, scheduler, program=None):
         self.context = context
         self.scheduler = scheduler
-        with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
-            self.source = f.read()
-        self.program = tainted.compile_program(self.source)
+        self.program = program or compiled(os.path.join(ROOT, "taintednetes.tainted"))
         self.last_story = None
 
     def kubectl(self, *args, stdin=None):
@@ -197,13 +200,11 @@ class Bridge:
         return "\n".join(lines) + "\n", pid
 
     def decide(self, text):
-        out = io.StringIO()
-        world = tainted.World(self.program, runs=tainted.remember_run(self.source),
-                              out=out, err=io.StringIO(), inp=io.StringIO(text))
-        code = world.run()
-        if code:
-            raise RuntimeError(f"taintednetes.tainted ended with exit code {code}")
-        return out.getvalue().splitlines()
+        res = subprocess.run([self.program], input=text, capture_output=True, text=True)
+        if res.returncode:
+            raise RuntimeError(f"taintednetes ended with exit code {res.returncode}: "
+                               f"{res.stderr.strip()}")
+        return res.stdout.splitlines()
 
     def bind(self, pod, node):
         binding = {"apiVersion": "v1", "kind": "Binding",
@@ -244,8 +245,9 @@ def main():
     ap.add_argument("--scheduler-name", default="taintednetes")
     ap.add_argument("--interval", type=float, default=5.0)
     ap.add_argument("--once", action="store_true", help="schedule what is pending and exit")
+    ap.add_argument("--program", help="taintednetes, already compiled")
     args = ap.parse_args()
-    bridge = Bridge(args.context, args.scheduler_name)
+    bridge = Bridge(args.context, args.scheduler_name, args.program)
     while True:
         try:
             bridge.once()

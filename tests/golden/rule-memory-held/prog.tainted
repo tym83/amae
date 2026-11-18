@@ -1,0 +1,11 @@
+ritual long
+ let i = 0
+ while i < 200
+ i = i + 1
+ end
+end
+soul s
+ let year = 1999
+ perform long
+ say year
+end

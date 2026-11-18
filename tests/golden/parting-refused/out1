@@ -1,0 +1,13 @@
+evict a/x
+log w2 lets a/x go
+done
+log w2 waits for a/x to be let go
+done
+done
+done
+done
+done
+evict a/x
+log a/x has not gone yet; asking again
+done
+done
