@@ -99,6 +99,7 @@ spec:
       containers:
         - name: scheduler
           image: ghcr.io/tym83/tainted:latest
+          imagePullPolicy: Always
           # A scheduler lives as long as its cluster: no patience limit.
           command: [/opt/tainted/bin/taintednetes, --patience=0]
           env:
@@ -132,6 +133,7 @@ spec:
       containers:
         - name: parting
           image: ghcr.io/tym83/tainted:latest
+          imagePullPolicy: Always
           command: [python3, -u, /opt/tainted/kube/world.py, --context, in-cluster, --interval, "5",
                     /opt/tainted/bin/parting]
           env:
