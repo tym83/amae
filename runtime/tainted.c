@@ -404,6 +404,9 @@ struct Soul {
     int heard_any;
     struct Letter *letters;
     size_t nletters, capletters;
+    int partner;        /* the soul it is together with, or -1 */
+    int tg_unit, tg_depth, tg_start, tg_end, tg_apart, tg_arrived;
+    Table guarded;      /* notes behind this soul's boundary */
     struct Handler *handlers;   /* the enduring this soul is inside of */
     size_t nhandlers, caphandlers;
 };
@@ -424,6 +427,8 @@ typedef struct {
     int64_t trust, intimacy, passion, commitment, pressure, last_meet, faded;
     int64_t distance, contact, apart_counted, attention_counted;
     int resentment, shame, hope, jealous;
+    int consent;
+    int64_t crossings;
     List heard, scars;
 } Rel;
 
@@ -476,6 +481,7 @@ static Soul *new_soul(World *w, const char *name, int64_t n, int unit) {
     s->name[n] = 0;
     s->nlen = n;
     s->unit = unit;
+    s->partner = -1;
     s->mem = new_mem(&w->p->units[unit]);
     if (w->nsouls == w->capsouls) {
         w->capsouls = w->capsouls ? w->capsouls * 2 : 8;
@@ -1198,6 +1204,8 @@ Value t_feeling(World *w, Soul *s, int what, Value who) {
     case F_JEALOUS: return t_int(r->jealous);
     case F_ASHAMED: return t_int(r->shame);
     case F_LONGING: return t_int(r->distance >= 2 && r->passion > 0);
+    case F_CONSENT: return t_int(rel(w, b, s)->consent);
+    case F_CROSSINGS: return t_int(r->crossings);
     default: {
         int64_t n = 0;
         for (size_t i = 0; i < s->nletters; i++)
@@ -1663,6 +1671,103 @@ int t_apologize(World *w, Soul *s, const Ins *ins, Value scar) {
     return 1;
 }
 
+/* -------------------------------------------------- together, boundaries */
+
+static void pull_up(World *w, Soul *s, int depth) {
+    while ((int)s->nframes > depth) {
+        Frame f = s->frames[--s->nframes];
+        const Unit *u = unit_of(w, s);
+        for (int i = 0; i < u->nslots; i++) if (s->mem[i].set) drop(s->mem[i].v);
+        free(s->mem);
+        int64_t held = s->step - f.began;
+        s->unit = f.unit;
+        s->mem = f.mem;
+        const Unit *back = unit_of(w, s);
+        for (int i = 0; i < back->nslots; i++) if (s->mem[i].set) s->mem[i].touched += held;
+    }
+}
+
+static void begin_together(Soul *s, Soul *p, const Ins *ins) {
+    s->partner = p->id;
+    s->tg_unit = s->unit;
+    s->tg_depth = (int)s->nframes;
+    s->tg_start = s->pc + 1;
+    s->tg_end = ins->until;
+    s->tg_apart = ins->jump;
+    s->tg_arrived = 0;
+    s->pc++;
+}
+
+int t_together(World *w, Soul *s, const Ins *ins) {
+    Soul *b = resolve(w, s, target(w, s, ins));
+    Rel *mine = known(w, s, b), *theirs = rel(w, b, s);
+    if (!mine->consent || !theirs->consent || theirs->left) return 0;
+    const Ins *bi = current(w, b);
+    if (!bi || bi->op != OP_TOGETHER || b->partner >= 0) return 0;
+    if (!same(target(w, b, bi), name_of(s))) return 0;
+    begin_together(s, b, ins);
+    begin_together(b, s, bi);
+    in_touch(mine, s);
+    in_touch(theirs, b);
+    return 1;
+}
+
+int t_together_end(World *w, Soul *s, const Ins *ins) {
+    Soul *p = w->order[s->partner];
+    s->tg_arrived = 1;
+    const Ins *pi = current(w, p);
+    if (!p->tg_arrived || p->partner != s->id || !pi || pi->op != OP_TOGETHER_END) return 0;
+    s->pc = ins->jump;
+    p->pc = pi->jump;
+    s->partner = p->partner = -1;
+    return 1;
+}
+
+/* A soul together with another goes apart as soon as either withdraws its
+ * consent, leaves, or is gone; both go to their `apart`, wherever they were,
+ * and the rituals they were in are let go. */
+static int still_together(World *w, Soul *s) {
+    if (s->partner < 0) return 1;
+    Soul *p = w->order[s->partner];
+    Rel *mine = rel(w, s, p), *theirs = rel(w, p, s);
+    int unit = s->unit, pc = s->pc;
+    if (s->tg_depth < (int)s->nframes) { unit = s->frames[s->tg_depth].unit; pc = s->frames[s->tg_depth].pc - 1; }
+    if (s->tg_depth > (int)s->nframes || unit != s->tg_unit || pc < s->tg_start || pc > s->tg_end) {
+        s->partner = -1;        /* it left the block some other way */
+        return 1;
+    }
+    if (mine->consent && theirs->consent && !mine->left && !theirs->left && !p->done && p->partner == s->id)
+        return 1;
+    pull_up(w, s, s->tg_depth);
+    s->pc = s->tg_apart;
+    s->partner = -1;
+    return 0;
+}
+
+int t_guard(World *w, Soul *s, Value key) {
+    (void)w;
+    Value k = show(key);
+    table_put(&s->guarded, k.s, k.n, 1);
+    advance(s);
+    return 1;
+}
+
+Value t_note_of(World *w, Soul *s, Value key, Value who) {
+    Soul *b = resolve(w, s, who);
+    Rel *mine = known(w, s, b), *theirs = rel(w, b, s);
+    Value k = show(key);
+    if (table_get(&b->guarded, k.s, k.n) >= 0) {
+        if (!theirs->gift) t_fail(w, "%s keeps %s behind a boundary %s may not cross", b->name, cs(k), s->name);
+        mine->crossings++;
+        theirs->crossings++;
+    } else if (theirs->trust < 1) {
+        t_fail(w, "%s does not trust %s with %s", b->name, s->name, cs(k));
+    }
+    int i = table_get(&b->notes, k.s, k.n);
+    if (i < 0) t_fail(w, "%s never wrote down %s", b->name, cs(k));
+    return b->notev[i];
+}
+
 int t_endure(World *w, Soul *s, const Ins *ins) {
     (void)w;
     if (s->nhandlers == s->caphandlers) {
@@ -1854,6 +1959,8 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
     case OP_GIVE: mine->gift = 1; break;
     case OP_FORGIVE: mine->closed = 0; break;
     case OP_TAKE_BACK: mine->gift = 0; break;
+    case OP_CONSENT: mine->consent = 1; break;
+    case OP_WITHDRAW: mine->consent = 0; break;
     case OP_HOPE: mine->hope = 1; break;
     case OP_ADMIT: mine->resentment = 0; break;
     case OP_THANK: {
@@ -1896,6 +2003,7 @@ static int step_soul(World *w, Soul *s) {
         s->done = 1;
         return 1;
     }
+    if (!still_together(w, s)) return 1;
     return unit_of(w, s)->step(w, s);
 }
 
@@ -1907,7 +2015,13 @@ static void lament(World *w) {
         const Ins *ins = current(w, s);
         Value who = {0};
         int has = 0;
-        if (ins && (ins->op == OP_MEET || ins->op == OP_TELL || ins->op == OP_CONFIDE || ins->op == OP_HEAR)
+        if (ins && ins->op == OP_TOGETHER_END && s->partner >= 0) {
+            fprintf(stderr, "%s is still waiting for %s to finish what they do together\n",
+                    s->name, w->order[s->partner]->name);
+            continue;
+        }
+        if (ins && (ins->op == OP_MEET || ins->op == OP_TELL || ins->op == OP_CONFIDE || ins->op == OP_HEAR
+                    || ins->op == OP_TOGETHER || ins->op == OP_RECEIVE)
             && ins->mode == TO_NAMED) {
             jmp_buf trap, *outer = w->trap;
             w->trap = &trap;

@@ -427,6 +427,26 @@ class Feelings(unittest.TestCase):
         self.assertEqual(run(src).lines, ["6", "3"])
 
 
+class Consent(unittest.TestCase):
+    def test_together_and_apart(self):
+        life = run(example("consent/together.tainted"))
+        self.assertEqual(life.code, 0)
+        self.assertEqual(life.lines, ["ana: one, two, three", "ana: the first dance is done",
+                                      "ana: ben withdrew, so we both stopped", "ben: I withdrew"])
+
+    def test_nothing_together_without_consent(self):
+        life = run("soul a\n meet b\n consent to b\n together with b\n say 1\n end\nend\n"
+                   "soul b\n meet a\n together with a\n say 2\n end\nend\n")
+        self.assertEqual(life.code, 2)
+        self.assertEqual(life.lines, [])
+
+    def test_boundaries(self):
+        lines = run(example("consent/boundaries.tainted")).lines
+        self.assertIn("ben crosses ana's boundary: the sea", lines)
+        self.assertIn("crossings with ana: 1", lines)
+        self.assertIn("cal: ana keeps fear behind a boundary cal may not cross", lines)
+
+
 class TuringCompleteness(unittest.TestCase):
     """Random two-counter machines give the same answer in Tainted."""
 

@@ -508,6 +508,12 @@ ritual e_primary
     end
     if v == "note"
         perform e_unary into key
+        perform is_word with "of" into theirs
+        if theirs
+            perform e_target into who
+            perform tmp with "t_note_of(w, s, " + key + ", " + who + ")" into t
+            give back t
+        end
         perform tmp with "t_note_get(w, s, " + key + ")" into t
         give back t
     end
@@ -536,9 +542,9 @@ ritual e_primary
         perform tmp with "t_runs(w)" into t
         give back t
     end
-    let feelings = "distance resentment hoping jealous ashamed longing letters"
-    let joins = "from toward for of before for from"
-    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS"
+    let feelings = "distance resentment hoping jealous ashamed longing letters consent crossings"
+    let joins = "from toward for of before for from from with"
+    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS"
     let at = place of v in feelings
     if at > 0
         perform expect_word with word at of joins
@@ -1325,6 +1331,46 @@ ritual statement_of_world head, j
         perform line_done
         give back 0
     end
+    if head == "consent"
+        perform expect_word with "to"
+        perform feeling with "OP_CONSENT"
+        perform line_done
+        give back 0
+    end
+    if head == "withdraw"
+        perform expect_word with "consent"
+        perform expect_word with "from"
+        perform feeling with "OP_WITHDRAW"
+        perform line_done
+        give back 0
+    end
+    if head == "guard"
+        perform with_value with "OP_GUARD", "t_guard"
+        perform line_done
+        give back 0
+    end
+    if head == "together"
+        perform expect_word with "with"
+        perform target_fn into t
+        perform line_done
+        let id = 0
+        perform label into id
+        perform here into at
+        perform add_ins with "OP_TOGETHER", ", .mode=TO_NAMED, .target=" + t + ", .jump=" + id + "a, .until=" + id + "u" + note "none", "return t_together(w, s, " + at + ");"
+        perform block with "apart end"
+        perform define with id + "u", note "pc"
+        perform here into at
+        perform add_ins with "OP_TOGETHER_END", ", .jump=" + id + "x" + note "none", "return t_together_end(w, s, " + at + ");"
+        perform define with id + "a", note "pc"
+        perform at with "apart" into parted
+        if parted
+            note "j" = note "j" + 1
+            perform block with "end"
+        end
+        perform define with id + "x", note "pc"
+        note "j" = note "j" + 1
+        give back 0
+    end
     if head == "thank"
         perform feeling with "OP_THANK"
         perform line_done
@@ -1629,7 +1675,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0
