@@ -94,6 +94,15 @@ ritual remember_node name
     if place of name in note "known" == 0
         note "known" = note "known" + " " + name
         note ("let go " + name) = 0
+        note ("said " + name) = ""
+    end
+end
+
+# A node that is stuck says why once, and again only when the reason changes.
+ritual complain name, what
+    if note ("said " + name) != what
+        say "log " + what
+        note ("said " + name) = what
     end
 end
 
@@ -121,9 +130,9 @@ ritual reconcile
                     perform first_pod_to_let_go with name into pod
                     if pod == ""
                         if count == 1
-                            say "log " + name + " cannot leave: its last pod has nowhere to come back from"
+                            perform complain with name, name + " cannot leave: its last pod has nowhere to come back from"
                         else
-                            say "log " + name + " cannot leave: its last " + count + " pods have nowhere to come back from"
+                            perform complain with name, name + " cannot leave: its last " + count + " pods have nowhere to come back from"
                         end
                     else
                         note "let go" = word 1 of pod
@@ -133,6 +142,7 @@ ritual reconcile
                         say "evict " + word 1 of pod
                         say "log " + name + " lets " + word 1 of pod + " go"
                         perform farewell with name, 1
+                        note ("said " + name) = ""
                         sent = 1
                     end
                 end
