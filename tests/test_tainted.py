@@ -492,6 +492,18 @@ class BeforeTheyMeet(unittest.TestCase):
         self.assertEqual(life.lines, ["a gave their heart to c"])
 
 
+class ALongLove(unittest.TestCase):
+    def test_infatuation_becomes_attachment(self):
+        life = run(example("a-long-love.tainted"))
+        self.assertEqual(life.code, 0)
+        self.assertEqual(life.lines[0], "they meet: lust, infatuation")
+        self.assertTrue(life.lines[1].startswith("year 1: attraction, romantic love"))
+        self.assertTrue(life.lines[2].startswith("year 2: attachment, consummate love"))
+        self.assertIn("      mira resents it: 1, and is still open to him", life.lines)
+        self.assertTrue(life.lines[-2].startswith("year 6: attachment, companionate love; passion 0"))
+        self.assertEqual(life.lines[-1], "mira and teo: companionate love, attachment")
+
+
 class Chemistry(unittest.TestCase):
     SRC = "soul ana\n meet ben\n say chemistry with ben\nend\nsoul ben\n meet ana\nend\n"
 

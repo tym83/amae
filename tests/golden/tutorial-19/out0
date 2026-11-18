@@ -1,6 +1,4 @@
-cordon w2
-log w2 is not ready; nobody new goes there
-done
-uncordon w2
-log w2 is back
-done
+ana: one, two, three
+ana: the first dance is done
+ana: ben withdrew, so we both stopped
+ben: I withdrew

@@ -409,6 +409,29 @@ the end.
 ana is still waiting for ben, who left
 ```
 
+### Долгая любовь
+
+`a-long-love.tainted` показывает, что делает время. Мира и Тео встречаются с
+первого взгляда; два года свиданий питают страсть, которая не растёт
+бесконечно, каждый вопрос, на который ответили, прибавляет близости, а свадьба
+приносит верность. Потом они перестают бегать друг к другу на встречи: страсть
+остывает, но время, проведённое рядом, связывает их, и привязанность помогает
+им пережить рану и извинение. На шестой год остаётся любовь спокойная и
+сильная.
+
+```
+they meet: lust, infatuation
+year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
+year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
+year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
+      mira resents it: 1, and is still open to him
+      after his apology: 0
+year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
+year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
+year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
+mira and teo: companionate love, attachment
+```
+
 ### Классические программы
 
 Привычные программы, какими их написали бы души, лежат в `examples/classics/`.

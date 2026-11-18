@@ -431,6 +431,7 @@ typedef struct {
     int resentment, shame, hope, jealous;
     int consent;
     int64_t crossings, chemistry;
+    int64_t attachment, close;   /* what long closeness grows, and the closeness not yet counted */
     List heard, scars;
 } Rel;
 
@@ -519,14 +520,25 @@ static void settle(Rel *r, Soul *owner) {
     int64_t every = r->resentment ? FADE : 2 * FADE;
     int64_t lost = apart / every;
     if (lost > r->attention_counted) {
+        int64_t floor_ = r->intimacy < r->attachment ? r->intimacy : r->attachment;
         r->intimacy -= lost - r->attention_counted;
-        if (r->intimacy < 0) r->intimacy = 0;
+        if (r->intimacy < floor_) r->intimacy = floor_;   /* attachment holds what attention cannot */
         r->attention_counted = lost;
     }
 }
 
+#define ATTACHING (3 * FADE)
+
+/* Attachment grows out of time spent close: every ATTACHING steps in which
+ * the two kept in touch, with no resentment between them, bind them a little
+ * more. It is what remains when passion has cooled. */
 static void in_touch(Rel *r, Soul *owner) {
     settle(r, owner);
+    int64_t gap = owner->step - r->contact;
+    if (r->met && gap < FADE && !r->resentment) {
+        r->close += gap;
+        while (r->close >= ATTACHING) { r->close -= ATTACHING; r->attachment++; }
+    }
     r->contact = owner->step;
     r->apart_counted = 0;
     r->attention_counted = 0;
@@ -1213,6 +1225,14 @@ Value t_feeling(World *w, Soul *s, int what, Value who) {
     case F_CONSENT: return t_int(rel(w, b, s)->consent);
     case F_CROSSINGS: return t_int(r->crossings);
     case F_CHEMISTRY: return t_int(r->chemistry);
+    case F_ATTACHMENT: return t_int(r->attachment);
+    case F_PHASE:
+        /* Helen Fisher's three: lust, attraction, attachment */
+        if (!r->met) return t_cstr("strangers");
+        if (r->attachment >= PRESENT) return t_cstr("attachment");
+        if (r->passion >= PRESENT && r->intimacy >= PRESENT) return t_cstr("attraction");
+        if (r->passion >= PRESENT) return t_cstr("lust");
+        return t_cstr("acquaintance");
     default: {
         int64_t n = 0;
         for (size_t i = 0; i < s->nletters; i++)
@@ -1425,14 +1445,15 @@ static int try_meet(World *w, Soul *a, Soul *b) {
         settle(rs[k], pair[k][0]);
         rs[k]->distance /= 2;
         rs[k]->met = 1;
-        rs[k]->passion += first_sight ? (pair[k][0]->style & S_EROS ? 5 : 3) : 1;
+        /* first sight kindles; later meetings feed passion only until it is
+         * full: being in love does not grow without end */
+        if (first_sight) rs[k]->passion += pair[k][0]->style & S_EROS ? 5 : 3;
+        else if (rs[k]->passion < 2 * PRESENT) rs[k]->passion++;
         if (chemistry) { rs[k]->chemistry += chemistry; rs[k]->passion += chemistry; }
         if (rs[k]->passion < 0) rs[k]->passion = 0;
         rs[k]->last_meet = pair[k][0]->step;
         rs[k]->faded = 0;
-        rs[k]->contact = pair[k][0]->step;
-        rs[k]->apart_counted = 0;
-        rs[k]->attention_counted = 0;
+        in_touch(rs[k], pair[k][0]);
         advance(pair[k][0]);
     }
     return 1;
@@ -1935,7 +1956,7 @@ static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     else rs->pressure++;
     if (si->op == OP_CONFIDE) jealousy(w, snd, rcv, 0);
     else if (w->mania) jealousy(w, snd, rcv, 1);
-    if (rs->pressure > rr->intimacy + 2) {
+    if (rs->pressure > rr->intimacy + 2 + rr->attachment) {
         frighten(rcv, snd->id, 3 + rs->pressure);
         if (rr->passion > 0) rr->passion--;
         rs->pressure = 0;
@@ -2018,7 +2039,7 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
         them->trust = b->style & S_STORGE ? them->trust / 2 : 0;
         them->intimacy /= 2;
         list_push(&them->scars, printf_value("wounded by %s", s->name));
-        if (!them->gift && !(b->style & S_AGAPE)) them->closed = 1;
+        if (!them->gift && !(b->style & S_AGAPE) && them->attachment < 3) them->closed = 1;
         them->resentment = !(b->style & S_AGAPE);
         if (them->gift) mine->shame = 1;
         break;
