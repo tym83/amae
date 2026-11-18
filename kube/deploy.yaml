@@ -1,12 +1,7 @@
 # Taintednetes inside the cluster it schedules: the scheduler and the parting
-# operator run as pods. The code comes from a ConfigMap built from the repo:
+# operator, compiled from Tainted into ghcr.io/tym83/tainted, run as pods.
 #
 #   kubectl --context <ctx> create namespace taintednetes
-#   kubectl --context <ctx> -n taintednetes create configmap taintednetes-code \
-#     --from-file=tainted.py --from-file=taintednetes.tainted \
-#     --from-file=kube/bridge.py --from-file=kube/world.py \
-#     --from-file=kube/parting.tainted --dry-run=client -o yaml \
-#     | kubectl --context <ctx> apply -f -
 #   kubectl --context <ctx> apply -f kube/deploy.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -103,27 +98,18 @@ spec:
       serviceAccountName: scheduler
       containers:
         - name: scheduler
-          image: alpine/k8s:1.35.9
-          command: [python3, -u, /app/kube/bridge.py, --context, in-cluster, --interval, "5"]
+          image: ghcr.io/tym83/tainted:latest
+          command: [python3, -u, /opt/tainted/kube/bridge.py, --context, in-cluster, --interval, "5",
+                    --program, /opt/tainted/bin/taintednetes]
           env:
             - {name: KUBECONFIG, value: /etc/taintednetes/config}
             - {name: HOME, value: /tmp}
             - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
           volumeMounts:
-            - {name: code, mountPath: /app}
             - {name: kubeconfig, mountPath: /etc/taintednetes}
           resources:
             requests: {cpu: 50m, memory: 64Mi}
       volumes:
-        - name: code
-          configMap:
-            name: taintednetes-code
-            items:
-              - {key: tainted.py, path: tainted.py}
-              - {key: taintednetes.tainted, path: taintednetes.tainted}
-              - {key: bridge.py, path: kube/bridge.py}
-              - {key: world.py, path: kube/world.py}
-              - {key: parting.tainted, path: kube/parting.tainted}
         - name: kubeconfig
           configMap: {name: taintednetes-kubeconfig}
 ---
@@ -144,27 +130,17 @@ spec:
       serviceAccountName: parting
       containers:
         - name: parting
-          image: alpine/k8s:1.35.9
-          command: [python3, -u, /app/kube/world.py, --context, in-cluster, --interval, "5",
-                    /app/kube/parting.tainted]
+          image: ghcr.io/tym83/tainted:latest
+          command: [python3, -u, /opt/tainted/kube/world.py, --context, in-cluster, --interval, "5",
+                    /opt/tainted/bin/parting]
           env:
             - {name: KUBECONFIG, value: /etc/taintednetes/config}
             - {name: HOME, value: /tmp}
             - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
           volumeMounts:
-            - {name: code, mountPath: /app}
             - {name: kubeconfig, mountPath: /etc/taintednetes}
           resources:
             requests: {cpu: 50m, memory: 64Mi}
       volumes:
-        - name: code
-          configMap:
-            name: taintednetes-code
-            items:
-              - {key: tainted.py, path: tainted.py}
-              - {key: taintednetes.tainted, path: taintednetes.tainted}
-              - {key: bridge.py, path: kube/bridge.py}
-              - {key: world.py, path: kube/world.py}
-              - {key: parting.tainted, path: kube/parting.tainted}
         - name: kubeconfig
           configMap: {name: taintednetes-kubeconfig}
