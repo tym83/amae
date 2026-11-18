@@ -411,25 +411,28 @@ ana is still waiting for ben, who left
 
 ### Долгая любовь
 
-`a-long-love.tainted` показывает, что делает время. Мира и Тео встречаются с
-первого взгляда; два года свиданий питают страсть, которая не растёт
-бесконечно, каждый вопрос, на который ответили, прибавляет близости, а свадьба
-приносит верность. Потом они перестают бегать друг к другу на встречи: страсть
-остывает, но время, проведённое рядом, связывает их, и привязанность помогает
-им пережить рану и извинение. На шестой год остаётся любовь спокойная и
-сильная.
+`a-long-love.tainted` показывает, что делает время. Страсть и влюблённость —
+искра: два года свиданий наполняют страсть Миры и Тео, и с тех пор каждый
+срок, проведённый рядом, строит любовь, с каждым годом чуть больше, чем годом
+раньше. Искра остывает, а любовь нет, и проявляется она всё сильнее: рана на
+третий год причиняет боль, но закрыть Миру не может, рана на восьмой не
+оставляет обиды, а построенная ими любовь возвращает страсть.
 
 ```
-they meet: lust, infatuation
-year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
-year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
-year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
-      mira resents it: 1, and is still open to him
-      after his apology: 0
-year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
-year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
-year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
-mira and teo: companionate love, attachment
+they meet: lust, infatuation, love 0
+year 1: attraction, romantic love; passion 6, love 1
+year 2: attachment, consummate love; passion 6, love 3
+      year 3, he hurts her: resentment 1, still open
+year 3: attachment, companionate love; passion 2, love 5
+year 4: attachment, companionate love; passion 2, love 9
+year 5: love, companionate love; passion 2, love 11
+year 6: love, consummate love; passion 3, love 14
+year 7: love, consummate love; passion 5, love 21
+      year 8, he hurts her: resentment 0, still open
+year 8: love, consummate love; passion 6, love 33
+year 9: love, consummate love; passion 6, love 40
+year 10: love, consummate love; passion 6, love 49
+mira and teo, ten years on: consummate love, love
 ```
 
 ### Классические программы
