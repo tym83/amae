@@ -12,7 +12,7 @@ bin/tc program.tainted
 ./program
 ```
 
-Tainted remembers every program it has run (see [chapter 17](#17-the-second-time)),
+Tainted remembers every program it has run (see [chapter 21](#21-the-second-time)),
 so the first run of a program can differ from the ones after it. The outputs
 here are of first runs.
 
@@ -32,8 +32,12 @@ here are of first runs.
 - [14. Asking the world](#14-asking-the-world)
 - [15. Enduring](#15-enduring)
 - [16. Learning](#16-learning)
-- [17. The second time](#17-the-second-time)
-- [18. An operator](#18-an-operator)
+- [17. Feelings that happen](#17-feelings-that-happen)
+- [18. Together](#18-together)
+- [19. Ways of loving](#19-ways-of-loving)
+- [20. Before souls meet](#20-before-souls-meet)
+- [21. The second time](#21-the-second-time)
+- [22. An operator](#22-an-operator)
 - [Where to go next](#where-to-go-next)
 
 ## 1. A soul
@@ -684,7 +688,297 @@ looked for next to the program, then in the library, `lib/`. A file learned
 twice is learned once, and a mistake in it is reported with its own name:
 `tainted: line 3 of words.tainted: expected 'of'`.
 
-## 17. The second time
+## 17. Feelings that happen
+
+```tainted
+soul ana
+    meet ben
+    let year = 1999
+    hear ben into n
+    let i = 0
+    while i < 20
+        i = i + 1
+    end
+    say "ana remembers " + year
+    give heart to ben
+    tell ben "ready"
+    hear ben into first_words
+    say "resentment toward ben: " + resentment toward ben
+    tell ben "why?"
+    hear ben into sorry
+    say "after the apology: " + resentment toward ben + ", trust " + trust ben + ", scars " + scars of ben
+    say scar 2 of ben
+    hear ben into soft
+    say "intimacy after tenderness: " + intimacy ben
+    receive from ben into letter
+    say "a letter: " + letter
+end
+
+soul ben
+    meet ana
+    tell ana 47
+    hear ana into ready
+    knowingly wound ana
+    say "ben is ashamed: " + ashamed before ana
+    tell ana "that hurt, I know"
+    hear ana into why
+    apologize to ana for scar 1
+    say "ben is ashamed: " + ashamed before ana
+    tell ana "I am sorry"
+    thank ana
+    tell ana "always" tenderly
+    send ana "from far away"
+end
+```
+
+```output
+ana remembers 1997
+ben is ashamed: 1
+resentment toward ben: 1
+ben is ashamed: 0
+after the apology: 0, trust 1, scars 2
+ben apologized for: wounded by ben
+intimacy after tenderness: 4
+a letter: from far away
+```
+
+Feelings are not declared; they happen in a relationship and change it. A wound
+leaves resentment, and while it lasts answers no longer bring two souls closer.
+A soul that wounds someone who gave it their heart is ashamed. An apology has
+to name the wound, `apologize to ana for scar 1`: an apology for everything at
+once does not compile. It takes away the resentment and the shame and leaves
+one more scar beside the wound, because the wound stays.
+
+`thank` strengthens the one who thanks, `tell … tenderly` says a word that puts
+no pressure on the listener, and `send` writes a letter that arrives in its own
+time, to be read with `receive`. Letters from souls that are gone cannot be
+stopped, only read; whatever is left unread stays as scars.
+
+Remembering rewrites. Ana remembered 1999, and the last thing she heard before
+the year faded was 47: she now remembers 1997. Souls also drift apart while
+nothing passes between them, and words from far away take longer to arrive;
+every meeting brings them closer again.
+
+## 18. Together
+
+```tainted
+# Two moves together, then one of them withdraws halfway through the second.
+soul ana
+    meet ben
+    consent to ben
+    together with ben
+        tell ben "one, two"
+        hear ben into reply
+        say "ana: " + reply
+    apart
+        say "ana: we went apart"
+    end
+    say "ana: the first dance is done"
+    together with ben
+        tell ben "three"
+        hear ben into reply
+        say "ana never hears: " + reply
+    apart
+        say "ana: ben withdrew, so we both stopped"
+    end
+end
+
+soul ben
+    meet ana
+    consent to ana
+    together with ana
+        hear ana into steps
+        tell ana steps + ", three"
+    apart
+        say "ben: we went apart"
+    end
+    together with ana
+        hear ana into steps
+        withdraw consent from ana
+        say "ben never says this"
+    apart
+        say "ben: I withdrew"
+    end
+end
+```
+
+```output
+ana: one, two, three
+ana: the first dance is done
+ana: ben withdrew, so we both stopped
+ben: I withdrew
+```
+
+What two souls do together needs the consent of both. `together with ben` waits
+until Ben is at `together with ana` and both have said `consent to`; inside,
+each goes its own way, and at the `end` each waits for the other, so what is
+done together is done by both or by neither. Either may withdraw consent at
+any moment, even halfway: then both stop where they are and go to `apart`.
+
+```tainted
+# Some things anyone trusted may read; some only a heart given lets you near.
+soul ana
+    meet ben
+    meet cal
+    note "song" = "Tainted Love"
+    note "fear" = "the sea"
+    guard "fear"
+    warm to ben
+    warm to cal
+    give heart to ben
+    tell ben "go on"
+    tell cal "go on"
+end
+
+soul ben
+    meet ana
+    hear ana into go
+    say "ben reads ana's song: " + note "song" of ana
+    say "ben crosses ana's boundary: " + note "fear" of ana
+    say "crossings with ana: " + crossings with ana
+end
+
+soul cal
+    meet ana
+    hear ana into go
+    say "cal reads ana's song: " + note "song" of ana
+    endure
+        say note "fear" of ana
+    when it hurts as pain
+        say "cal: " + pain
+    end
+end
+```
+
+```output
+ben reads ana's song: Tainted Love
+cal reads ana's song: Tainted Love
+ben crosses ana's boundary: the sea
+crossings with ana: 1
+cal: ana keeps fear behind a boundary cal may not cross
+```
+
+`note k of S` reads another soul's note. A note in the open needs the owner's
+trust; a note behind its boundary, `guard "fear"`, opens only to someone the
+owner gave its heart to, and every crossing is counted on both sides.
+
+## 19. Ways of loving
+
+```tainted
+# The same meeting, lived by souls who love in different ways.
+soul erin is eros
+    meet luca
+    say "erin at first sight: passion " + passion luca
+    promise luca
+    say "erin promised: commitment " + commitment luca
+    hear luca into promise_words
+end
+
+soul luca is ludus
+    meet erin
+    promise erin
+    promise erin
+    say "luca promised twice: commitment " + commitment erin
+    tell erin "forever"
+    meet stella
+    tell stella "see you"
+end
+
+soul stella is storge
+    meet luca
+    warm to luca
+    warm to luca
+    warm to luca
+    warm to luca
+    cool to luca
+    say "stella warmed four times and cooled once: trust " + trust luca
+    hear luca into bye
+    meet prue
+    warm to prue
+    warm to prue
+    warm to prue
+    warm to prue
+    hear prue into brace
+    wait
+    wait
+    say "stella, wounded, still trusts prue " + trust prue + " and resents it: " + resentment toward prue
+end
+
+soul prue is pragma
+    meet stella
+    warm to stella
+    endure
+        give heart to stella
+    when it hurts as pain
+        say pain
+    end
+    tell stella "brace yourself"
+    knowingly wound stella
+    meet aga
+    knowingly wound aga
+    tell aga "and you"
+end
+
+soul aga is agape
+    meet prue
+    hear prue into heard_words
+    say "aga, wounded, still hears: " + heard_words + ", resentment " + resentment toward prue
+end
+```
+
+```output
+erin at first sight: passion 5
+luca promised twice: commitment 0
+erin promised: commitment 1
+stella warmed four times and cooled once: trust 2
+prue gives its heart only where it trusts, and trusts stella only 1
+stella, wounded, still trusts prue 1 and resents it: 1
+aga, wounded, still hears: and you, resentment 0
+```
+
+`soul erin is eros` says how a soul loves. The attachment styles, `anxious`,
+`avoidant` and `secure`, are ways of waiting: an anxious soul spends steps
+asking whether the other is still there, an avoidant one comes late even when
+it is ready. The styles of John Alan Lee are ways of feeling: eros burns at
+first sight and cools fast, ludus promises nothing, storge is slow to trust and
+slow to lose it, pragma gives its heart only where it trusts, mania is jealous
+of every word, agape is not closed by a wound. A kind passes its style to the
+souls it brings to life.
+
+## 20. Before souls meet
+
+Some lives the compiler refuses to begin.
+
+```
+soul alice
+    meet bob
+    tell bob "hello"
+end
+
+soul bob
+    meet alice
+    tell alice "hi"
+end
+```
+
+```
+tainted: line 3: alice and bob cannot get along: here alice tells bob, but at line 8 bob tells alice
+```
+
+When two souls name each other, the compiler reads what each will do with the
+other, in order, and the two must fit: words told answer words heard, a
+meeting answers a meeting. Two souls who both speak first, or both wait to
+hear, cannot get along, and the program does not compile. What happens after
+a wound or a leaving is not compared: from there it is the souls' story.
+
+A confession, a wound and a leaving cannot be undone, so they are only done
+knowingly: `knowingly wound bob`. Without the word, the program does not
+compile. And a heart is given to one at a time: code that gives it to two by
+name without `take back heart from` the first does not compile either; if it
+happens anyway, through a name computed while the program runs, the heart
+moves and both the one who lost it and the one who gave it keep the scar.
+
+## 21. The second time
 
 ```tainted
 soul stranger
@@ -712,8 +1006,13 @@ and `first time` runs only the first time. The count belongs to the exact text
 of the program, so changing a single character makes it a program that has
 never run. The order in which souls take their steps turns by one with every
 run, so a program of several souls lives a slightly different life each time.
+From the second life on there is chemistry too: at their first meeting, a pair
+gets a little more or a little less passion than the rules say, and nobody can
+work out which from the code. Two souls who did everything right may not fall
+in love this time. A program that starts with the line `deterministic` lives
+the same life every run; infrastructure does.
 
-## 18. An operator
+## 22. An operator
 
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again

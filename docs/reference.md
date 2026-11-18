@@ -81,7 +81,7 @@ ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
-is anxious avoidant secure eros ludus storge pragma mania agape knowingly
+is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -166,6 +166,7 @@ A name standing alone reads a variable from the soul's memory, which may have
 | `letters from S` | how many letters from `S` have arrived and are not yet read |
 | `consent from S` | `1` while `S` consents to this soul |
 | `crossings with S` | how many times a boundary between them was crossed |
+| `chemistry with S` | what their first meeting brought that nobody could work out: −1, 0 or 1 ([Chemistry](#chemistry)) |
 | `note k of S` | the note `k` of another soul, if it lets this one in ([Boundaries](#boundaries)) |
 
 All of them describe how this soul sees `S`; relationships are not symmetric.
@@ -441,6 +442,18 @@ commitment have reached 3:
 | ✓ | ✓ | ✓ | consummate love |
 
 Two strangers who meet at first sight start with passion 3: infatuation.
+
+### Chemistry
+
+Two souls that did everything right may still not fall in love. At their first
+meeting a pair gets a chemistry of −1, 0 or 1, added to the passion of both;
+it comes from who they are and from the lives the program has already lived,
+so nobody can declare it or work it out from the code. A program's first life
+has none: the first time, nothing stands in the way.
+
+Infrastructure wants the same life every run. A program that starts with the
+line `deterministic`, or runs with `--deterministic` or `TAINTED_DETERMINISTIC`
+set, has no chemistry; Taintednetes and the operators are such programs.
 
 ### Passion cools
 
@@ -753,6 +766,7 @@ bin/tc program.tainted -c           print the C the compiler makes of it
 ./program                           run it; the world is its standard input
 ./program --feelings                run it, then print every relationship
 ./program --patience=N              give up after N rounds
+./program --deterministic           no chemistry, the same life every run
 ```
 
 `--feelings` prints, on standard error, one line per soul and soul it met:

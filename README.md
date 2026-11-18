@@ -97,13 +97,13 @@ the [reference](docs/reference.md) has all of them.
 | `meet anyone as x` | meet whoever comes looking for you, and learn their name |
 | `tell b expr` | hand a value over; completes only when `b` is listening |
 | `hear b into x`, `hear anyone into x [from who]` | listen; `from` learns who spoke |
-| `confide b expr` | tell a secret; allowed only to someone you gave your heart to |
+| `knowingly confide b expr` | tell a secret; allowed only to someone you gave your heart to |
 | `warm to b`, `cool to b` | trust `b` one step more or less |
 | `promise b` | commitment grows |
 | `give heart to b` | irreversible; `b` may now be confided in, and a wound from `b` no longer closes you |
-| `wound b` | `b` loses all calculated trust in you, half the intimacy, and gains a scar |
+| `knowingly wound b` | `b` loses all calculated trust in you, half the intimacy, and gains a scar |
 | `forgive b` | open the door that a wound from `b` closed; the scar stays |
-| `leave b` | irreversible; everything each of you heard becomes scars |
+| `knowingly leave b` | irreversible; everything each of you heard becomes scars |
 
 Wherever a soul is named, `soul named expr` names it by a computed word:
 `tell soul named who "yes"`.

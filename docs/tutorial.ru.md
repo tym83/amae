@@ -15,7 +15,7 @@ bin/tc program.tainted
 ./program
 ```
 
-Tainted помнит каждую программу, которую когда-либо выполнял (см. [главу 17](#17-во-второй-раз)),
+Tainted помнит каждую программу, которую когда-либо выполнял (см. [главу 21](#21-во-второй-раз)),
 поэтому первый запуск программы может отличаться от последующих. Здесь
 показан вывод первых запусков.
 
@@ -35,8 +35,12 @@ Tainted помнит каждую программу, которую когда-
 - [14. Вопросы к миру](#14-вопросы-к-миру)
 - [15. Перетерпеть боль](#15-перетерпеть-боль)
 - [16. Изучить файл](#16-изучить-файл)
-- [17. Во второй раз](#17-во-второй-раз)
-- [18. Оператор](#18-оператор)
+- [17. Чувства случаются](#17-чувства-случаются)
+- [18. Вместе](#18-вместе)
+- [19. Как любят](#19-как-любят)
+- [20. Прежде чем души встретятся](#20-прежде-чем-души-встретятся)
+- [21. Во второй раз](#21-во-второй-раз)
+- [22. Оператор](#22-оператор)
 - [Куда двигаться дальше](#куда-двигаться-дальше)
 
 ## 1. Душа
@@ -698,7 +702,301 @@ sc
 один раз, а об ошибке в нём сообщают под его собственным именем:
 `tainted: line 3 of words.tainted: expected 'of'`.
 
-## 17. Во второй раз
+## 17. Чувства случаются
+
+```tainted
+soul ana
+    meet ben
+    let year = 1999
+    hear ben into n
+    let i = 0
+    while i < 20
+        i = i + 1
+    end
+    say "ana remembers " + year
+    give heart to ben
+    tell ben "ready"
+    hear ben into first_words
+    say "resentment toward ben: " + resentment toward ben
+    tell ben "why?"
+    hear ben into sorry
+    say "after the apology: " + resentment toward ben + ", trust " + trust ben + ", scars " + scars of ben
+    say scar 2 of ben
+    hear ben into soft
+    say "intimacy after tenderness: " + intimacy ben
+    receive from ben into letter
+    say "a letter: " + letter
+end
+
+soul ben
+    meet ana
+    tell ana 47
+    hear ana into ready
+    knowingly wound ana
+    say "ben is ashamed: " + ashamed before ana
+    tell ana "that hurt, I know"
+    hear ana into why
+    apologize to ana for scar 1
+    say "ben is ashamed: " + ashamed before ana
+    tell ana "I am sorry"
+    thank ana
+    tell ana "always" tenderly
+    send ana "from far away"
+end
+```
+
+```output
+ana remembers 1997
+ben is ashamed: 1
+resentment toward ben: 1
+ben is ashamed: 0
+after the apology: 0, trust 1, scars 2
+ben apologized for: wounded by ben
+intimacy after tenderness: 4
+a letter: from far away
+```
+
+Чувства не объявляют: они случаются в отношениях и меняют их. Рана оставляет
+обиду, и пока обида держится, ответы больше не сближают двух душ. Душа,
+ранившая того, кто отдал ей сердце, стыдится. Извинение должно назвать рану,
+`apologize to ana for scar 1`: извинение за всё сразу не компилируется. Оно
+снимает обиду и стыд и оставляет рядом с раной ещё один шрам, потому что рана
+остаётся.
+
+`thank` укрепляет того, кто благодарит, `tell … tenderly` говорит слово, которое
+не давит на слушающего, а `send` пишет письмо: оно придёт в свой срок, и
+прочтут его через `receive`. Письма от ушедших душ нельзя остановить, можно
+только прочесть; всё непрочитанное остаётся шрамами.
+
+Воспоминание переписывает. Ana помнила 1999 год, а последним, что она
+услышала, прежде чем год выцвел, было 47: теперь она помнит 1997. Кроме того,
+души отдаляются друг от друга, пока между ними ничего не происходит, и слова
+издалека идут дольше; каждая встреча снова их сближает.
+
+## 18. Вместе
+
+```tainted
+# Two moves together, then one of them withdraws halfway through the second.
+soul ana
+    meet ben
+    consent to ben
+    together with ben
+        tell ben "one, two"
+        hear ben into reply
+        say "ana: " + reply
+    apart
+        say "ana: we went apart"
+    end
+    say "ana: the first dance is done"
+    together with ben
+        tell ben "three"
+        hear ben into reply
+        say "ana never hears: " + reply
+    apart
+        say "ana: ben withdrew, so we both stopped"
+    end
+end
+
+soul ben
+    meet ana
+    consent to ana
+    together with ana
+        hear ana into steps
+        tell ana steps + ", three"
+    apart
+        say "ben: we went apart"
+    end
+    together with ana
+        hear ana into steps
+        withdraw consent from ana
+        say "ben never says this"
+    apart
+        say "ben: I withdrew"
+    end
+end
+```
+
+```output
+ana: one, two, three
+ana: the first dance is done
+ana: ben withdrew, so we both stopped
+ben: I withdrew
+```
+
+Что две души делают вместе, требует согласия обеих. `together with ben` ждёт,
+пока Ben не дойдёт до `together with ana` и обе не скажут `consent to`; внутри
+каждая идёт своей дорогой, а на `end` каждая ждёт другую, так что общее дело
+делают либо обе, либо ни одна. Любая из двух может отозвать согласие в любой
+миг, даже на полпути: тогда обе останавливаются там, где были, и переходят к
+`apart`.
+
+```tainted
+# Some things anyone trusted may read; some only a heart given lets you near.
+soul ana
+    meet ben
+    meet cal
+    note "song" = "Tainted Love"
+    note "fear" = "the sea"
+    guard "fear"
+    warm to ben
+    warm to cal
+    give heart to ben
+    tell ben "go on"
+    tell cal "go on"
+end
+
+soul ben
+    meet ana
+    hear ana into go
+    say "ben reads ana's song: " + note "song" of ana
+    say "ben crosses ana's boundary: " + note "fear" of ana
+    say "crossings with ana: " + crossings with ana
+end
+
+soul cal
+    meet ana
+    hear ana into go
+    say "cal reads ana's song: " + note "song" of ana
+    endure
+        say note "fear" of ana
+    when it hurts as pain
+        say "cal: " + pain
+    end
+end
+```
+
+```output
+ben reads ana's song: Tainted Love
+cal reads ana's song: Tainted Love
+ben crosses ana's boundary: the sea
+crossings with ana: 1
+cal: ana keeps fear behind a boundary cal may not cross
+```
+
+`note k of S` читает заметку другой души. Для открытой заметки нужно доверие
+владельца; заметка за границей, `guard "fear"`, открывается только тому, кому
+владелец отдал сердце, и каждое пересечение границы засчитывается с обеих
+сторон.
+
+## 19. Как любят
+
+```tainted
+# The same meeting, lived by souls who love in different ways.
+soul erin is eros
+    meet luca
+    say "erin at first sight: passion " + passion luca
+    promise luca
+    say "erin promised: commitment " + commitment luca
+    hear luca into promise_words
+end
+
+soul luca is ludus
+    meet erin
+    promise erin
+    promise erin
+    say "luca promised twice: commitment " + commitment erin
+    tell erin "forever"
+    meet stella
+    tell stella "see you"
+end
+
+soul stella is storge
+    meet luca
+    warm to luca
+    warm to luca
+    warm to luca
+    warm to luca
+    cool to luca
+    say "stella warmed four times and cooled once: trust " + trust luca
+    hear luca into bye
+    meet prue
+    warm to prue
+    warm to prue
+    warm to prue
+    warm to prue
+    hear prue into brace
+    wait
+    wait
+    say "stella, wounded, still trusts prue " + trust prue + " and resents it: " + resentment toward prue
+end
+
+soul prue is pragma
+    meet stella
+    warm to stella
+    endure
+        give heart to stella
+    when it hurts as pain
+        say pain
+    end
+    tell stella "brace yourself"
+    knowingly wound stella
+    meet aga
+    knowingly wound aga
+    tell aga "and you"
+end
+
+soul aga is agape
+    meet prue
+    hear prue into heard_words
+    say "aga, wounded, still hears: " + heard_words + ", resentment " + resentment toward prue
+end
+```
+
+```output
+erin at first sight: passion 5
+luca promised twice: commitment 0
+erin promised: commitment 1
+stella warmed four times and cooled once: trust 2
+prue gives its heart only where it trusts, and trusts stella only 1
+stella, wounded, still trusts prue 1 and resents it: 1
+aga, wounded, still hears: and you, resentment 0
+```
+
+`soul erin is eros` говорит, как душа любит. Стили привязанности, `anxious`,
+`avoidant` и `secure` (тревожный, избегающий и надёжный), — это способы ждать:
+тревожная душа тратит шаги на то, чтобы спросить, здесь ли ещё другая, а
+избегающая опаздывает, даже когда готова. Стили Джона Алана Ли — способы
+чувствовать: эрос вспыхивает с первого взгляда и быстро остывает, у людуса
+обещания ничего не стоят, сторге медленно начинает доверять и медленно
+перестаёт, прагма отдаёт сердце только там, где доверяет, мания ревнует к
+каждому слову, а агапе рана не закрывает. Род передаёт свой стиль душам,
+которых призывает к жизни.
+
+## 20. Прежде чем души встретятся
+
+Некоторые жизни компилятор отказывается начинать.
+
+```
+soul alice
+    meet bob
+    tell bob "hello"
+end
+
+soul bob
+    meet alice
+    tell alice "hi"
+end
+```
+
+```
+tainted: line 3: alice and bob cannot get along: here alice tells bob, but at line 8 bob tells alice
+```
+
+Когда две души называют друг друга, компилятор по порядку читает, что каждая
+будет делать с другой, и одно должно отвечать другому: сказанные слова —
+услышанным, встреча — встрече. Две души, которые обе заговаривают первыми или
+обе ждут, когда заговорит другая, не уживутся, и программа не компилируется.
+То, что случается после раны или ухода, не сравнивается: дальше это история
+самих душ.
+
+Признание, рану и уход не отменишь, поэтому их совершают только сознательно:
+`knowingly wound bob`. Без этого слова программа не компилируется. И сердце
+отдают одной душе за раз: код, который отдаёт его двум по имени, не забрав у
+первой через `take back heart from`, тоже не компилируется; если это
+всё-таки случается, через имя, вычисленное во время работы, сердце переходит к
+другой, и шрам остаётся и у той, что его потеряла, и у той, что его отдала.
+
+## 21. Во второй раз
 
 ```tainted
 soul stranger
@@ -727,8 +1025,13 @@ Tainted считает, сколько раз выполнялась кажда�
 которая ни разу не запускалась. Порядок, в котором души делают свои шаги,
 сдвигается на одну с каждым запуском, поэтому программа из нескольких душ
 всякий раз проживает чуть-чуть другую жизнь.
+Начиная со второй жизни, есть ещё и химия: на первой встрече пара получает
+чуть больше или чуть меньше страсти, чем велят правила, и по коду никто не
+угадает, в какую сторону. Двое, сделавшие всё как следует, на этот раз могут и
+не полюбить друг друга. Программа, которая начинается строкой `deterministic`,
+при каждом запуске проживает одну и ту же жизнь; так живёт инфраструктура.
 
-## 18. Оператор
+## 22. Оператор
 
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again
