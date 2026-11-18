@@ -84,6 +84,37 @@ class Examples(unittest.TestCase):
         self.assertIn("c = 42", lines)
 
 
+class ALife(unittest.TestCase):
+    def test_every_rule_changes_the_story(self):
+        code, lines, _ = run(example("a-life.tainted"))
+        self.assertEqual(code, 2)
+        self.assertEqual(lines[0], "ana: I have never met anyone like this.")
+        self.assertIn("ana sees ben: infatuation", lines)
+        self.assertIn("ana is afraid of ben: 1", lines)
+        self.assertIn("ana's calculated trust in ben is 0 now", lines)
+        self.assertIn("ana remembers they met in 1990", lines)
+        self.assertEqual(lines[-1], "ana keeps 12 scars; the last one says: ben left")
+        _, again, _ = run(example("a-life.tainted"), runs=3)
+        self.assertEqual(again[0], "ana: it feels as if this has happened 3 times before.")
+
+
+class Rituals(unittest.TestCase):
+    def test_recursion_and_values(self):
+        src = ("ritual f n\n if n <= 1\n give back 1\n end\n"
+               " perform f with n - 1 into m\n give back n * m\nend\n"
+               "soul s\n perform f with 12 into x\n say x\nend\n")
+        self.assertEqual(run(src)[1], ["479001600"])
+
+    def test_memories_outside_are_held(self):
+        src = ("ritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
+               "soul s\n let year = 1999\n perform long\n say year\nend\n")
+        self.assertEqual(run(src)[1], ["1999"])
+
+    def test_wrong_number_of_things(self):
+        with self.assertRaisesRegex(tainted.TaintedError, "takes 1 things"):
+            run("ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n")
+
+
 class Rules(unittest.TestCase):
     def test_cannot_tell_a_stranger(self):
         with self.assertRaisesRegex(tainted.TaintedError, "never met"):
@@ -267,6 +298,11 @@ class Classics(unittest.TestCase):
     def test_producer_consumer(self):
         self.assertEqual(classic("producer-consumer")[1],
                          ["sum 45, afraid of the producer: 1"])
+
+    def test_hanoi(self):
+        lines = classic("hanoi")[1]
+        self.assertEqual(len(lines), 15)
+        self.assertEqual(lines[7], "disk 4: A -> C")
 
     def test_philosophers(self):
         code, lines, _ = classic("philosophers")
