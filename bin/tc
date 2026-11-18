@@ -1,0 +1,39 @@
+#!/bin/sh
+# tc: compile a Tainted program into a program of its own.
+#
+#   tc program.tainted              builds ./program
+#   tc program.tainted -o path      builds path
+#   tc program.tainted -c           only says the C
+#
+# The compiler itself is build/tc-core, made from the seed by `make`.
+set -e
+home=${TAINTED_HOME:-$(cd "$(dirname "$0")/.." && pwd)}
+core=${TAINTED_CORE:-$home/build/tc-core}
+cc=${CC:-cc}
+if [ $# -lt 1 ]; then
+    echo "usage: tc program.tainted [-o output | -c]" >&2
+    exit 64
+fi
+source=$1
+shift
+output=$(basename "$source" .tainted)
+only_c=0
+while [ $# -gt 0 ]; do
+    case $1 in
+        -o) output=$2; shift 2 ;;
+        -c) only_c=1; shift ;;
+        *) echo "tc: unknown option $1" >&2; exit 64 ;;
+    esac
+done
+if [ ! -x "$core" ]; then
+    echo "tc: no compiler at $core; run make in $home" >&2
+    exit 1
+fi
+if [ $only_c = 1 ]; then
+    exec "$core" < "$source"
+fi
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+"$core" < "$source" > "$work/program.c"
+"$cc" -std=c11 -D_POSIX_C_SOURCE=200809L -O2 -w -I"$home/runtime" \
+    "$work/program.c" "$home/runtime/tainted.c" -o "$output"
