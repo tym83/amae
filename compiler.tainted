@@ -12,6 +12,9 @@
 # than a few steps is written down in notes; only what a loop touches on
 # every turn is kept in memory.
 
+# This is the heart of the compiler: rebuilding it takes --give-heart.
+core
+
 # ------------------------------------------------------------ what it says
 
 ritual out_head text
@@ -580,6 +583,16 @@ ritual e_primary
     end
     if v == "now"
         perform tmp with "t_now(w)" into t
+        give back t
+    end
+    if v == "lineage" or v == "source"
+        perform tmp with "t_" + v + "(w)" into t
+        give back t
+    end
+    if v == "hash"
+        perform expect_word with "of"
+        perform e_unary into x
+        perform tmp with "t_hash(w, " + x + ")" into t
         give back t
     end
     if v == "fate" or v == "world"
@@ -1597,6 +1610,13 @@ ritual declaration
     let j = note "j"
     perform open_line with j
     note "hl" = note ("ln " + j)
+    perform is_word with "core" into heart_of_it
+    if heart_of_it
+        perform line_done
+        note "core" = 1
+        note "j" = j + 1
+        give back 0
+    end
     perform is_word with "deterministic" into steady
     if steady
         perform line_done
@@ -1900,6 +1920,51 @@ ritual define_uses list, prefix, sort
     end
 end
 
+# Every program carries the lineage of the compilers that made it, and a new
+# generation of the compiler carries all the generations before it: there is
+# no fixed point, because every generation remembers.
+ritual remember_making
+    let text = ""
+    let i = 1
+    while i <= note "src"
+        text = text + note ("src " + i) + "\n"
+        i = i + 1
+        recall text
+    end
+    let print = part 1 12 of hash of text
+    let mine = lineage
+    let generations = 0
+    let all = lines of mine
+    i = 1
+    while i <= length of all
+        if part 1 11 of all[i] == "generation "
+            generations = generations + 1
+        end
+        i = i + 1
+        recall all generations
+    end
+    let maker = "the seed"
+    if generations > 0
+        maker = "generation " + generations
+    end
+    let entry = "a program, from " + print + ", made by " + maker
+    if note "core" == 1
+        entry = "generation " + (generations + 1) + " of the compiler, from " + print + ", made by " + maker + ", at " + whole of now
+    end
+    let made = lines of (mine + entry + "\n")
+    perform out_body with "/* lineage */"
+    perform out_body with "static const char LINEAGE[] ="
+    i = 1
+    while i <= length of made
+        perform cquote with made[i] into quoted
+        perform out_body with "    \"" + quoted + "\\n\""
+        i = i + 1
+        recall made
+    end
+    perform out_body with "    \"\";"
+    perform out_body with "/* end of lineage */"
+end
+
 ritual say_all
     let i = 1
     while i <= note "hn"
@@ -1914,7 +1979,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase core lineage hash source"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0
@@ -1927,6 +1992,7 @@ soul compiler
     note "rituals used" = ""
     note "learned" = []
     note "deterministic" = 0
+    note "core" = 0
     note "lexfile" = ""
 
     note "src" = 0
@@ -1964,6 +2030,10 @@ soul compiler
     end
     perform check_hearts
     perform check_dialogues
+    if note "core" == 1 and world "TAINTED_GIVE_HEART" == ""
+        cry "tainted: this is the heart of a compiler, and a compiler rebuilds its own heart only when it gives its heart to itself: --give-heart"
+        goodbye with 1
+    end
 
     perform out_head with "/* Compiled from Tainted by compiler.tainted. */"
     perform out_head with "#include \"tainted.h\""
@@ -1985,7 +2055,8 @@ soul compiler
         note "n" = note "n" + 1
     end
     perform out_body with "    \"\";"
-    perform out_body with "static const Program PROGRAM = {" + note "units" + ", UNITS, SOURCE, " + note "deterministic" + "};"
+    perform remember_making
+    perform out_body with "static const Program PROGRAM = {" + note "units" + ", UNITS, SOURCE, " + note "deterministic" + ", LINEAGE};"
     perform out_body with "int main(int argc, char **argv) { return tainted_main(&PROGRAM, argc, argv); }"
     perform say_all
 end

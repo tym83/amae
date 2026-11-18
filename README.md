@@ -244,13 +244,17 @@ expression a C function evaluated left to right, and `runtime/tainted.c` carries
 out what happens between souls. `bin/tc` puts the two together.
 
 ```
-make                 # build/tc-core, from the seed boot/tc.c
-make bootstrap       # generation 1 compiles itself into 2, 2 into 3; 2 and 3 are compared
-make seed            # after a change to the compiler: the new generation becomes the seed
+make                 # the seed gives its heart and compiles the compiler afresh: build/tc-core
+make bootstrap       # generation 2, then 3; they must recognize each other
+make seed            # the newest generation becomes the seed
 ```
 
-The seed is the C the compiler says of its own source; the compiler built from
-it says that seed back, byte for byte. Every program in `tests/golden/` was
+There is no fixed point. Every generation remembers the generations before it
+and writes their lineage into everything it makes, so two generations are never
+the same file; they recognize each other instead, saying the same about every
+program, memory aside. Any program says which compilers made it with
+`--lineage`. The compiler's source begins with `core`, and the compiler
+rebuilds its own heart only with `--give-heart`. Every program in `tests/golden/` was
 recorded once with everything it printed, lamented and felt on its first and
 second run; `make test` compiles each of them and compares.
 

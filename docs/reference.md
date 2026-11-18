@@ -81,7 +81,7 @@ ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
-is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase
+is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase core lineage hash source
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -205,6 +205,9 @@ A soul that has never met `S` sees nothing: zeros, `nothing yet`, no scars.
 | `world e` | the environment variable named `e`, or `""` |
 | `now` | the time, in seconds since 1970, as a decimal |
 | `fate n` | a whole number from 0 to `n − 1`, as chance decides; `TAINTED_FATE` fixes the chance for a run |
+| `lineage` | the compilers that made this program, one line each ([Lineage](#lineage)) |
+| `source` | the source this program was compiled from |
+| `hash of x` | the SHA-256 of `x` as text, in hex |
 
 The operand after `of` and `in`, and the indexes of `word`, `part` and
 `scar`, are unary: a literal, a name, another of these expressions or
@@ -797,6 +800,9 @@ bin/tc program.tainted -c           print the C the compiler makes of it
 ./program --feelings                run it, then print every relationship
 ./program --patience=N              give up after N rounds
 ./program --deterministic           no chemistry, the same life every run
+./program --lineage                 say which compilers made it, and stop
+bin/tc compiler.tainted --give-heart
+                                    rebuild the heart of the compiler
 ```
 
 `--feelings` prints, on standard error, one line per soul and soul it met:
@@ -827,12 +833,41 @@ compiler one after the other.
 - The source of the program is kept inside the program it compiles to, so the
   program counts its own runs.
 
-The compiler compiles itself. `boot/tc.c` is the seed: the C that the
-compiler says of its own source. `make` builds the compiler from the seed;
-`make bootstrap` lets it compile itself twice more and checks that the
-generations say the same program; `make seed` replaces the seed after a change
-to the compiler. A new rule of the language is first taught to the compiler in
-the words the previous generation already understands.
+The compiler compiles itself, and has no fixed point. Every generation
+remembers the generations before it and writes their lineage, and its own
+line, into what it makes, so no two generations are the same file. Instead of
+being the same, they recognize each other: given the same programs, they say
+the same thing about every one of them, memory aside. `tools/recognize.tainted`
+checks this on every recorded program and on the compiler itself.
+
+```
+make                 the seed boot/tc.c gives its heart and compiles the compiler afresh: build/tc-core
+make bootstrap       build/tc-core compiles the compiler into generation 2, 2 into 3, and 2 and 3 must recognize each other
+make seed            the newest generation becomes the seed
+```
+
+`compiler.tainted` begins with the line `core`: it is the heart of a compiler.
+A compiler rebuilds its own heart only when it gives its heart to itself, with
+`bin/tc compiler.tainted --give-heart` (or `TAINTED_GIVE_HEART`); without it,
+it refuses. A new rule of the language is first taught to the compiler in the
+words the previous generation already understands.
+
+### Lineage
+
+Every program carries the lineage of the compilers that made it, one line
+each, oldest first, and says it when run with `--lineage`:
+
+```
+generation 4 of the compiler, from 409f651a051f, made by generation 3, at 1795016256
+generation 5 of the compiler, from 409f651a051f, made by generation 4, at 1795016257
+a program, from 51fa19e57b34, made by generation 5
+```
+
+`from` is the beginning of the SHA-256 of the source, `at` the time the
+generation was made. Ken Thompson showed that a compiler can carry, from
+generation to generation, something that is in no source; in Tainted what each
+generation carries is in plain sight. A program reads its own with `lineage`,
+its own source with `source`, and `hash of x` is the SHA-256 of `x` as text.
 
 The compiler forgets like any soul. It writes down in notes everything that has
 to outlive a few steps; where a loop runs long, it recalls what it will need

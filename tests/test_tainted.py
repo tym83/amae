@@ -49,7 +49,8 @@ def source_key(source):
 
 def compile_source(source, history=None):
     """Compile with the Tainted compiler; returns (program, None) or (None, (code, error))."""
-    key = hashlib.sha256(source.encode()).hexdigest()[:16]
+    stamp = f"{os.path.getmtime(CORE)}:{os.path.getmtime(os.path.join(ROOT, 'runtime', 'tainted.c'))}"
+    key = hashlib.sha256((stamp + source).encode()).hexdigest()[:16]
     program = os.path.join(CACHE, key)
     if os.path.exists(program):
         return program, None
@@ -547,38 +548,63 @@ class TuringCompleteness(unittest.TestCase):
 
 
 class SelfHosting(unittest.TestCase):
-    """The compiler is a Tainted program; built from the seed, it builds itself."""
+    """The compiler is a Tainted program and compiles itself, but has no fixed
+    point: every generation remembers the generations before it."""
 
     @classmethod
     def setUpClass(cls):
         with open(os.path.join(ROOT, "compiler.tainted")) as f:
             cls.compiler = f.read()
-        with open(os.path.join(ROOT, "boot", "tc.c")) as f:
-            cls.seed = f.read()
 
-    def compile_with(self, core, source):
-        with tempfile.TemporaryDirectory() as d:
-            return subprocess.run([core], input=source, capture_output=True, text=True,
-                                  env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
+    def compile_with(self, core, source, heart=True):
+        env = dict(os.environ, TAINTED_HISTORY=os.path.join(CACHE, "h-self.json"))
+        if heart:
+            env["TAINTED_GIVE_HEART"] = "1"
+        return subprocess.run([core], input=source, capture_output=True, text=True, env=env)
 
-    def test_the_seed_is_what_the_compiler_says_of_itself(self):
-        res = self.compile_with(CORE, self.compiler)
-        self.assertEqual(res.returncode, 0, res.stderr)
-        self.assertEqual(res.stdout, self.seed)
+    def build(self, c, name):
+        path = os.path.join(CACHE, name + ".c")
+        with open(path, "w") as f:
+            f.write(c)
+        out = os.path.join(CACHE, name)
+        subprocess.run([CC, *FLAGS, path, os.path.join(CACHE, "runtime.o"), "-o", out, "-lm"], check=True)
+        return out
+
+    @staticmethod
+    def without_memory(c):
+        return re.sub(r"/\* lineage \*/.*?/\* end of lineage \*/\n", "", c, flags=re.S)
+
+    def test_generations_recognize_each_other_and_remember(self):
+        one = self.compile_with(CORE, self.compiler)
+        self.assertEqual(one.returncode, 0, one.stderr)
+        gen_a = self.build(one.stdout, "gen-a")
+        two = self.compile_with(gen_a, self.compiler)
+        self.assertNotEqual(one.stdout, two.stdout)
+        self.assertEqual(self.without_memory(one.stdout), self.without_memory(two.stdout))
+        lineage_a = subprocess.run([gen_a, "--lineage"], capture_output=True, text=True).stdout
+        gen_b = self.build(two.stdout, "gen-b")
+        lineage_b = subprocess.run([gen_b, "--lineage"], capture_output=True, text=True).stdout
+        self.assertTrue(lineage_b.startswith(lineage_a))
+        self.assertRegex(lineage_b.splitlines()[-1], r"^generation \d+ of the compiler, from [0-9a-f]{12}, made by generation \d+")
+
+    def test_the_heart_is_rebuilt_only_when_given(self):
+        res = self.compile_with(CORE, self.compiler, heart=False)
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("--give-heart", res.stderr)
+
+    def test_every_program_carries_its_makers(self):
+        program, _ = compile_source(example("hello.tainted"))
+        said = subprocess.run([program, "--lineage"], capture_output=True, text=True).stdout.splitlines()
+        self.assertTrue(said[-1].startswith("a program, from "))
+        self.assertTrue(any(l.startswith("generation ") for l in said))
 
     def test_without_recall_the_compiler_forgets(self):
         forgetful = "\n".join(line for line in self.compiler.splitlines()
                               if line.strip() != "recall name result") + "\n"
         res = self.compile_with(CORE, forgetful)
         self.assertEqual(res.returncode, 0, res.stderr)
-        with tempfile.TemporaryDirectory() as d:
-            c = os.path.join(d, "forgetful.c")
-            with open(c, "w") as f:
-                f.write(res.stdout)
-            core = os.path.join(d, "forgetful")
-            subprocess.run([CC, *FLAGS, c, os.path.join(CACHE, "runtime.o"), "-o", core, "-lm"], check=True)
-            again = self.compile_with(core, self.compiler)
-        self.assertNotEqual(again.stdout, self.seed)
+        core = self.build(res.stdout, "forgetful")
+        again = self.compile_with(core, self.compiler)
         self.assertRegex(again.stdout, r"Value v = E\(w, s\)|\.a=E,")
 
 

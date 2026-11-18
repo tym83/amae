@@ -87,6 +87,7 @@ typedef struct Program {
     const Unit *units;
     const char *source;
     int deterministic;  /* no chemistry: the program said so */
+    const char *lineage;  /* the compilers that made it, one line each, oldest first */
 } Program;
 
 int tainted_main(const Program *program, int argc, char **argv);
@@ -132,6 +133,9 @@ Value t_env(World *w, Value name);
 Value t_now(World *w);
 Value t_fate(World *w, Value n);
 Value t_lines(World *w, Value text);
+Value t_lineage(World *w);
+Value t_source(World *w);
+Value t_hash(World *w, Value text);
 Value t_feeling(World *w, Soul *s, int what, Value who);
 enum { F_DISTANCE, F_RESENTMENT, F_HOPING, F_JEALOUS, F_ASHAMED, F_LONGING, F_LETTERS,
        F_CONSENT, F_CROSSINGS, F_CHEMISTRY, F_LOVE, F_PHASE };

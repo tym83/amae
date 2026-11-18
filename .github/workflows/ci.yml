@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build the compiler from the seed
         run: make
-      - name: Let the compiler compile itself
+      - name: The compiler compiles itself; the generations recognize each other
         run: make bootstrap
       - name: Every recorded program, compiled and run
         run: make test
