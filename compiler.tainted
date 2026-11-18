@@ -568,9 +568,9 @@ ritual e_primary
         perform tmp with "t_runs(w)" into t
         give back t
     end
-    let feelings = "distance resentment hoping jealous ashamed longing letters consent crossings chemistry"
-    let joins = "from toward for of before for from from with with"
-    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY"
+    let feelings = "distance resentment hoping jealous ashamed longing letters consent crossings chemistry attachment phase"
+    let joins = "from toward for of before for from from with with to with"
+    let kinds = "F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY F_ATTACHMENT F_PHASE"
     let at = place of v in feelings
     if at > 0
         perform expect_word with word at of joins
@@ -1914,7 +1914,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry attachment phase"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0

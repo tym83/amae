@@ -1,0 +1,77 @@
+# A long love: how a first sight becomes a calm, strong attachment.
+#
+# Mira and Teo meet. For two years every day is a date; then they marry and
+# keep talking every day, but stop running to meet each other. In the fourth
+# year Teo hurts Mira and apologizes. Passion, which needs meetings, cools;
+# intimacy, which needs answers, and attachment, which needs time spent close,
+# grow. Every year Mira says where they are.
+
+ritual season of_whom, year
+    give back "year " + year + ": " + phase with soul named of_whom + ", " + bond with soul named of_whom + "; passion " + passion soul named of_whom + ", intimacy " + intimacy soul named of_whom + ", commitment " + commitment soul named of_whom + ", attachment " + attachment to soul named of_whom
+end
+
+soul mira
+    meet teo
+    say "they meet: " + phase with teo + ", " + bond with teo
+    note "year" = 1
+    while note "year" <= 6
+        note "day" = 1
+        while note "day" <= 30
+            if note "year" <= 2
+                meet teo
+            end
+            tell teo "how was your day?"
+            hear teo into answer
+            wait
+            wait
+            note "day" = note "day" + 1
+        end
+        if note "year" == 2
+            promise teo
+            promise teo
+            promise teo
+        end
+        if note "year" == 4
+            hear teo into the_wound
+            say "      mira resents it: " + resentment toward teo + ", and is still open to him"
+            tell teo "that hurt"
+            hear teo into sorry
+            say "      after his apology: " + resentment toward teo
+        end
+        perform season with "teo", note "year" into said
+        say said
+        note "year" = note "year" + 1
+    end
+    say "mira and teo: " + bond with teo + ", " + phase with teo
+end
+
+soul teo
+    meet mira
+    note "year" = 1
+    while note "year" <= 6
+        note "day" = 1
+        while note "day" <= 30
+            if note "year" <= 2
+                meet mira
+            end
+            hear mira into question
+            tell mira "better now that you ask"
+            wait
+            wait
+            note "day" = note "day" + 1
+        end
+        if note "year" == 2
+            promise mira
+            promise mira
+            promise mira
+        end
+        if note "year" == 4
+            knowingly wound mira
+            tell mira "I said what I should not have"
+            hear mira into how_it_felt
+            apologize to mira for scar 1
+            tell mira "I am sorry"
+        end
+        note "year" = note "year" + 1
+    end
+end

@@ -81,7 +81,7 @@ ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
-is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry
+is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry attachment phase
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -167,6 +167,8 @@ A name standing alone reads a variable from the soul's memory, which may have
 | `consent from S` | `1` while `S` consents to this soul |
 | `crossings with S` | how many times a boundary between them was crossed |
 | `chemistry with S` | what their first meeting brought that nobody could work out: −1, 0 or 1 ([Chemistry](#chemistry)) |
+| `attachment to S` | how much long closeness has bound this soul to `S` ([Attachment](#attachment)) |
+| `phase with S` | `"strangers"`, `"acquaintance"`, `"lust"`, `"attraction"` or `"attachment"` ([Attachment](#attachment)) |
 | `note k of S` | the note `k` of another soul, if it lets this one in ([Boundaries](#boundaries)) |
 
 All of them describe how this soul sees `S`; relationships are not symmetric.
@@ -419,7 +421,8 @@ Every soul has its own view of every soul it has met:
 |---|---|---|
 | trust | 0 | `warm to` +1, `cool to` −1 (not below 0), a wound sets it to 0 |
 | intimacy | 0 | +1 on both sides for an answer, halved by a wound |
-| passion | 0 | +3 or +1 for a meeting, −1 for fright, cools while apart |
+| passion | 0 | +3 at first sight, +1 for a later meeting while it is below 6, −1 for fright, cools while apart |
+| attachment | 0 | +1 for every 150 steps spent close, without resentment |
 | commitment | 0 | `promise` +1, `leave` sets it to 0 |
 | heart given | no | `give heart to` |
 | closed | no | a wound, unless the heart was given; `forgive` opens |
@@ -442,6 +445,27 @@ commitment have reached 3:
 | ✓ | ✓ | ✓ | consummate love |
 
 Two strangers who meet at first sight start with passion 3: infatuation.
+
+### Attachment
+
+Passion needs meetings and cools without them; a later meeting feeds it only
+until it reaches 6, because being in love does not grow without end. What
+grows with time is attachment: every 150 steps two souls spend close, in
+touch at least every 50 steps and with no resentment between them, bind them
+by one more. Attachment is what holds when passion has cooled:
+
+- a soul attached by `a` is frightened only by more than `intimacy + 2 + a`
+  unanswered words;
+- intimacy, which fades without attention, does not fade below attachment;
+- a wound does not close a soul attached by 3 or more, as if it had given its
+  heart.
+
+`phase with S` follows Helen Fisher's three stages: `lust` while passion is
+there alone, `attraction` when intimacy has come too, and `attachment` once
+attachment has reached 3. A long love moves through Sternberg's names the same
+way: infatuation at first sight, romantic love as intimacy grows, consummate
+love with commitment, and, when passion has cooled and intimacy, commitment
+and attachment remain, companionate love: calm, and strong.
 
 ### Chemistry
 

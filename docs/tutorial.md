@@ -12,7 +12,7 @@ bin/tc program.tainted
 ./program
 ```
 
-Tainted remembers every program it has run (see [chapter 21](#21-the-second-time)),
+Tainted remembers every program it has run (see [chapter 22](#22-the-second-time)),
 so the first run of a program can differ from the ones after it. The outputs
 here are of first runs.
 
@@ -36,8 +36,9 @@ here are of first runs.
 - [18. Together](#18-together)
 - [19. Ways of loving](#19-ways-of-loving)
 - [20. Before souls meet](#20-before-souls-meet)
-- [21. The second time](#21-the-second-time)
-- [22. An operator](#22-an-operator)
+- [21. A long love](#21-a-long-love)
+- [22. The second time](#22-the-second-time)
+- [23. An operator](#23-an-operator)
 - [Where to go next](#where-to-go-next)
 
 ## 1. A soul
@@ -978,7 +979,114 @@ name without `take back heart from` the first does not compile either; if it
 happens anyway, through a name computed while the program runs, the heart
 moves and both the one who lost it and the one who gave it keep the scar.
 
-## 21. The second time
+## 21. A long love
+
+```tainted
+# A long love: how a first sight becomes a calm, strong attachment.
+#
+# Mira and Teo meet. For two years every day is a date; then they marry and
+# keep talking every day, but stop running to meet each other. In the fourth
+# year Teo hurts Mira and apologizes. Passion, which needs meetings, cools;
+# intimacy, which needs answers, and attachment, which needs time spent close,
+# grow. Every year Mira says where they are.
+
+ritual season of_whom, year
+    give back "year " + year + ": " + phase with soul named of_whom + ", " + bond with soul named of_whom + "; passion " + passion soul named of_whom + ", intimacy " + intimacy soul named of_whom + ", commitment " + commitment soul named of_whom + ", attachment " + attachment to soul named of_whom
+end
+
+soul mira
+    meet teo
+    say "they meet: " + phase with teo + ", " + bond with teo
+    note "year" = 1
+    while note "year" <= 6
+        note "day" = 1
+        while note "day" <= 30
+            if note "year" <= 2
+                meet teo
+            end
+            tell teo "how was your day?"
+            hear teo into answer
+            wait
+            wait
+            note "day" = note "day" + 1
+        end
+        if note "year" == 2
+            promise teo
+            promise teo
+            promise teo
+        end
+        if note "year" == 4
+            hear teo into the_wound
+            say "      mira resents it: " + resentment toward teo + ", and is still open to him"
+            tell teo "that hurt"
+            hear teo into sorry
+            say "      after his apology: " + resentment toward teo
+        end
+        perform season with "teo", note "year" into said
+        say said
+        note "year" = note "year" + 1
+    end
+    say "mira and teo: " + bond with teo + ", " + phase with teo
+end
+
+soul teo
+    meet mira
+    note "year" = 1
+    while note "year" <= 6
+        note "day" = 1
+        while note "day" <= 30
+            if note "year" <= 2
+                meet mira
+            end
+            hear mira into question
+            tell mira "better now that you ask"
+            wait
+            wait
+            note "day" = note "day" + 1
+        end
+        if note "year" == 2
+            promise mira
+            promise mira
+            promise mira
+        end
+        if note "year" == 4
+            knowingly wound mira
+            tell mira "I said what I should not have"
+            hear mira into how_it_felt
+            apologize to mira for scar 1
+            tell mira "I am sorry"
+        end
+        note "year" = note "year" + 1
+    end
+end
+```
+
+```output
+they meet: lust, infatuation
+year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
+year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
+year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
+      mira resents it: 1, and is still open to him
+      after his apology: 0
+year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
+year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
+year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
+mira and teo: companionate love, attachment
+```
+
+First sight is lust: passion and nothing else yet, infatuation. Two years of
+dates feed passion until it is full, while every answered question builds
+intimacy: attraction, romantic love; at the wedding commitment comes, and with
+it consummate love. Then they stop running to each other. Passion, which lives
+on meetings, cools; intimacy and commitment stay, and time spent close has
+been binding them all along: attachment.
+
+Attachment is what lets the fourth year pass. A wound closes a soul, unless it
+gave its heart or is attached by three or more; Mira is, so she resents it,
+stays open, and hears the apology. By the sixth year passion is gone and what
+they have is companionate love: calm, and stronger than at the start.
+
+## 22. The second time
 
 ```tainted
 soul stranger
@@ -1012,7 +1120,7 @@ work out which from the code. Two souls who did everything right may not fall
 in love this time. A program that starts with the line `deterministic` lives
 the same life every run; infrastructure does.
 
-## 22. An operator
+## 23. An operator
 
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again

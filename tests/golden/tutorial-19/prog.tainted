@@ -1,41 +1,38 @@
-# watchman: cordons a node that stops being ready and lets it work again
-# once it is back, but only the nodes it cordoned itself.
-
-ritual without name, list
-    let rest = ""
-    let i = 1
-    while i <= words of list
-        if word i of list != name
-            rest = rest + " " + word i of list
-        end
-        i = i + 1
+# Two moves together, then one of them withdraws halfway through the second.
+soul ana
+    meet ben
+    consent to ben
+    together with ben
+        tell ben "one, two"
+        hear ben into reply
+        say "ana: " + reply
+    apart
+        say "ana: we went apart"
     end
-    give back rest
+    say "ana: the first dance is done"
+    together with ben
+        tell ben "three"
+        hear ben into reply
+        say "ana never hears: " + reply
+    apart
+        say "ana: ben withdrew, so we both stopped"
+    end
 end
 
-soul watchman
-    note "mine" = ""
-    hear world into line
-    while line != 0
-        if word 1 of line == "node"
-            let name = word 2 of line
-            let ready = word 3 of line == "ready"
-            let open = word 4 of line == "schedulable"
-            if not ready and open
-                say "cordon " + name
-                say "log " + name + " is not ready; nobody new goes there"
-                note "mine" = note "mine" + " " + name
-            end
-            if ready and not open and place of name in note "mine" > 0
-                say "uncordon " + name
-                say "log " + name + " is back"
-                perform without with name, note "mine" into rest
-                note "mine" = rest
-            end
-        end
-        if line == "end"
-            say "done"
-        end
-        hear world into line
+soul ben
+    meet ana
+    consent to ana
+    together with ana
+        hear ana into steps
+        tell ana steps + ", three"
+    apart
+        say "ben: we went apart"
+    end
+    together with ana
+        hear ana into steps
+        withdraw consent from ana
+        say "ben never says this"
+    apart
+        say "ben: I withdrew"
     end
 end

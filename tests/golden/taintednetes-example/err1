@@ -1,24 +1,24 @@
-web -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-db -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-cache -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-alpha -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-beta -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-gamma -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-cluster -> web: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-cluster -> db: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
+web -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+db -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+cache -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+alpha -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+beta -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+gamma -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+cluster -> web: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+cluster -> db: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
 web -> alpha: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
-cluster -> cache: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-db -> alpha: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0, heart given
-cache -> alpha: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> alpha: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-cluster -> beta: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
+cluster -> cache: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+db -> alpha: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given
+cache -> alpha: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> alpha: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
+cluster -> beta: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
 alpha -> web: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1
 alpha -> db: nothing yet; trust 1, intimacy 0, passion 0, commitment 0, scars 0
 web -> beta: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0, heart given
-alpha -> cache: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+alpha -> cache: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 db -> beta: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 cache -> beta: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
-cluster -> gamma: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
+cluster -> gamma: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
 beta -> web: nothing yet; trust 1, intimacy 0, passion 0, commitment 0, scars 0
 beta -> db: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 web -> gamma: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -27,4 +27,4 @@ db -> gamma: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 cache -> gamma: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0, heart given
 gamma -> web: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 gamma -> db: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-gamma -> cache: nothing yet; trust 1, intimacy 1, passion 0, commitment 0, scars 0
+gamma -> cache: nothing yet; trust 1, intimacy 0, passion 0, commitment 0, scars 0

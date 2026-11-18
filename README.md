@@ -391,6 +391,28 @@ the end.
 ana is still waiting for ben, who left
 ```
 
+### A long love
+
+`a-long-love.tainted` shows what time does. Mira and Teo meet at first sight;
+two years of dates feed a passion that does not grow without end, every
+answered question builds intimacy, and the wedding brings commitment. Then
+they stop running to meet: passion cools, while time spent close binds them,
+and attachment lets them live through a wound and an apology. What remains in
+the sixth year is calm and strong.
+
+```
+they meet: lust, infatuation
+year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
+year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
+year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
+      mira resents it: 1, and is still open to him
+      after his apology: 0
+year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
+year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
+year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
+mira and teo: companionate love, attachment
+```
+
 ### Classic programs
 
 The usual programs, the way souls would write them, in `examples/classics/`.
