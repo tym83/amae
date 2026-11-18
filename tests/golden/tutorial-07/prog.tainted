@@ -15,6 +15,6 @@ soul ben
     meet ana
     hear ana into plea
     tell ana "I met someone at the port"
-    leave ana
+    knowingly leave ana
     say "ben keeps " + scars of ana + " scar: " + scar 1 of ana
 end

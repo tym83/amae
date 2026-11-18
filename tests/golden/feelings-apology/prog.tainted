@@ -25,7 +25,7 @@ soul ben
     meet ana
     tell ana 47
     hear ana into ready
-    wound ana
+    knowingly wound ana
     say "ben is ashamed: " + ashamed before ana
     tell ana "that hurt, I know"
     hear ana into why

@@ -199,14 +199,14 @@ class Rules(unittest.TestCase):
         self.errs("soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n", "never met")
 
     def test_confide_needs_the_heart(self):
-        self.errs("soul a\n meet b\n confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
+        self.errs("soul a\n meet b\n knowingly confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
                   "gave their heart")
 
     def test_leaving_is_irreversible(self):
-        self.errs("soul a\n meet b\n leave b\n meet b\nend\nsoul b\n meet a\nend\n", "nothing more")
+        self.errs("soul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n", "nothing more")
 
     def test_forgiveness_reopens_but_keeps_the_scar(self):
-        src = ("soul a\n meet b\n wound b\n hear b into x\n say x\nend\n"
+        src = ("soul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
                "soul b\n meet a\n forgive a\n tell a \"still here\"\n say scars of a\nend\n")
         life = run(src)
         self.assertEqual(life.code, 0)
@@ -462,6 +462,36 @@ class Styles(unittest.TestCase):
         self.assertIn("there is no such way to love: shy", life.err)
 
 
+class BeforeTheyMeet(unittest.TestCase):
+    """What the compiler refuses before a program ever runs."""
+
+    def refused(self, src, text):
+        life = run(src)
+        self.assertEqual(life.code, 1)
+        self.assertIn(text, life.err)
+
+    def test_what_cannot_be_undone_is_done_knowingly(self):
+        self.refused("soul a\n meet b\n wound b\nend\nsoul b\n meet a\nend\n", "knowingly wound")
+        self.refused("soul a\n meet b\n leave b\nend\nsoul b\n meet a\nend\n", "knowingly leave")
+
+    def test_dialogues_must_fit(self):
+        self.refused("soul a\n meet b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n",
+                     "a and b cannot get along: here a tells b, but at line 7 b tells a")
+        self.refused("soul a\n meet b\n tell b 1\n tell b 2\nend\nsoul b\n meet a\n hear a into x\nend\n",
+                     "here a tells b, and b never answers")
+
+    def test_after_a_wound_it_is_their_story(self):
+        life = run("soul a\n meet b\n knowingly wound b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n")
+        self.assertEqual(life.code, 2)
+
+    def test_one_heart(self):
+        self.refused("soul a\n meet b\n meet c\n give heart to b\n give heart to c\nend\n"
+                     "soul b\n meet a\nend\nsoul c\n meet a\nend\n", "a heart is given to one at a time")
+        life = run("soul a\n meet b\n meet c\n give heart to b\n give heart to soul named \"c\"\nend\n"
+                   "soul b\n meet a\n wait\n wait\n say scar 1 of a\nend\nsoul c\n meet a\nend\n")
+        self.assertEqual(life.lines, ["a gave their heart to c"])
+
+
 class TuringCompleteness(unittest.TestCase):
     """Random two-counter machines give the same answer in Tainted."""
 
@@ -654,7 +684,8 @@ class Taintednetes(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(placement, {"web": "beta", "db": "alpha", "cache": "gamma"})
         self.assertEqual(lines[-1], "the cluster is at rest")
-        self.assertEqual(world.feelings[("cache", "beta")]["scars"], 1)
+        # the wound from beta, and the heart cache then gave to gamma
+        self.assertEqual(world.feelings[("cache", "beta")]["scars"], 2)
 
     def test_random_clusters_settle_into_stable_matchings(self):
         rng = random.Random(83)

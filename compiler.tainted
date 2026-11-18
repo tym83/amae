@@ -399,11 +399,26 @@ ritual e_target
     if computed
         perform expect_word with "named"
         perform e_unary into t
+        note "who" = ""
         give back t
     end
     perform a_name into name
+    note "who" = name
     perform tmp with "t_cstr(\"" + name + "\")" into t
     give back t
+end
+
+# What a soul does with another soul it names in its code, in order, so that
+# the dialogues of two souls can be compared before they ever meet. A soul
+# whose partners the code cannot tell (rituals, strangers, moments) is not
+# compared.
+ritual happen sort
+    let u = note "u"
+    if sort == "unknown" or note "who" == ""
+        note ("unknown " + u) = 1
+        give back 0
+    end
+    note ("script " + u) = note ("script " + u) + [[sort, note "who", note "hl", note "depth"]]
 end
 
 ritual e_primary
@@ -886,12 +901,19 @@ ritual block ends
     end
 end
 
+# A block inside a block: what happens there may or may not happen.
+ritual inner_block ends
+    note "depth" = note "depth" + 1
+    perform block with ends
+    note "depth" = note "depth" - 1
+end
+
 ritual conditional head, line, top
     let id = 0
     perform label into id
     perform jz_to with id + "e"
     perform line_done
-    perform block with "else end"
+    perform inner_block with "else end"
     perform at with "else" into other
     if head == "while"
         if other
@@ -909,7 +931,7 @@ ritual conditional head, line, top
         perform jmp_to with id + "x"
         perform define with id + "e", note "pc"
         note "j" = note "j" + 1
-        perform block with "end"
+        perform inner_block with "end"
         perform define with id + "x", note "pc"
     else
         perform define with id + "e", note "pc"
@@ -957,7 +979,18 @@ ritual statement
         give back 0
     end
     perform take_token into skipped
+    note "knowing" = 0
+    if head == "knowingly"
+        perform peek_value into deed
+        if deed != "wound" and deed != "leave" and deed != "confide"
+            perform fail with "only what cannot be undone is done knowingly: wound, leave or confide"
+        end
+        perform take_token into skipped
+        note "knowing" = 1
+        head = deed
+    end
     perform statement_of with head, j
+    note "knowing" = 0
 end
 
 ritual statement_of head, j
@@ -991,15 +1024,21 @@ ritual statement_of head, j
             perform a_name into name
             perform slot_of with name into slot
             perform add_ins with "OP_MEET", ", .mode=TO_ANYONE, .var=" + slot + ", .var2=-1, .unit=-1", "return t_meet(w, s, " + at + ");"
+            perform happen with "unknown"
         else
             perform target_fn into t
             perform add_ins with "OP_MEET", ", .mode=TO_NAMED, .target=" + t + note "none", "return t_meet(w, s, " + at + ");"
+            perform happen with "meet"
         end
         perform line_done
         give back 0
     end
     if head == "tell" or head == "confide"
+        if head == "confide" and note "knowing" != 1
+            perform fail with "a confession cannot be taken back; say it knowingly: knowingly confide"
+        end
         perform target_fn into t
+        perform happen with "tell"
         perform expr_fn into e
         perform here into at
         let op = "OP_TELL"
@@ -1038,12 +1077,14 @@ ritual statement_of head, j
         perform is_word with "anyone" into stranger
         if stranger
             mode = "TO_ANYONE"
+            perform happen with "unknown"
         else
             perform is_word with "world" into outside
             if outside
                 mode = "TO_WORLD"
             else
                 perform target_fn into t
+                perform happen with "hear"
             end
         end
         perform expect_word with "into"
@@ -1081,11 +1122,18 @@ ritual statement_of head, j
             perform expect_word with "heart"
             perform expect_word with "to"
             perform feeling with "OP_GIVE"
+            if note "who" != ""
+                if place of note "who" in note ("hearts " + note "u") == 0
+                    note ("hearts " + note "u") = note ("hearts " + note "u") + [note "who"]
+                    note ("heart lines " + note "u") = note ("heart lines " + note "u") + [note "hl"]
+                end
+            end
         end
         perform line_done
         give back 0
     end
     if head == "perform"
+        perform happen with "unknown"
         perform a_name into name
         let args = ""
         let count = 0
@@ -1126,7 +1174,11 @@ ritual statement_of head, j
         give back 0
     end
     if head == "wound"
+        if note "knowing" != 1
+            perform fail with "a wound cannot be undone; give it knowingly: knowingly wound"
+        end
         perform feeling with "OP_WOUND"
+        perform happen with "cut"
         perform line_done
         give back 0
     end
@@ -1136,7 +1188,11 @@ ritual statement_of head, j
         give back 0
     end
     if head == "leave"
+        if note "knowing" != 1
+            perform fail with "leaving cannot be undone; leave knowingly: knowingly leave"
+        end
         perform feeling with "OP_LEAVE"
+        perform happen with "cut"
         perform line_done
         give back 0
     end
@@ -1179,6 +1235,10 @@ ritual statement_of head, j
         give back 0
     end
     if head == "goodbye"
+        if note "depth" == 0
+            note "who" = "-"
+            perform happen with "end"
+        end
         perform is_word with "with" into ending
         if ending
             perform with_value with "OP_GOODBYE", "t_goodbye_with"
@@ -1189,6 +1249,7 @@ ritual statement_of head, j
         give back 0
     end
     if head == "mark"
+        perform happen with "unknown"
         perform a_name into moment
         perform line_done
         let u = note "u"
@@ -1229,7 +1290,7 @@ ritual statement_of head, j
         let id = 0
         perform label into id
         perform add_ins with "OP_FIRST", note "none", "return t_first(w, s, " + id + "e);"
-        perform block with "end"
+        perform inner_block with "end"
         perform define with id + "e", note "pc"
         note "j" = note "j" + 1
         give back 0
@@ -1363,12 +1424,13 @@ ritual statement_of_world head, j
     if head == "together"
         perform expect_word with "with"
         perform target_fn into t
+        perform happen with "together"
         perform line_done
         let id = 0
         perform label into id
         perform here into at
         perform add_ins with "OP_TOGETHER", ", .mode=TO_NAMED, .target=" + t + ", .jump=" + id + "a, .until=" + id + "u" + note "none", "return t_together(w, s, " + at + ");"
-        perform block with "apart end"
+        perform inner_block with "apart end"
         perform define with id + "u", note "pc"
         perform here into at
         perform add_ins with "OP_TOGETHER_END", ", .jump=" + id + "x" + note "none", "return t_together_end(w, s, " + at + ");"
@@ -1376,7 +1438,7 @@ ritual statement_of_world head, j
         perform at with "apart" into parted
         if parted
             note "j" = note "j" + 1
-            perform block with "end"
+            perform inner_block with "end"
         end
         perform define with id + "x", note "pc"
         note "j" = note "j" + 1
@@ -1401,6 +1463,7 @@ ritual statement_of_world head, j
         give back 0
     end
     if head == "take"
+        note ("takes back " + note "u") = 1
         perform expect_word with "back"
         perform expect_word with "heart"
         perform expect_word with "from"
@@ -1429,6 +1492,7 @@ ritual statement_of_world head, j
         perform label into id
         perform here into at
         perform add_ins with "OP_ENDURE", ", .var=" + id + "s, .var2=-1, .unit=-1, .jump=" + id + "h, .until=" + id + "u", "return t_endure(w, s, " + at + ");"
+        note "depth" = note "depth" + 1
         perform at_when into found
         while not found
             perform at with "end" into ended
@@ -1439,6 +1503,7 @@ ritual statement_of_world head, j
             perform statement
             perform at_when into found
         end
+        note "depth" = note "depth" - 1
         perform open_line with note "j"
         note "hl" = note ("ln " + note "j")
         perform expect_word with "when"
@@ -1453,7 +1518,7 @@ ritual statement_of_world head, j
         perform add_ins with "OP_ENDURED", note "none", "return t_endured(w, s, " + id + "x);"
         perform define with id + "h", note "pc"
         note "j" = note "j" + 1
-        perform block with "end"
+        perform inner_block with "end"
         perform define with id + "x", note "pc"
         note "j" = note "j" + 1
         give back 0
@@ -1579,6 +1644,14 @@ ritual declaration
     note ("marks " + u) = ""
     note ("merr " + u) = ""
     note ("rn " + u) = 0
+    note ("script " + u) = []
+    note ("hearts " + u) = []
+    note ("heart lines " + u) = []
+    note ("takes back " + u) = 0
+    note ("unknown " + u) = 0
+    note ("kind of " + u) = decl
+    note ("name of " + u) = name
+    note "depth" = 0
     note "params" = ""
     note "nparams" = 0
     if decl == "ritual"
@@ -1607,6 +1680,7 @@ ritual declaration
             end
             note "ustyle" = note "ustyle" + flags[at]
             perform is_word with "and" into more
+            recall j decl name u ways flags
         end
     end
     perform line_done
@@ -1673,6 +1747,137 @@ ritual learn_file wanted
     note "lexfile" = ""
 end
 
+# ---------------------------------------------------------------- dialogues
+
+# What one side of a dialogue does, as the other side should see it.
+ritual answer_to sort
+    if sort == "tell"
+        give back "hear"
+    end
+    if sort == "hear"
+        give back "tell"
+    end
+    give back sort
+end
+
+ritual deed_words sort
+    if sort == "tell"
+        give back "tells"
+    end
+    if sort == "hear"
+        give back "waits to hear from"
+    end
+    if sort == "meet"
+        give back "waits to meet"
+    end
+    give back "waits to be together with"
+end
+
+ritual script_with u, partner
+    let mine = []
+    let all = note ("script " + u)
+    let i = 1
+    while i <= length of all
+        if all[i][2] == partner or all[i][1] == "end"
+            put all[i] into mine
+        end
+        i = i + 1
+        recall all partner mine
+    end
+    give back mine
+end
+
+# Two souls that name each other must say things in an order the other can
+# follow, up to the first wound or leaving: after that, it is their story.
+ritual compare a, b
+    let name_a = note ("name of " + a)
+    let name_b = note ("name of " + b)
+    perform script_with with a, name_b into sa
+    perform script_with with b, name_a into sb
+    let i = 1
+    while i <= length of sa
+        if sa[i][4] > 0
+            give back 0
+        end
+        i = i + 1
+        recall sa
+    end
+    i = 1
+    while i <= length of sb
+        if sb[i][4] > 0
+            give back 0
+        end
+        i = i + 1
+        recall sb
+    end
+    i = 1
+    while i <= length of sa and i <= length of sb
+        let ea = sa[i]
+        let eb = sb[i]
+        if ea[1] == "cut" or eb[1] == "cut" or ea[1] == "end" or eb[1] == "end"
+            give back 0
+        end
+        perform answer_to with ea[1] into wanted
+        if eb[1] != wanted
+            perform deed_words with ea[1] into does_a
+            perform deed_words with eb[1] into does_b
+            cry "tainted: line " + ea[3] + ": " + name_a + " and " + name_b + " cannot get along: here " + name_a + " " + does_a + " " + name_b + ", but at line " + eb[3] + " " + name_b + " " + does_b + " " + name_a
+            goodbye with 1
+        end
+        i = i + 1
+        recall sa sb name_a name_b
+    end
+    let extra = []
+    let lonely = name_a
+    let other = name_b
+    if length of sa > length of sb
+        extra = sa[i]
+    end
+    if length of sb > length of sa
+        extra = sb[i]
+        lonely = name_b
+        other = name_a
+    end
+    if length of extra > 0
+        if extra[1] != "cut" and extra[1] != "end"
+            perform deed_words with extra[1] into does
+            cry "tainted: line " + extra[3] + ": " + lonely + " and " + other + " cannot get along: here " + lonely + " " + does + " " + other + ", and " + other + " never answers"
+            goodbye with 1
+        end
+    end
+end
+
+# A heart is given to one at a time: a soul whose code gives it to two
+# others, and never takes it back, does not compile.
+ritual check_hearts
+    let u = 0
+    while u < note "units"
+        let given = note ("hearts " + u)
+        if length of given > 1 and note ("takes back " + u) == 0
+            cry "tainted: line " + (note ("heart lines " + u))[2] + ": " + note ("name of " + u) + " gives its heart to " + given[1] + " and to " + given[2] + "; a heart is given to one at a time, so take it back first"
+            goodbye with 1
+        end
+        u = u + 1
+    end
+end
+
+ritual check_dialogues
+    let a = 0
+    while a < note "units"
+        let b = a + 1
+        while b < note "units"
+            if note ("kind of " + a) == "soul" and note ("kind of " + b) == "soul"
+                if note ("unknown " + a) == 0 and note ("unknown " + b) == 0
+                    perform compare with a, b
+                end
+            end
+            b = b + 1
+            recall a
+        end
+        a = a + 1
+    end
+end
+
 ritual define_uses list, prefix, sort
     let names = note list
     let i = 1
@@ -1702,7 +1907,7 @@ ritual say_all
 end
 
 soul compiler
-    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape"
+    note "keywords" = "soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly"
     note "none" = ", .var=-1, .var2=-1, .unit=-1"
     note "hn" = 0
     note "bn" = 0
@@ -1749,6 +1954,8 @@ soul compiler
     if note "souls" == 0
         perform fail_plain with "a program needs at least one soul"
     end
+    perform check_hearts
+    perform check_dialogues
 
     perform out_head with "/* Compiled from Tainted by compiler.tainted. */"
     perform out_head with "#include \"tainted.h\""

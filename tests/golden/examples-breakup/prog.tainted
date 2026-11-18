@@ -5,7 +5,7 @@ soul alice
     hear bob into a
     tell bob "good night"
     hear bob into b
-    leave bob
+    knowingly leave bob
     say "alice keeps " + scars of bob + " scars: " + scar 1 of bob + ", " + scar 2 of bob
 end
 

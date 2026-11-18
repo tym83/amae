@@ -77,7 +77,7 @@ ritual NAME a, b     a ritual (a subroutine) with parameters a and b
 ```
 afraid and anyone as back bond bring commitment confide cool end else
 first for forgive from give goodbye hear heart if in intimacy into kind
-leave length let mark me meet named not note number of or part passion
+knowingly leave length let mark me meet named not note number of or part passion
 perform place promise recall return ritual runs say scar scars silence
 soul tell time to trust wait warm while with word words world wound cry
 ask telling listen read write append file seconds endure when hurts learn

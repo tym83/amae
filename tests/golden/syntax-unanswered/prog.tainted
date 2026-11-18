@@ -1,0 +1,9 @@
+soul a
+ meet b
+ tell b 1
+ tell b 2
+end
+soul b
+ meet a
+ hear a into x
+end

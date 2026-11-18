@@ -1,0 +1,4 @@
+b -> a: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0
+a -> b: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 0, heart given
+c -> a: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 1
+a -> c: infatuation; trust 0, intimacy 0, passion 3, commitment 0, scars 1

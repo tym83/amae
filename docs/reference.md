@@ -19,6 +19,7 @@ and how every feeling is counted.
 - [Memory](#memory)
 - [Runs](#runs)
 - [The world](#the-world)
+- [Before souls meet](#before-souls-meet)
 - [Ways of loving](#ways-of-loving)
 - [Consent](#consent)
 - [Boundaries](#boundaries)
@@ -73,14 +74,14 @@ rituals or moments:
 ```
 afraid and anyone as back bond bring commitment confide cool end else
 first for forgive from give goodbye hear heart if in intimacy into kind
-leave length let mark me meet named not note number of or part passion
+knowingly leave length let mark me meet named not note number of or part passion
 perform place promise recall return ritual runs say scar scars silence
 soul tell time to trust wait warm while with word words world wound cry
 ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
-is anxious avoidant secure eros ludus storge pragma mania agape
+is anxious avoidant secure eros ludus storge pragma mania agape knowingly
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -218,7 +219,7 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `meet anyone as x` | meets whoever is looking for this soul; their name goes to `x` | until someone does |
 | `tell S e` | [tells](#speaking-and-hearing) `S` the value of `e` | until `S` hears |
 | `tell S e tenderly` | the same, gently: it puts no pressure on `S` and brings `S` closer | until `S` hears |
-| `confide S e` | tells `S` a secret; only to a soul this one gave its heart to | until `S` hears |
+| `knowingly confide S e` | tells `S` a secret; only to a soul this one gave its heart to | until `S` hears |
 | `hear S into x` | hears from `S` into `x` | until `S` tells |
 | `hear anyone into x` | hears from whoever speaks to this soul first | until someone does |
 | `hear anyone into x from y` | the same, and the speaker's name goes to `y` | until someone does |
@@ -226,8 +227,8 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `warm to S` | trust in `S` grows by one | no |
 | `cool to S` | trust in `S` falls by one, not below zero | no |
 | `promise S` | commitment to `S` grows by one | no |
-| `give heart to S` | gives `S` this soul's heart | no |
-| `wound S` | wounds `S` ([Wounds](#wounds)) | no |
+| `give heart to S` | gives `S` this soul's heart, and takes it from whoever had it ([Fidelity](#fidelity)) | no |
+| `knowingly wound S` | wounds `S` ([Wounds](#wounds)) | no |
 | `forgive S` | opens this soul to `S` again after a wound | no |
 | `apologize to S for scar n` | apologizes for the wound that is `S`'s scar `n` ([Apologies](#apologies)) | no |
 | `admit resentment toward S` | names this soul's resentment, which lets it go | no |
@@ -241,7 +242,7 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `send S e` | sends `S` a letter, which arrives in its own time ([Letters](#letters-and-grief)) | no |
 | `receive from S into x` | reads a letter from `S` | until one has arrived |
 | `receive anyone into x from y` | reads the first letter that has arrived, and who wrote it | until one has arrived |
-| `leave S` | leaves `S` for good ([Leaving](#leaving)) | no |
+| `knowingly leave S` | leaves `S` for good ([Leaving](#leaving)) | no |
 | `note k = e` | writes `e` down under the key `k` ([Notes](#notes)) | no |
 | `recall a b …` | reads the variables, which keeps them from fading | no |
 | `bring K named e` | brings a new soul of kind `K`, named `e`, to life | no |
@@ -485,7 +486,7 @@ goes, `S`'s trust grows by one, and `S` keeps one more scar:
 
 ### Wounds
 
-`wound S` changes how `S` sees this soul: `S`'s trust drops to zero, its
+`knowingly wound S` changes how `S` sees this soul: `S`'s trust drops to zero, its
 intimacy is halved (rounded down), it keeps the scar
 `"wounded by <name>"` and it resents the wound. If `S` had not given its heart to this soul, `S` is
 also closed: it will not hear this soul and will not meet it until it
@@ -494,7 +495,7 @@ relationship survive a wound.
 
 ### Leaving
 
-`leave S` is final for both. This soul's commitment to `S` becomes zero;
+`knowingly leave S` is final for both. This soul's commitment to `S` becomes zero;
 everything this soul heard from `S` becomes its scars, everything `S` heard
 from this soul becomes `S`'s scars, and `S` keeps one more: `"<name> left"`.
 Neither can meet, tell or hear the other again; trying to from the side that
@@ -581,6 +582,46 @@ first.
 This is how a Tainted program knows that a computation spread over many souls
 has settled: the scheduler in `taintednetes.tainted` waits for silence and then
 asks every pod where it lives.
+
+## Before souls meet
+
+The compiler looks at what souls will do to each other before they ever
+meet, and refuses three things.
+
+### What cannot be undone
+
+A confession, a wound and a leaving cannot be undone, so they are only done
+knowingly: `knowingly confide S e`, `knowingly wound S`, `knowingly leave S`.
+Without the word the program does not compile. Forgiving is possible after
+them; the scar stays.
+
+### Dialogues
+
+When two souls name each other in their code, the compiler reads what each
+of them does with the other, in order: meetings, words said and heard, things
+done together. The two must fit: a meeting answers a meeting, words told
+answer words heard, `together` answers `together`. Two souls that both wait to
+hear, or both speak first, or one of whom says something the other never
+listens to, cannot get along, and the program does not compile:
+
+```
+tainted: line 3: a and b cannot get along: here a tells b, but at line 7 b tells a
+```
+
+Only what is certain is compared: a soul whose partners the code cannot tell
+(one that performs rituals, meets or hears strangers, or marks moments) is
+not, and neither is anything inside `if`, `while` or another block. After a
+wound, a leaving or a `goodbye`, the rest is the souls' story, and the
+compiler stops comparing.
+
+### Fidelity
+
+A heart is given to one at a time. A soul whose code gives its heart to two
+different souls by name, and never takes it back with `take back heart from`,
+does not compile. When it happens at run time anyway, through a computed name,
+the heart moves: the one who had it loses it and keeps the scar
+`"<giver> gave their heart to <new>"`, and the giver keeps `"gave my heart to
+<new>"`. Both know.
 
 ## Ways of loving
 

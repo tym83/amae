@@ -1,0 +1,19 @@
+soul a
+ meet b
+ meet c
+ give heart to b
+ take back heart from b
+ give heart to c
+ give heart to soul named "b"
+ say scars of c
+end
+soul b
+ meet a
+end
+soul c
+ meet a
+ wait
+ wait
+ wait
+ say scar 1 of a
+end

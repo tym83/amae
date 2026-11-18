@@ -1,0 +1,1 @@
+tainted: line 3: a and b cannot get along: here a tells b, but at line 7 b tells a

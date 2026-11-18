@@ -46,9 +46,9 @@ soul prue is pragma
         say pain
     end
     tell stella "brace yourself"
-    wound stella
+    knowingly wound stella
     meet aga
-    wound aga
+    knowingly wound aga
     tell aga "and you"
 end
 

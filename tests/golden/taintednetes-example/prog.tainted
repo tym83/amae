@@ -141,7 +141,7 @@ kind node
     warm to soul named note "who"
     cool to soul named note "out"
     tell soul named note "out" "go"
-    wound soul named note "out"
+    knowingly wound soul named note "out"
     return to attentive
 end
 
