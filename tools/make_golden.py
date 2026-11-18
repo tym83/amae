@@ -64,6 +64,20 @@ INLINE = {
     "rule-escapes": "soul s\n say \"a\\\\nb\"\n say \"q\\\"q\"\n say \"x\\ny\"\n say \"t\\tz\"\nend\n",
     "rule-cry": "soul s\n cry \"it hurts\"\n say \"still\"\n goodbye with 3\n say \"never\"\nend\n",
     "rule-bad-ending": "soul s\n goodbye with \"soon\"\nend\n",
+    "values-lists-maps": ("soul s\n let xs = [3, 1, 2]\n put 10 into xs\n xs[2] = 5\n say xs\n"
+                          " let m = {\"a\": 1, \"b\": [2, 3]}\n m[\"c\"] = 2.5\n remove \"a\" from m\n"
+                          " say m\n say keys of m\n say json of m\n say m[\"b\"][2] * 1.5\n"
+                          " say meaning of \"[1, {\\\"x\\\": null}]\"\nend\n"),
+    "values-fade": ("soul s\n let xs = [1, 2, 3, 4]\n let d = 3.14159\n let i = 0\n"
+                    " while i < 40\n i = i + 1\n end\n say xs\n say d\nend\n"),
+    "values-endure": ("ritual risky n\n if n == 0\n say {}[\"x\"]\n end\n perform risky with n - 1\nend\n"
+                      "soul s\n endure\n perform risky with 2\n say \"no\"\n when it hurts as pain\n"
+                      " say pain\n end\n endure\n say 1 / 0\n when it hurts as pain\n say pain\n end\n"
+                      " say [1][3]\nend\n"),
+    "syntax-list": "soul s\n say [1, 2\nend\n",
+    "syntax-map": "soul s\n say {\"a\" 1}\nend\n",
+    "syntax-endure": "soul s\n endure\n say 1\n end\nend\n",
+    "syntax-learn": "learn missing\nsoul s\nend\n",
     # compile errors
     "syntax-outside": "say 1\n",
     "syntax-no-end": "soul s\n say 1\n",
@@ -89,7 +103,7 @@ INPUTS = {
 PATIENCE = {"rule-patience": 1000}
 
 
-def run(prog, given, history, patience=None):
+def run(prog, given, history, patience=None, cwd=None):
     """Compile the program and run it; a program that does not compile says
     what the compiler said, every time."""
     binary = prog[:-len(".tainted")]
@@ -102,13 +116,13 @@ def run(prog, given, history, patience=None):
             return "", res.stderr, str(res.returncode)
         with open(binary + ".c", "w") as f:
             f.write(res.stdout)
-        subprocess.run(["cc", "-std=c11", "-D_POSIX_C_SOURCE=200809L", "-O1", "-w",
+        subprocess.run(["cc", "-std=c11", "-D_POSIX_C_SOURCE=200809L", "-D_DEFAULT_SOURCE", "-O1", "-w",
                         "-I" + os.path.join(ROOT, "runtime"), binary + ".c",
-                        os.path.join(ROOT, "runtime", "tainted.c"), "-o", binary], check=True)
+                        os.path.join(ROOT, "runtime", "tainted.c"), "-o", binary, "-lm"], check=True)
     args = [binary, "--feelings"]
     if patience:
         args.append(f"--patience={patience}")
-    res = subprocess.run(args, input=given, capture_output=True, text=True,
+    res = subprocess.run(args, input=given, capture_output=True, text=True, cwd=cwd,
                          env=dict(os.environ, TAINTED_HISTORY=history))
     return res.stdout, res.stderr, str(res.returncode)
 
@@ -129,7 +143,7 @@ def add(name, source, given="", patience=None):
         history = os.path.join(t, "history.json")
         shutil.copy(prog, os.path.join(t, "prog.tainted"))
         for k in range(2):
-            out, err, code = run(os.path.join(t, "prog.tainted"), given, history, patience)
+            out, err, code = run(os.path.join(t, "prog.tainted"), given, history, patience, cwd=t)
             for part, text in (("out", out), ("err", err), ("code", code)):
                 with open(os.path.join(d, f"{part}{k}"), "w") as f:
                     f.write(text)
@@ -173,6 +187,9 @@ def main():
         if lang == "tainted":
             chapter += 1
             given = blocks[i + 1][1] if blocks[i + 1][0] == "input" else ""
+            follows = blocks[i + 2][0] if given else blocks[i + 1][0]
+            if follows != "output" or 'learn "' in body:
+                continue        # a file to learn from, or a program that learns
             add(f"tutorial-{chapter:02d}", body, given)
     with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
         scheduler = f.read()

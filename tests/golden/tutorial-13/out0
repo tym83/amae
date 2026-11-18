@@ -1,1 +1,8 @@
-I have never been here before.
+["Ada 83", "Oberon", "Modula-2"]
+3 books, the second is Oberon
+{"Ada 83": 1983, "Modula-2": 1978}
+["Ada 83", "Modula-2"]
+2
+on average 1980.5, or 1980
+{"shelf": ["Ada 83", "Oberon", "Modula-2"], "count": 3}
+Oberon in 2 copies

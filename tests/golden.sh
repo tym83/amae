@@ -4,7 +4,7 @@
 core=$1
 here=$(cd "$(dirname "$0")/.." && pwd)
 cc=${CC:-cc}
-flags="-std=c11 -D_POSIX_C_SOURCE=200809L -O1 -w -I$here/runtime"
+flags="-std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -O1 -w -I$here/runtime"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 "$cc" $flags -c "$here/runtime/tainted.c" -o "$work/runtime.o" || exit 1
@@ -20,11 +20,11 @@ for case in "$here"/tests/golden/*/; do
     [ -f "$case/patience" ] && patience="--patience=$(cat "$case/patience")"
     ok=1
     if TAINTED_HISTORY="$out/compiler.json" "$core" < "$case/prog.tainted" > "$out/prog.c" 2> "$out/compile.err"; then
-        if ! "$cc" $flags "$out/prog.c" "$work/runtime.o" -o "$out/prog" 2> "$out/cc.err"; then
+        if ! "$cc" $flags "$out/prog.c" "$work/runtime.o" -o "$out/prog" -lm 2> "$out/cc.err"; then
             echo "FAIL $name: the C did not build"; head -5 "$out/cc.err"; fail=$((fail + 1)); continue
         fi
         for k in 0 1; do
-            TAINTED_HISTORY="$out/history.json" "$out/prog" --feelings $patience < "$input" > "$out/out$k" 2> "$out/err$k"
+            (cd "$out" && TAINTED_HISTORY="$out/history.json" "$out/prog" --feelings $patience < "$input" > "$out/out$k" 2> "$out/err$k")
             printf "%s" $? > "$out/code$k"
         done
     else

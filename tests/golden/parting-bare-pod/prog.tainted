@@ -96,8 +96,8 @@ ritual calm
     if here == 1
         give back 0
     end
-    perform waiting_of with note "owner" into now
-    if now > note "before"
+    perform waiting_of with note "owner" into waiting_now
+    if waiting_now > note "before"
         note "why" = "waits for " + note "owner" + " to bring a replacement up"
         give back 0
     end

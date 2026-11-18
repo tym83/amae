@@ -1,6 +1,4 @@
-cordon w2
-log w2 is not ready; nobody new goes there
-done
-uncordon w2
-log w2 is back
-done
+the world says it is 1
+["apple", "fig", "pear"]
+2 lines in the letter
+one then two

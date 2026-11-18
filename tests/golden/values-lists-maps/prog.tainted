@@ -1,0 +1,14 @@
+soul s
+ let xs = [3, 1, 2]
+ put 10 into xs
+ xs[2] = 5
+ say xs
+ let m = {"a": 1, "b": [2, 3]}
+ m["c"] = 2.5
+ remove "a" from m
+ say m
+ say keys of m
+ say json of m
+ say m["b"][2] * 1.5
+ say meaning of "[1, {\"x\": null}]"
+end
