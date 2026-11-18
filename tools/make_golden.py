@@ -6,6 +6,7 @@ world says to it (input, if anything) and, for its first and second run,
 what it printed, what it lamented and how it ended (out0, err0, code0, out1,
 err1, code1). The compiled programs are checked against these.
 """
+import json
 import os
 import random
 import re
@@ -126,7 +127,8 @@ def run(prog, given, history, patience=None, cwd=None):
             res = subprocess.run([os.path.join(ROOT, "build", "tc-core")], stdin=f,
                                  capture_output=True, text=True,
                                  env=dict(os.environ, TAINTED_HISTORY=history + ".compiler",
-                                          TAINTED_MEMORY=history + ".memory"))
+                                          TAINTED_MEMORY=history + ".memory",
+                                          TAINTED_LIB=os.path.join(ROOT, "lib")))
         if res.returncode:
             return "", res.stderr, str(res.returncode)
         with open(binary + ".c", "w") as f:
@@ -162,6 +164,33 @@ def add(name, source, given="", patience=None):
             for part, text in (("out", out), ("err", err), ("code", code)):
                 with open(os.path.join(d, f"{part}{k}"), "w") as f:
                     f.write(text)
+
+
+def snapshot():
+    """A cluster as kubectl tells it: nodes, then pods, one JSON line each."""
+    def node(name, labels=None, taint=False, extra=None, seats=None):
+        notes = {"taintednetes.io/seats": str(seats)} if seats is not None else {}
+        return {"metadata": {"name": name, "labels": labels or {}, "annotations": notes},
+                "spec": {"taints": [{"key": "role", "effect": "NoSchedule"}] if taint else []},
+                "status": {"allocatable": {"cpu": "2", "memory": "4Gi", "pods": "110", **(extra or {})},
+                           "conditions": [{"type": "Ready", "status": "True"}]}}
+
+    def pod(name, node=None, requests=None, likes=None, spec=None):
+        c = {"resources": {"requests": requests or {"cpu": "500m", "memory": "64Mi"}}}
+        body = {"schedulerName": "taintednetes", "nodeName": node, "containers": [c], **(spec or {})}
+        return {"metadata": {"name": name, "namespace": "shop",
+                             "creationTimestamp": "2026-11-18T10:00:00Z",
+                             "annotations": {"taintednetes.io/likes": likes} if likes else {}},
+                "spec": body, "status": {"phase": "Running" if node else "Pending"}}
+    zone = {"affinity": {"nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": {
+        "nodeSelectorTerms": [{"matchExpressions": [{"key": "zone", "operator": "In", "values": ["west"]}]}]}}}}
+    nodes = [node("east", labels={"zone": "east"}), node("west", labels={"zone": "west"}, seats=3),
+             node("lab", extra={"nvidia.com/gpu": "1"}), node("control", taint=True)]
+    pods = [pod("db-0", node="east", requests={"cpu": "1500m"}), pod("web", likes="east west"),
+            pod("api", spec=zone), pod("train", requests={"cpu": "1", "nvidia.com/gpu": "1"}),
+            pod("tune", requests={"cpu": "1", "nvidia.com/gpu": "1"}),
+            pod("big", requests={"cpu": "3"})]
+    return json.dumps({"items": nodes}) + "\n" + json.dumps({"items": pods}) + "\n"
 
 
 def cluster(rng):
@@ -215,6 +244,7 @@ def main():
     rng = random.Random(2026)
     for k in range(6):
         add(f"taintednetes-random-{k}", scheduler, cluster(rng))
+    add("taintednetes-snapshot", scheduler, snapshot())
     with open(os.path.join(ROOT, "kube", "parting.tainted")) as f:
         parting = f.read()
     nodes = ["w1 ready schedulable staying", "w2 ready schedulable leaving"]

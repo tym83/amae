@@ -304,13 +304,18 @@ bin/tc taintednetes.tainted && ./taintednetes < examples/cluster.txt
 
 ### On a real cluster
 
-`kube/bridge.py` makes `taintednetes.tainted` the scheduler of a real
-Kubernetes cluster. It reads pending pods with `schedulerName: taintednetes`
-and the ready nodes through `kubectl`, describes them to the Tainted program
-and binds every pod where the program says it lives. The bridge decides only
-who may meet whom: a pod likes the nodes it fits on (free CPU and memory, node
-selector, taints it tolerates), a node offers as many seats as it can hold of
-the largest pod that wants it.
+With `KUBE_CONTEXT` set, `taintednetes.tainted` is the scheduler of a real
+Kubernetes cluster, with nothing between them but `kubectl`. Every few seconds
+it reads the ready nodes and the pending pods with `schedulerName:
+taintednetes`, works out in Tainted (with `lib/kube.tainted`) who may meet
+whom, lets them find each other and binds every pod where it settled, through
+the `pods/binding` subresource. A pod likes only the nodes it fits on, decided
+the way kube-scheduler decides it: resources counted the way the kubelet counts
+them (init containers, sidecars, overhead, pod-level resources), extended
+resources such as `nvidia.com/gpu`, node selector, required node affinity,
+taints it tolerates and free host ports. A node offers as many seats as it can
+hold of the largest pod that wants it. The nodes are souls that live as long as
+the scheduler does; the pods of every look are souls of that look.
 
 | Annotation | On | Meaning |
 |---|---|---|
@@ -318,15 +323,16 @@ the largest pod that wants it.
 | `taintednetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
 | `taintednetes.io/seats: "N"` | node | at most N pods of this scheduler |
 
-Without annotations, pods prefer nodes with more free cores, and where the
-nodes are equal every pod has its own lasting taste, so identical pods spread
+Then pods prefer the nodes their preferred node affinity leans to, then nodes
+with more free cores, and where the nodes are equal every pod has its own lasting taste, so identical pods spread
 out; nodes prefer pods with higher priority, then the ones waiting longest.
 
 ```
 kubectl --context <ctx> create namespace demo
 sed -e s/NODE_A/<node>/ -e s/NODE_B/<node>/ kube/demo.yaml \
   | kubectl --context <ctx> -n demo apply -f -
-python3 kube/bridge.py --context <ctx> --once     # or leave it running
+bin/tc taintednetes.tainted
+KUBE_CONTEXT=<ctx> TAINTEDNETES_LOOKS=1 ./taintednetes   # one look; without LOOKS it keeps looking
 ```
 
 On a cluster with three workers limited to two seats each, seven pods compete

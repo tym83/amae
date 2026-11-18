@@ -1,14 +1,13 @@
 p0 settles on n0
 p2 has nowhere to live
 p1 settles on n0
-p5 settles on n0
 p4 has nowhere to live
+p5 settles on n0
+p6 has nowhere to live
 p1 is sent away from n0
 p1 has nowhere to live
-p6 has nowhere to live
 p3 has nowhere to live
 p11 has nowhere to live
-p12 has nowhere to live
 p9 settles on n1
 p7 has nowhere to live
 p10 has nowhere to live
@@ -16,8 +15,9 @@ p8 settles on n0
 p13 has nowhere to live
 p0 is sent away from n0
 p0 has nowhere to live
-p17 has nowhere to live
+p12 has nowhere to live
 p15 has nowhere to live
+p17 has nowhere to live
 p16 has nowhere to live
 p14 has nowhere to live
 p22 has nowhere to live
