@@ -206,20 +206,13 @@ bin/tc examples/multiply.tainted && ./multiply   # c = 42
 
 ## Операторы
 
-`kube/world.py` позволяет программе на Tainted жить в кластере Kubernetes.
-Кластер становится миром программы: на каждом такте он рассказывает, как
-выглядит, по строке на каждую ноду и каждый под, а программа, которая слушает
-его через `hear world`, отвечает через `say`. Душа, ожидающая мир, не
-застряла — просто мир нетороплив, и программа живёт до тех пор, пока кластер с
-ней разговаривает. Кластер меняют лишь немногие ответы: `cordon`, `uncordon`,
-`evict`, `annotate node` и `log`.
-
-```
-tick 7
-node worker-2 ready cordoned leaving
-pod shop/web-5d8f worker-2 ready shop/ReplicaSet/web-5d8f
-end
-```
+Программа на Tainted присматривает за кластером Kubernetes через `kubectl`, и
+между ними ничего нет. `lib/kube.tainted` спрашивает кластер (в контексте из
+`KUBE_CONTEXT`) и читает его ответ как JSON; `listen to world` на
+`kubectl get … --watch-only` будит программу всякий раз, когда что-то
+меняется. Душа, ожидающая мир, не застряла — просто мир нетороплив, и
+программа живёт до тех пор, пока кластер с ней разговаривает, а с
+`--patience=0` — без всякого предела.
 
 `kube/parting.tainted` — первый оператор, написанный на Tainted. Нода с
 аннотацией `taintednetes.io/leaving: "true"` бережно уходит из кластера:
@@ -228,8 +221,13 @@ end
 принадлежит ни одному контроллеру, неоткуда вернуться, поэтому нода его не
 выгоняет, а ждёт. Опустевшую ноду помечают `taintednetes.io/left: "true"`.
 
+Оператор следит за нодами и подами и смотрит на кластер при каждом изменении
+и раз в несколько секунд. Без `KUBE_CONTEXT` он слышит кластер строками со
+стандартного ввода и говорит, что сделал бы, — так его проверяют.
+
 ```
-python3 kube/world.py --context <ctx> kube/parting.tainted
+bin/tc kube/parting.tainted
+KUBE_CONTEXT=<ctx> ./parting --patience=0
 kubectl --context <ctx> annotate node worker-3 taintednetes.io/leaving=true
 ```
 

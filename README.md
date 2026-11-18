@@ -193,20 +193,13 @@ bin/tc examples/multiply.tainted && ./multiply   # c = 42
 
 ## Operators
 
-`kube/world.py` lets a Tainted program live in a Kubernetes cluster. The
-cluster becomes the program's world: every tick it says what it looks like,
-one line per node and pod, and the program, which listens with `hear world`,
-answers with `say`. A soul that waits for the world is not stuck, the world is
-only slow, so the program lives as long as the cluster talks to it. Only a few
-answers change the cluster: `cordon`, `uncordon`, `evict`,
-`annotate node` and `log`.
-
-```
-tick 7
-node worker-2 ready cordoned leaving
-pod shop/web-5d8f worker-2 ready shop/ReplicaSet/web-5d8f
-end
-```
+A Tainted program looks after a Kubernetes cluster through `kubectl`, with
+nothing in between. `lib/kube.tainted` asks the cluster (in the context named by
+`KUBE_CONTEXT`) and reads what it says as JSON; `listen to world` on
+`kubectl get … --watch-only` wakes the program whenever something changes. A
+soul that waits for the world is not stuck, the world is only slow, so the
+program lives as long as the cluster talks to it, and `--patience=0` lets it
+live without a limit.
 
 `kube/parting.tainted` is the first operator written in Tainted. A node
 annotated `taintednetes.io/leaving: "true"` leaves the cluster gently: it stops
@@ -216,8 +209,13 @@ to no controller has nowhere to come back from, so the node does not send it
 away and waits instead. When the node is empty it is marked
 `taintednetes.io/left: "true"`.
 
+It watches nodes and pods and looks at the cluster on every change and every
+few seconds. On standard input, without `KUBE_CONTEXT`, it hears the cluster as
+lines and says what it would do, which is how it is tested.
+
 ```
-python3 kube/world.py --context <ctx> kube/parting.tainted
+bin/tc kube/parting.tainted
+KUBE_CONTEXT=<ctx> ./parting --patience=0
 kubectl --context <ctx> annotate node worker-3 taintednetes.io/leaving=true
 ```
 
