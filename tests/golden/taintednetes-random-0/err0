@@ -2,16 +2,16 @@ p0 -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
 p1 -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
 p2 -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
 p3 -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
-cluster -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-n0 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n0 -> cluster: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+cluster -> n0: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p4 -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
 p5 -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
-cluster -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-n1 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n1 -> cluster: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
+cluster -> n1: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n2 -> cluster: nothing yet; trust 0, intimacy 1, passion 1, commitment 0, scars 0
 cluster -> n2: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-n2 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-n3 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+n3 -> cluster: nothing yet; trust 0, intimacy 2, passion 1, commitment 0, scars 0
+cluster -> n3: nothing yet; trust 0, intimacy 2, passion 1, commitment 0, scars 0
 cluster -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p0 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 cluster -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
@@ -22,7 +22,7 @@ cluster -> p3: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 
 p3 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 cluster -> p4: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p4 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
-cluster -> p5: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> p5: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p5 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0

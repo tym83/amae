@@ -1,17 +1,17 @@
-cluster -> east: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 east -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> west: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
+cluster -> east: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 west -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> west: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 shop/web -> cluster: nothing yet; trust 0, intimacy 2, passion 0, commitment 0, scars 0
-cluster -> lab: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 lab -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> lab: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 shop/api -> cluster: nothing yet; trust 0, intimacy 2, passion 0, commitment 0, scars 0
-cluster -> control: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 control -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> control: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> shop/web: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 shop/train -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 shop/tune -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 shop/big -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> shop/web: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 shop/web -> east: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given
 cluster -> shop/api: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 shop/api -> east: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0

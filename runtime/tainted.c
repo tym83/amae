@@ -451,6 +451,7 @@ struct World {
     Source *src;
     size_t nsrc, capsrc;
     int in_transit;     /* words or letters are on their way: time passes, nobody is stuck */
+    int hearing;        /* someone waits to hear the world, not only for time to pass */
     int mania;          /* someone here loves like mania */
     int deterministic;  /* no chemistry */
 };
@@ -1555,7 +1556,9 @@ static void await_world(World *w, double timeout) {
     for (size_t i = 0; i < w->nsrc; i++)
         if (!w->src[i].closed) { p[n].fd = w->src[i].fd; p[n].events = POLLIN; p[n].revents = 0; n++; }
     int ms = timeout < 0 ? -1 : (int)(timeout * 1000) + 1;
-    if (n) poll(p, (nfds_t)n, ms);
+    /* A soul that only sleeps is not listening: what the world has to say,
+     * the end of it too, waits until someone hears it. */
+    if (n && w->hearing) poll(p, (nfds_t)n, ms);
     else if (ms > 0) usleep((useconds_t)ms * 1000);
 }
 
@@ -2219,6 +2222,7 @@ static double waiting_for_world(World *w, Soul **alive, size_t n) {
             sleepers = 1;
         }
     }
+    w->hearing = world;
     if (world) {
         int open = 0;
         for (size_t i = 0; i < w->nsrc; i++) if (!w->src[i].closed) open = 1;

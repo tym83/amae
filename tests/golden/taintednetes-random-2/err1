@@ -20,12 +20,12 @@ p18 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars
 p19 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p20 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p21 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p22 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p23 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n1: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 n1 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n1: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p24 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 cluster -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p0 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given

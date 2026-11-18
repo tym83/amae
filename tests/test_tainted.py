@@ -312,6 +312,20 @@ end
 
 
 class TheWorld(unittest.TestCase):
+    def test_a_soul_that_sleeps_does_not_spin(self):
+        """Standard input at its end is always ready; a soul that only sleeps
+        must not be woken by it over and over."""
+        import resource
+        program, _ = compile_source('written by "tests"\nsoul s\n    wait 1 seconds\n    say "awake"\nend\n')
+        before = resource.getrusage(resource.RUSAGE_CHILDREN)
+        with tempfile.TemporaryDirectory() as d:
+            res = subprocess.run([program], stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                                 env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
+        after = resource.getrusage(resource.RUSAGE_CHILDREN)
+        self.assertEqual(res.stdout, "awake\n")
+        spent = (after.ru_utime - before.ru_utime) + (after.ru_stime - before.ru_stime)
+        self.assertLess(spent, 0.3)
+
     def test_asking_listening_files_and_time(self):
         with tempfile.TemporaryDirectory() as d:
             src = """written by \"tests\"\nsoul s
@@ -891,6 +905,14 @@ class Scheduler(unittest.TestCase):
         pods = [fake_pod("there", node="a", host_port=80), fake_pod("wants", host_port=80, likes="a")]
         _, placed = place(nodes, pods)
         self.assertEqual(placed, {"ns/wants": "b"})
+
+    def test_two_pods_of_one_look_do_not_share_a_host_port(self):
+        nodes = [fake_node("a")]
+        pods = [fake_pod("first", host_port=80), fake_pod("second", host_port=80)]
+        life, placed = place(nodes, pods)
+        self.assertEqual(list(placed.values()), ["a"])
+        self.assertTrue(any("waits for the next look: host port TCP/80 on a is taken" in line
+                            for line in life.lines), life.lines)
 
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
