@@ -1211,6 +1211,8 @@ Value t_env(World *w, Value name) {
 }
 
 static double clock_now(void) {
+    const char *fixed = getenv("TAINTED_CLOCK");     /* a world whose time is set, for tests */
+    if (fixed && *fixed) return strtod(fixed, NULL);
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return (double)tv.tv_sec + tv.tv_usec / 1e6;
@@ -1248,6 +1250,19 @@ Value t_feeling(World *w, Soul *s, int what, Value who) {
         return t_int(n);
     }
     }
+}
+
+static void sha256(const unsigned char *data, size_t len, char out[65]);
+
+Value t_lineage(World *w) { return t_cstr(w->p->lineage ? w->p->lineage : ""); }
+Value t_source(World *w) { return t_cstr(w->p->source); }
+
+Value t_hash(World *w, Value text) {
+    Value t = show(text);
+    char *out = scratch(65);
+    sha256((const unsigned char *)t.s, (size_t)t.n, out);
+    (void)w;
+    return t_str(out, 64);
 }
 
 Value t_lines(World *w, Value text) {
@@ -2417,6 +2432,10 @@ int tainted_main(const Program *p, int argc, char **argv) {
         if (strncmp(argv[i], "--patience=", 11) == 0) patience = atoll(argv[i] + 11);
         else if (strcmp(argv[i], "--feelings") == 0) show_feelings = 1;
         else if (strcmp(argv[i], "--deterministic") == 0) deterministic = 1;
+        else if (strcmp(argv[i], "--lineage") == 0) {
+            fputs(p->lineage && *p->lineage ? p->lineage : "made by no compiler that remembers\n", stdout);
+            return 0;
+        }
         else if (strncmp(argv[i], "--", 2) == 0) { fprintf(stderr, "unknown flag %s\n", argv[i]); return 64; }
         else { fprintf(stderr, "usage: %s [--feelings] [--patience=N]\n", argv[0]); return 64; }
     }
