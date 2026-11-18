@@ -982,23 +982,26 @@ moves and both the one who lost it and the one who gave it keep the scar.
 ## 21. A long love
 
 ```tainted
-# A long love: how a first sight becomes a calm, strong attachment.
+# A long love: passion is only the spark; love is built, and grows stronger
+# every year.
 #
-# Mira and Teo meet. For two years every day is a date; then they marry and
-# keep talking every day, but stop running to meet each other. In the fourth
-# year Teo hurts Mira and apologizes. Passion, which needs meetings, cools;
-# intimacy, which needs answers, and attachment, which needs time spent close,
-# grow. Every year Mira says where they are.
+# Mira and Teo meet. For two years every day is a date, and passion is full:
+# that is the spark, and from then on every stretch of time they spend close
+# builds love, and the more love there is, the more each stretch builds. They
+# marry, and keep talking every day without running to meet. Twice Teo hurts
+# Mira. In the third year it still hurts, and he apologizes; in the eighth,
+# love is stronger than the hurt. Every year Mira says where they are.
 
 ritual season of_whom, year
-    give back "year " + year + ": " + phase with soul named of_whom + ", " + bond with soul named of_whom + "; passion " + passion soul named of_whom + ", intimacy " + intimacy soul named of_whom + ", commitment " + commitment soul named of_whom + ", attachment " + attachment to soul named of_whom
+    let who = of_whom
+    give back "year " + year + ": " + phase with soul named who + ", " + bond with soul named who + "; passion " + passion soul named who + ", love " + love for soul named who
 end
 
 soul mira
     meet teo
-    say "they meet: " + phase with teo + ", " + bond with teo
+    say "they meet: " + phase with teo + ", " + bond with teo + ", love " + love for teo
     note "year" = 1
-    while note "year" <= 6
+    while note "year" <= 10
         note "day" = 1
         while note "day" <= 30
             if note "year" <= 2
@@ -1015,24 +1018,24 @@ soul mira
             promise teo
             promise teo
         end
-        if note "year" == 4
-            hear teo into the_wound
-            say "      mira resents it: " + resentment toward teo + ", and is still open to him"
+        if note "year" == 3 or note "year" == 8
+            hear teo into hurtful
+            say "      year " + note "year" + ", he hurts her: resentment " + resentment toward teo + ", still open"
             tell teo "that hurt"
             hear teo into sorry
-            say "      after his apology: " + resentment toward teo
         end
         perform season with "teo", note "year" into said
         say said
         note "year" = note "year" + 1
     end
-    say "mira and teo: " + bond with teo + ", " + phase with teo
+    say "mira and teo, ten years on: " + bond with teo + ", " + phase with teo
 end
 
 soul teo
     meet mira
+    note "her scars" = 0
     note "year" = 1
-    while note "year" <= 6
+    while note "year" <= 10
         note "day" = 1
         while note "day" <= 30
             if note "year" <= 2
@@ -1049,11 +1052,13 @@ soul teo
             promise mira
             promise mira
         end
-        if note "year" == 4
+        if note "year" == 3 or note "year" == 8
+            note "her scars" = note "her scars" + 1
             knowingly wound mira
             tell mira "I said what I should not have"
             hear mira into how_it_felt
-            apologize to mira for scar 1
+            apologize to mira for scar note "her scars"
+            note "her scars" = note "her scars" + 1
             tell mira "I am sorry"
         end
         note "year" = note "year" + 1
@@ -1062,29 +1067,35 @@ end
 ```
 
 ```output
-they meet: lust, infatuation
-year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
-year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
-year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
-      mira resents it: 1, and is still open to him
-      after his apology: 0
-year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
-year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
-year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
-mira and teo: companionate love, attachment
+they meet: lust, infatuation, love 0
+year 1: attraction, romantic love; passion 6, love 1
+year 2: attachment, consummate love; passion 6, love 3
+      year 3, he hurts her: resentment 1, still open
+year 3: attachment, companionate love; passion 2, love 5
+year 4: attachment, companionate love; passion 2, love 9
+year 5: love, companionate love; passion 2, love 11
+year 6: love, consummate love; passion 3, love 14
+year 7: love, consummate love; passion 5, love 21
+      year 8, he hurts her: resentment 0, still open
+year 8: love, consummate love; passion 6, love 33
+year 9: love, consummate love; passion 6, love 40
+year 10: love, consummate love; passion 6, love 49
+mira and teo, ten years on: consummate love, love
 ```
 
-First sight is lust: passion and nothing else yet, infatuation. Two years of
-dates feed passion until it is full, while every answered question builds
-intimacy: attraction, romantic love; at the wedding commitment comes, and with
-it consummate love. Then they stop running to each other. Passion, which lives
-on meetings, cools; intimacy and commitment stay, and time spent close has
-been binding them all along: attachment.
+Passion and infatuation are only the spark. First sight is lust, two years of
+dates fill passion up, and from the moment it is full, every stretch of time
+the two spend close builds love, which `love for` shows. Each stretch builds a
+little more than the last, because the more love there is, the faster it
+grows.
 
-Attachment is what lets the fourth year pass. A wound closes a soul, unless it
-gave its heart or is attached by three or more; Mira is, so she resents it,
-stays open, and hears the apology. By the sixth year passion is gone and what
-they have is companionate love: calm, and stronger than at the start.
+When the dates stop, the spark cools, and for a while their bond is only
+companionate. Love does not cool with it: it goes on being built, and it shows
+more and more. In the third year a wound still hurts, but cannot close Mira,
+and the apology adds to what they have; by the eighth year the same wound
+leaves no resentment at all. Built love brings back the fire, too: from the
+sixth year their passion is warm again, and what they have is consummate love,
+stronger every year.
 
 ## 22. The second time
 

@@ -134,7 +134,7 @@ Value t_fate(World *w, Value n);
 Value t_lines(World *w, Value text);
 Value t_feeling(World *w, Soul *s, int what, Value who);
 enum { F_DISTANCE, F_RESENTMENT, F_HOPING, F_JEALOUS, F_ASHAMED, F_LONGING, F_LETTERS,
-       F_CONSENT, F_CROSSINGS, F_CHEMISTRY, F_ATTACHMENT, F_PHASE };
+       F_CONSENT, F_CROSSINGS, F_CHEMISTRY, F_LOVE, F_PHASE };
 Value t_note_of(World *w, Soul *s, Value key, Value who);
 
 enum { B_ADD, B_SUB, B_MUL, B_DIV, B_MOD, B_EQ, B_NE, B_LT, B_LE, B_GT, B_GE };

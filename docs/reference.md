@@ -81,7 +81,7 @@ ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
-is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry attachment phase
+is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -167,8 +167,8 @@ A name standing alone reads a variable from the soul's memory, which may have
 | `consent from S` | `1` while `S` consents to this soul |
 | `crossings with S` | how many times a boundary between them was crossed |
 | `chemistry with S` | what their first meeting brought that nobody could work out: −1, 0 or 1 ([Chemistry](#chemistry)) |
-| `attachment to S` | how much long closeness has bound this soul to `S` ([Attachment](#attachment)) |
-| `phase with S` | `"strangers"`, `"acquaintance"`, `"lust"`, `"attraction"` or `"attachment"` ([Attachment](#attachment)) |
+| `love for S` | the love this soul has built with `S` ([Love is built](#love-is-built)) |
+| `phase with S` | `"strangers"`, `"acquaintance"`, `"lust"`, `"attraction"`, `"attachment"` or `"love"` ([Love is built](#love-is-built)) |
 | `note k of S` | the note `k` of another soul, if it lets this one in ([Boundaries](#boundaries)) |
 
 All of them describe how this soul sees `S`; relationships are not symmetric.
@@ -421,8 +421,8 @@ Every soul has its own view of every soul it has met:
 |---|---|---|
 | trust | 0 | `warm to` +1, `cool to` −1 (not below 0), a wound sets it to 0 |
 | intimacy | 0 | +1 on both sides for an answer, halved by a wound |
-| passion | 0 | +3 at first sight, +1 for a later meeting while it is below 6, −1 for fright, cools while apart |
-| attachment | 0 | +1 for every 150 steps spent close, without resentment |
+| passion | 0 | +3 at first sight, +1 for a later meeting while it is below 6, −1 for fright, cools while apart, kept up by love |
+| love | 0 | built once passion has been full, a little more for every 150 steps spent close ([Love is built](#love-is-built)) |
 | commitment | 0 | `promise` +1, `leave` sets it to 0 |
 | heart given | no | `give heart to` |
 | closed | no | a wound, unless the heart was given; `forgive` opens |
@@ -446,26 +446,32 @@ commitment have reached 3:
 
 Two strangers who meet at first sight start with passion 3: infatuation.
 
-### Attachment
+### Love is built
 
-Passion needs meetings and cools without them; a later meeting feeds it only
-until it reaches 6, because being in love does not grow without end. What
-grows with time is attachment: every 150 steps two souls spend close, in
-touch at least every 50 steps and with no resentment between them, bind them
-by one more. Attachment is what holds when passion has cooled:
+Passion and infatuation are the spark, not the love. Until passion has once
+been full (3 or more), nothing is built. From then on, every 150 steps the two
+souls spend close, in touch at least every 50 steps and with no resentment
+between them, add to their love, and each such stretch adds `1 + love / 5`:
+the more love has been built, the faster it grows. What it lives through
+builds it too: an apology accepted where there is love adds one on both sides.
 
-- a soul attached by `a` is frightened only by more than `intimacy + 2 + a`
-  unanswered words;
-- intimacy, which fades without attention, does not fade below attachment;
-- a wound does not close a soul attached by 3 or more, as if it had given its
-  heart.
+The stronger the love, the more it shows:
 
-`phase with S` follows Helen Fisher's three stages: `lust` while passion is
-there alone, `attraction` when intimacy has come too, and `attachment` once
-attachment has reached 3. A long love moves through Sternberg's names the same
-way: infatuation at first sight, romantic love as intimacy grows, consummate
-love with commitment, and, when passion has cooled and intimacy, commitment
-and attachment remain, companionate love: calm, and strong.
+- a soul is frightened only by more than `intimacy + 2 + love` unanswered words;
+- intimacy, which fades without attention, does not fade below love;
+- from 3, a wound no longer closes the soul, as if it had given its heart;
+- from 6, a wound leaves no resentment, and words between them arrive at once,
+  however far apart they have grown;
+- passion, which cools without meetings, is kept at a quarter of the love, up
+  to full: built love brings back the fire the spark began.
+
+`phase with S` follows Helen Fisher's stages and goes on past them: `lust`
+while passion is there alone, `attraction` when intimacy has come too,
+`attachment` once love has reached 3, and `love` from 10. A long love moves
+through Sternberg's names the same way: infatuation at first sight, romantic
+love, consummate love with commitment; while the spark cools it may pass
+through companionate love, and as the built love grows it brings the passion
+back, and the love is consummate again, and stronger every year.
 
 ### Chemistry
 

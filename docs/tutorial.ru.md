@@ -1000,23 +1000,26 @@ tainted: line 3: alice and bob cannot get along: here alice tells bob, but at li
 ## 21. Долгая любовь
 
 ```tainted
-# A long love: how a first sight becomes a calm, strong attachment.
+# A long love: passion is only the spark; love is built, and grows stronger
+# every year.
 #
-# Mira and Teo meet. For two years every day is a date; then they marry and
-# keep talking every day, but stop running to meet each other. In the fourth
-# year Teo hurts Mira and apologizes. Passion, which needs meetings, cools;
-# intimacy, which needs answers, and attachment, which needs time spent close,
-# grow. Every year Mira says where they are.
+# Mira and Teo meet. For two years every day is a date, and passion is full:
+# that is the spark, and from then on every stretch of time they spend close
+# builds love, and the more love there is, the more each stretch builds. They
+# marry, and keep talking every day without running to meet. Twice Teo hurts
+# Mira. In the third year it still hurts, and he apologizes; in the eighth,
+# love is stronger than the hurt. Every year Mira says where they are.
 
 ritual season of_whom, year
-    give back "year " + year + ": " + phase with soul named of_whom + ", " + bond with soul named of_whom + "; passion " + passion soul named of_whom + ", intimacy " + intimacy soul named of_whom + ", commitment " + commitment soul named of_whom + ", attachment " + attachment to soul named of_whom
+    let who = of_whom
+    give back "year " + year + ": " + phase with soul named who + ", " + bond with soul named who + "; passion " + passion soul named who + ", love " + love for soul named who
 end
 
 soul mira
     meet teo
-    say "they meet: " + phase with teo + ", " + bond with teo
+    say "they meet: " + phase with teo + ", " + bond with teo + ", love " + love for teo
     note "year" = 1
-    while note "year" <= 6
+    while note "year" <= 10
         note "day" = 1
         while note "day" <= 30
             if note "year" <= 2
@@ -1033,24 +1036,24 @@ soul mira
             promise teo
             promise teo
         end
-        if note "year" == 4
-            hear teo into the_wound
-            say "      mira resents it: " + resentment toward teo + ", and is still open to him"
+        if note "year" == 3 or note "year" == 8
+            hear teo into hurtful
+            say "      year " + note "year" + ", he hurts her: resentment " + resentment toward teo + ", still open"
             tell teo "that hurt"
             hear teo into sorry
-            say "      after his apology: " + resentment toward teo
         end
         perform season with "teo", note "year" into said
         say said
         note "year" = note "year" + 1
     end
-    say "mira and teo: " + bond with teo + ", " + phase with teo
+    say "mira and teo, ten years on: " + bond with teo + ", " + phase with teo
 end
 
 soul teo
     meet mira
+    note "her scars" = 0
     note "year" = 1
-    while note "year" <= 6
+    while note "year" <= 10
         note "day" = 1
         while note "day" <= 30
             if note "year" <= 2
@@ -1067,11 +1070,13 @@ soul teo
             promise mira
             promise mira
         end
-        if note "year" == 4
+        if note "year" == 3 or note "year" == 8
+            note "her scars" = note "her scars" + 1
             knowingly wound mira
             tell mira "I said what I should not have"
             hear mira into how_it_felt
-            apologize to mira for scar 1
+            apologize to mira for scar note "her scars"
+            note "her scars" = note "her scars" + 1
             tell mira "I am sorry"
         end
         note "year" = note "year" + 1
@@ -1080,32 +1085,35 @@ end
 ```
 
 ```output
-they meet: lust, infatuation
-year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
-year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
-year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
-      mira resents it: 1, and is still open to him
-      after his apology: 0
-year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
-year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
-year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
-mira and teo: companionate love, attachment
+they meet: lust, infatuation, love 0
+year 1: attraction, romantic love; passion 6, love 1
+year 2: attachment, consummate love; passion 6, love 3
+      year 3, he hurts her: resentment 1, still open
+year 3: attachment, companionate love; passion 2, love 5
+year 4: attachment, companionate love; passion 2, love 9
+year 5: love, companionate love; passion 2, love 11
+year 6: love, consummate love; passion 3, love 14
+year 7: love, consummate love; passion 5, love 21
+      year 8, he hurts her: resentment 0, still open
+year 8: love, consummate love; passion 6, love 33
+year 9: love, consummate love; passion 6, love 40
+year 10: love, consummate love; passion 6, love 49
+mira and teo, ten years on: consummate love, love
 ```
 
-С первого взгляда — влечение (`lust`): пока одна только страсть, и связь эта
-зовётся влюблённостью (`infatuation`). Два года свиданий питают страсть, пока
-она не наполнится, а каждый вопрос, на который ответили, прибавляет близости:
-это уже влюблённость (`attraction`) и романтическая любовь; на свадьбе
-приходит верность, а с ней совершенная любовь. Потом они перестают бегать друг
-к другу. Страсть, которая живёт встречами, остывает; близость и верность
-остаются, а проведённые рядом дни всё это время связывали их: так приходит
-привязанность.
+Страсть и влюблённость — только искра. С первого взгляда — влечение (`lust`),
+два года свиданий наполняют страсть, и с той минуты, как она наполнилась,
+каждый срок, который двое проводят рядом, строит любовь; её и показывает
+`love for`. Каждый срок строит чуть больше прежнего, потому что чем больше
+любви, тем быстрее она растёт.
 
-Привязанность и помогает пережить четвёртый год. Рана закрывает душу, если
-только та не отдала сердце и её привязанность не дошла до трёх; у Миры дошла,
-поэтому она обижается, но остаётся открытой и слышит извинение. К шестому году
-страсти уже нет, и между ними дружеская любовь, спокойная и сильнее, чем
-вначале.
+Когда свидания кончаются, искра остывает, и какое-то время их связь только
+дружеская. Любовь вместе с ней не остывает: она строится дальше и проявляется
+всё сильнее. На третий год рана ещё причиняет боль, но закрыть Миру уже не
+может, а извинение прибавляет к тому, что у них есть; к восьмому году та же
+рана не оставляет никакой обиды. Построенная любовь возвращает и огонь: с
+шестого года страсть снова теплеет, и между ними совершенная любовь, с каждым
+годом всё крепче.
 
 ## 22. Во второй раз
 
