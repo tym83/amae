@@ -21,7 +21,7 @@
 
 # Being handed something by the cluster, and thanking it, so that the
 # cluster never says too much unanswered.
-ritual receive
+ritual accept_gift
     hear cluster into gift
     tell cluster "thank you"
     give back gift
@@ -65,9 +65,9 @@ end
 
 kind pod
     meet cluster
-    perform receive into likes
+    perform accept_gift into likes
     note "likes" = likes
-    perform receive into nodes
+    perform accept_gift into nodes
     note "nodes" = nodes
     perform meet_everyone with "nodes"
     note "k" = 1
@@ -103,11 +103,11 @@ end
 
 kind node
     meet cluster
-    perform receive into seats
+    perform accept_gift into seats
     note "seats" = number of seats
-    perform receive into likes
+    perform accept_gift into likes
     note "likes" = likes
-    perform receive into pods
+    perform accept_gift into pods
     note "pods" = pods
     perform meet_everyone with "pods"
     note "held" = 0

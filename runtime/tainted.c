@@ -400,11 +400,19 @@ struct Soul {
     size_t nfears, capfears;
     int sleeping;
     double wake;
+    Value last_heard;   /* what the soul heard last, which rewrites what it forgets */
+    int heard_any;
+    struct Letter *letters;
+    size_t nletters, capletters;
     struct Handler *handlers;   /* the enduring this soul is inside of */
     size_t nhandlers, caphandlers;
 };
 
 typedef struct Handler { int unit, depth, start, end, to, slot; } Handler;
+
+/* A letter is on its way until the round it arrives in; it is kept until it
+ * is read, even after its writer is gone. */
+typedef struct Letter { int from; int64_t arrives; Value v; int read; } Letter;
 
 /* Where the world's lines come from: standard input, and every process the
  * program listens to. */
@@ -414,6 +422,8 @@ typedef struct {
     int a, b;
     int met, gift, closed, left, abandoned;
     int64_t trust, intimacy, passion, commitment, pressure, last_meet, faded;
+    int64_t distance, contact, apart_counted, attention_counted;
+    int resentment, shame, hope, jealous;
     List heard, scars;
 } Rel;
 
@@ -431,9 +441,13 @@ struct World {
     jmp_buf *trap;
     Source *src;
     size_t nsrc, capsrc;
+    int in_transit;     /* words or letters are on their way: time passes, nobody is stuck */
 };
 
 int t_pc(const Soul *s) { return s->pc; }
+
+static void grieve(World *w, Soul *s);
+static void heard(Soul *s, Value v);
 
 static const Unit *unit_of(World *w, Soul *s) { return &w->p->units[s->unit]; }
 
@@ -482,7 +496,33 @@ static Value name_of(Soul *s) { return t_str(s->name, s->nlen); }
 
 /* ------------------------------------------------------ relationships */
 
+/* Distance grows by one for every FADE steps without a word or a meeting;
+ * intimacy, which needs attention, falls by one for every 2 * FADE such
+ * steps, or every FADE while there is resentment. */
+static void settle(Rel *r, Soul *owner) {
+    if (!r->met || r->left || owner->step <= r->contact) return;
+    int64_t apart = owner->step - r->contact;
+    int64_t due = apart / FADE;
+    if (due > r->apart_counted) { r->distance += due - r->apart_counted; r->apart_counted = due; }
+    int64_t every = r->resentment ? FADE : 2 * FADE;
+    int64_t lost = apart / every;
+    if (lost > r->attention_counted) {
+        r->intimacy -= lost - r->attention_counted;
+        if (r->intimacy < 0) r->intimacy = 0;
+        r->attention_counted = lost;
+    }
+}
+
+static void in_touch(Rel *r, Soul *owner) {
+    settle(r, owner);
+    r->contact = owner->step;
+    r->apart_counted = 0;
+    r->attention_counted = 0;
+}
+
 static void cool_down(Rel *r, Soul *owner) {
+    settle(r, owner);
+    if (r->hope) { r->last_meet = owner->step; r->faded = 0; return; }
     if (r->met && !r->left && owner->step > r->last_meet) {
         int64_t due = (owner->step - r->last_meet) / PASSION_FADE;
         if (due > r->faded) {
@@ -512,6 +552,16 @@ static Rel *rel(World *w, Soul *a, Soul *b) {
     Rel *r = w->rels[i];
     cool_down(r, a);
     return r;
+}
+
+static Rel *rel_if(World *w, Soul *a, Soul *b) {
+    char key[16];
+    memcpy(key, &a->id, sizeof(int));
+    memcpy(key + sizeof(int), &b->id, sizeof(int));
+    int i = table_get(&w->relindex, key, 2 * sizeof(int));
+    if (i < 0) return NULL;
+    cool_down(w->rels[i], a);
+    return w->rels[i];
 }
 
 static const char *bond_name(Rel *r) {
@@ -600,6 +650,21 @@ Value t_var(World *w, Soul *s, int slot) {
     int64_t periods = (s->step - m->touched) / FADE;
     if (periods) {
         Value faded = fade(m->v, periods);
+        /* Remembering rewrites: what was lost is filled in from the end of what
+         * the soul heard last, when it heard the same kind of thing. */
+        if (s->heard_any && faded.tag == T_INT && s->last_heard.tag == T_INT && periods < 19) {
+            int64_t lost = 1;
+            for (int64_t k = 0; k < periods; k++) lost *= 10;
+            int64_t tail = s->last_heard.i < 0 ? -(s->last_heard.i % lost) : s->last_heard.i % lost;
+            faded.i += faded.i < 0 ? -tail : tail;
+        } else if (s->heard_any && faded.tag == T_STR && m->v.tag == T_STR && s->last_heard.tag == T_STR) {
+            int64_t missing = chars(m->v) - chars(faded);
+            int64_t have = chars(s->last_heard);
+            if (missing > have) missing = have;
+            Value tail = t_str(s->last_heard.s + offset(s->last_heard, have - missing),
+                               s->last_heard.n - offset(s->last_heard, have - missing));
+            faded = t_bin(w, B_ADD, faded, tail);
+        }
         store(m, faded, s->step);
     } else {
         m->touched = s->step;
@@ -1123,6 +1188,25 @@ static double clock_now(void) {
 
 Value t_now(World *w) { (void)w; return t_dec(floor(clock_now() * 1000) / 1000); }
 
+Value t_feeling(World *w, Soul *s, int what, Value who) {
+    Soul *b = resolve(w, s, who);
+    Rel *r = rel(w, s, b);
+    switch (what) {
+    case F_DISTANCE: return t_int(r->distance);
+    case F_RESENTMENT: return t_int(r->resentment);
+    case F_HOPING: return t_int(r->hope);
+    case F_JEALOUS: return t_int(r->jealous);
+    case F_ASHAMED: return t_int(r->shame);
+    case F_LONGING: return t_int(r->distance >= 2 && r->passion > 0);
+    default: {
+        int64_t n = 0;
+        for (size_t i = 0; i < s->nletters; i++)
+            if (!s->letters[i].read && s->letters[i].from == b->id && s->letters[i].arrives <= w->round) n++;
+        return t_int(n);
+    }
+    }
+}
+
 Value t_lines(World *w, Value text) {
     needs_word(w, "lines", text);
     Value l = t_list_new(w);
@@ -1188,6 +1272,7 @@ int t_goodbye_with(World *w, Soul *s, Value code) {
     if (code.tag != T_INT || code.i < 0 || code.i > 255)
         t_fail(w, "a program can only end with a number from 0 to 255, not %s", cs(code));
     w->ending = (int)code.i;
+    grieve(w, s);
     s->done = 1;
     return 1;
 }
@@ -1225,7 +1310,7 @@ int t_first(World *w, Soul *s, int to) {
 }
 
 int t_wait(World *w, Soul *s) { (void)w; advance(s); return 1; }
-int t_goodbye(World *w, Soul *s) { (void)w; s->done = 1; return 1; }
+int t_goodbye(World *w, Soul *s) { grieve(w, s); s->done = 1; return 1; }
 int t_silence(World *w, Soul *s) { (void)w; (void)s; return 0; }
 
 int t_recall(World *w, Soul *s, const Ins *ins) {
@@ -1308,10 +1393,15 @@ static int try_meet(World *w, Soul *a, Soul *b) {
     }
     Rel *rs[2] = {ra, rb};
     for (int k = 0; k < 2; k++) {
+        settle(rs[k], pair[k][0]);
+        rs[k]->distance /= 2;
         rs[k]->met = 1;
         rs[k]->passion += warmth;
         rs[k]->last_meet = pair[k][0]->step;
         rs[k]->faded = 0;
+        rs[k]->contact = pair[k][0]->step;
+        rs[k]->apart_counted = 0;
+        rs[k]->attention_counted = 0;
         advance(pair[k][0]);
     }
     return 1;
@@ -1504,6 +1594,75 @@ int t_sleep(World *w, Soul *s, Value seconds) {
     return 1;
 }
 
+int t_send(World *w, Soul *s, const Ins *ins) {
+    Soul *b = resolve(w, s, target(w, s, ins));
+    Rel *r = known(w, s, b);
+    Value v = ins->a(w, s);
+    if (b->nletters == b->capletters) {
+        b->capletters = b->capletters ? b->capletters * 2 : 8;
+        b->letters = oom(realloc(b->letters, b->capletters * sizeof(Letter)));
+    }
+    Letter *l = &b->letters[b->nletters++];
+    l->from = s->id;
+    l->arrives = w->round + r->distance;
+    l->v = keep(v);
+    l->read = 0;
+    in_touch(r, s);
+    advance(s);
+    return 1;
+}
+
+int t_receive(World *w, Soul *s, const Ins *ins) {
+    Soul *from = NULL;
+    if (ins->mode == TO_NAMED) {
+        from = resolve(w, s, target(w, s, ins));
+        known(w, s, from);
+    }
+    for (size_t i = 0; i < s->nletters; i++) {
+        Letter *l = &s->letters[i];
+        if (l->read || (from && l->from != from->id)) continue;
+        if (l->arrives > w->round) { w->in_transit = 1; continue; }
+        Soul *writer = w->order[l->from];
+        Rel *r = rel(w, s, writer);
+        if (r->closed) continue;
+        l->read = 1;
+        store(&s->mem[ins->var], l->v, s->step);
+        if (ins->var2 >= 0) store(&s->mem[ins->var2], name_of(writer), s->step);
+        list_push(&r->heard, l->v);
+        heard(s, l->v);
+        in_touch(r, s);
+        advance(s);
+        return 1;
+    }
+    return 0;
+}
+
+/* Letters from souls that are gone cannot be stopped, only read: whatever a
+ * soul has not read of them when it ends stays with it as scars. */
+static void grieve(World *w, Soul *s) {
+    for (size_t i = 0; i < s->nletters; i++) {
+        Letter *l = &s->letters[i];
+        if (l->read || !w->order[l->from]->done) continue;
+        l->read = 1;
+        list_push(&rel(w, s, w->order[l->from])->scars, l->v);
+    }
+}
+
+int t_apologize(World *w, Soul *s, const Ins *ins, Value scar) {
+    Soul *b = resolve(w, s, target(w, s, ins));
+    Rel *mine = known(w, s, b);
+    Rel *them = rel(w, b, s);
+    Value wound = printf_value("wounded by %s", s->name);
+    if (scar.tag != T_INT || scar.i < 1 || scar.i > (int64_t)them->scars.n || !same(them->scars.v[scar.i - 1], wound))
+        t_fail(w, "%s's scar %s is not a wound %s gave", b->name, cs(scar), s->name);
+    them->resentment = 0;
+    mine->shame = 0;
+    them->trust++;
+    list_push(&them->scars, printf_value("%s apologized for: wounded by %s", s->name, s->name));
+    advance(s);
+    return 1;
+}
+
 int t_endure(World *w, Soul *s, const Ins *ins) {
     (void)w;
     if (s->nhandlers == s->caphandlers) {
@@ -1601,6 +1760,25 @@ int t_remove(World *w, Soul *s, int slot, int n, const Value *path, Value key) {
     return 1;
 }
 
+static void heard(Soul *s, Value v) {
+    if (s->heard_any) drop(s->last_heard);
+    s->last_heard = keep(v);
+    s->heard_any = 1;
+}
+
+/* Whoever gave their heart to someone who confides in another is jealous. */
+static void jealousy(World *w, Soul *snd, Soul *rcv) {
+    for (size_t i = 0; i < w->nsouls; i++) {
+        Soul *a = w->order[i];
+        if (a == snd || a == rcv) continue;
+        Rel *r = rel_if(w, a, snd);
+        if (!r || !r->gift || r->left) continue;
+        r->jealous = 1;
+        r->passion++;
+        if (r->intimacy > 0) r->intimacy--;
+    }
+}
+
 static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     const Ins *si = current(w, snd), *ri = current(w, rcv);
     if (!si || (si->op != OP_TELL && si->op != OP_CONFIDE)) return 0;
@@ -1611,15 +1789,21 @@ static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     if (!rr->met || rr->closed || rr->left || rs->left) return 0;
     int64_t *f = fear_of(rcv, snd->id);
     if (f && *f > 0) return 0;
+    if (w->round - snd->arrived < rs->distance) { w->in_transit = 1; return 0; }  /* still on their way */
     if (si->op == OP_CONFIDE && !rs->gift)
         t_fail(w, "%s can confide only in someone they gave their heart to", snd->name);
     Value value = si->a(w, snd);
     store(&rcv->mem[ri->var], value, rcv->step);
     if (ri->var2 >= 0) store(&rcv->mem[ri->var2], name_of(snd), rcv->step);
     list_push(&rr->heard, value);
-    if (rr->pressure > 0) { rs->intimacy++; rr->intimacy++; }
+    heard(rcv, value);
+    in_touch(rs, snd);
+    in_touch(rr, rcv);
+    if (rr->pressure > 0 && !rr->resentment) { rs->intimacy++; rr->intimacy++; }
     rr->pressure = 0;
-    rs->pressure++;
+    if (si->tender) { if (!rr->resentment) rr->intimacy++; }
+    else rs->pressure++;
+    if (si->op == OP_CONFIDE) jealousy(w, snd, rcv);
     if (rs->pressure > rr->intimacy + 2) {
         frighten(rcv, snd->id, 3 + rs->pressure);
         if (rr->passion > 0) rr->passion--;
@@ -1669,12 +1853,23 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
     case OP_PROMISE: mine->commitment++; break;
     case OP_GIVE: mine->gift = 1; break;
     case OP_FORGIVE: mine->closed = 0; break;
+    case OP_TAKE_BACK: mine->gift = 0; break;
+    case OP_HOPE: mine->hope = 1; break;
+    case OP_ADMIT: mine->resentment = 0; break;
+    case OP_THANK: {
+        mine->commitment++;
+        Rel *them = rel(w, b, s);
+        if (them->met && !them->resentment) them->intimacy++;
+        break;
+    }
     case OP_WOUND: {
         Rel *them = rel(w, b, s);
         them->trust = 0;
         them->intimacy /= 2;
         list_push(&them->scars, printf_value("wounded by %s", s->name));
         if (!them->gift) them->closed = 1;
+        them->resentment = 1;
+        if (them->gift) mine->shame = 1;
         break;
     }
     case OP_LEAVE: {
@@ -1697,6 +1892,7 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
 static int step_soul(World *w, Soul *s) {
     if (!current(w, s)) {
         if (s->nframes) { finish_ritual(w, s, t_int(0)); return 1; }
+        grieve(w, s);
         s->done = 1;
         return 1;
     }
@@ -1724,6 +1920,7 @@ static void lament(World *w) {
         if (!b) { fprintf(stderr, "%s is still waiting for %s\n", s->name, cs(who)); continue; }
         if (rel(w, b, s)->left) fprintf(stderr, "%s is still waiting for %s, who left\n", s->name, b->name);
         else if (b->done) fprintf(stderr, "%s is still waiting for %s, who is gone\n", s->name, b->name);
+        else if (rel(w, s, b)->hope) fprintf(stderr, "%s is still waiting for %s, and still hopes\n", s->name, b->name);
         else fprintf(stderr, "%s is still waiting for %s\n", s->name, b->name);
     }
 }
@@ -1843,6 +2040,7 @@ static int live(World *w) {
             return 4;
         }
         int moved = 0;
+        w->in_transit = 0;
         for (size_t k = 0; k < nalive; k++) {
             Soul *s = list[k];
             s->step++;
@@ -1859,6 +2057,7 @@ static int live(World *w) {
             }
             step_over();
         }
+        if (!moved && w->in_transit) { free(list); continue; }
         if (!moved) {
             double wait = waiting_for_world(w, list, nalive);
             if (wait > -2) {

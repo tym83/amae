@@ -1,0 +1,12 @@
+soul a
+ meet b
+ wait
+ wait
+ wait
+ say scars of b
+end
+soul b
+ meet a
+ send a "x"
+ send a "y"
+end

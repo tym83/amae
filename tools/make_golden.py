@@ -172,7 +172,8 @@ def main():
     if os.path.exists(GOLDEN):
         shutil.rmtree(GOLDEN)
     os.makedirs(GOLDEN)
-    for folder, prefix in (("examples", "examples-"), ("examples/classics", "classics-")):
+    for folder, prefix in (("examples", "examples-"), ("examples/classics", "classics-"),
+                           ("examples/feelings", "feelings-")):
         for name in sorted(os.listdir(os.path.join(ROOT, folder))):
             if name.endswith(".tainted"):
                 key = prefix + name[:-len(".tainted")]
