@@ -473,6 +473,7 @@ class Parting(unittest.TestCase):
                           patience=float("inf"))
         threading.Thread(target=w.run, daemon=True).start()
         history, born = [], 0
+        self.logs = []
         for tick in range(1, ticks + 1):
             for line in (["tick %d" % tick]
                          + ["node %s %s" % (k, " ".join(v)) for k, v in nodes.items()]
@@ -485,6 +486,7 @@ class Parting(unittest.TestCase):
             self.assertIn("done", said)
             cmds = [c for c in said if c != "done" and not c.startswith("log ")]
             history.append(cmds)
+            self.logs.extend(c for c in said if c.startswith("log "))
             said.clear()
             for c in cmds:
                 w_ = c.split()
@@ -535,6 +537,13 @@ class Parting(unittest.TestCase):
         nodes = {"w2": ["ready", "cordoned", "leaving"]}
         pods = {"a/bare": ["w2", "ready", "none"]}
         self.assertEqual(self.live(nodes, pods, 3), [[], [], []])
+
+    def test_says_why_it_is_stuck_once(self):
+        nodes = {"w2": ["ready", "cordoned", "leaving"]}
+        pods = {"a/bare": ["w2", "ready", "none"]}
+        self.live(nodes, pods, 4)
+        self.assertEqual(self.logs,
+                         ["log w2 cannot leave: its last pod has nowhere to come back from"])
 
 
 if __name__ == "__main__":
