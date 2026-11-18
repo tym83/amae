@@ -1,4 +1,6 @@
 # Towers of Hanoi with a ritual that performs itself.
+
+written by "tainted"
 ritual move n, from_peg, to_peg, spare
     if n == 0
         give back 0

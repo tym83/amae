@@ -47,6 +47,8 @@ Tainted помнит каждую программу, которую когда-
 ## 1. Душа
 
 ```tainted
+written by "tainted"
+
 soul alice
     say "hello, world"
 end
@@ -63,6 +65,8 @@ hello, world
 ## 2. Две души
 
 ```tainted
+written by "tainted"
+
 soul alice
     meet bob
     tell bob "hello"
@@ -97,6 +101,8 @@ alice heard: hello to you
 ## 3. Наедине с собой
 
 ```tainted
+written by "tainted"
+
 soul counter
     let i = 1
     while i <= 15
@@ -145,6 +151,8 @@ FizzBuzz
 ## 4. Слишком много слов
 
 ```tainted
+written by "tainted"
+
 soul ben
     meet ana
     tell ana "I saw you and forgot my own name"
@@ -185,6 +193,8 @@ Ben говорит три фразы подряд, и ana не отвечает 
 ## 5. Доверие, обещания и узы
 
 ```tainted
+written by "tainted"
+
 soul alice
     meet bob
     let n = 0
@@ -239,6 +249,8 @@ Bob ответил трижды и ничего не обещал: это ром
 ## 6. Сердце и нож
 
 ```tainted
+written by "tainted"
+
 soul alice
     meet bob
     meet carol
@@ -287,6 +299,8 @@ Alice отдала сердце carol, но не bob. Оба её ранят, и
 ## 7. Уход
 
 ```tainted
+written by "tainted"
+
 soul ana
     meet ben
     tell ben "stay"
@@ -325,6 +339,8 @@ ana keeps 2 scars:
 ## 8. Память выцветает
 
 ```tainted
+written by "tainted"
+
 soul penelope
     let year = 1999
     let name = "Odysseus"
@@ -367,6 +383,8 @@ what she wrote down does not fade: Odysseus
 ## 9. Много душ
 
 ```tainted
+written by "tainted"
+
 kind worker
     meet anyone as boss
     hear soul named boss into task
@@ -409,6 +427,8 @@ worker 3: 4 squared is 16
 ## 10. Ритуалы
 
 ```tainted
+written by "tainted"
+
 ritual gcd a, b
     while b != 0
         let r = a % b
@@ -453,6 +473,8 @@ gcd: 21
 ```tainted
 # A rumour passes from soul to soul. Nobody knows how far it went
 # until everyone falls silent.
+
+written by "tainted"
 kind gossip
     meet anyone as teller
     hear soul named teller into rumour
@@ -497,6 +519,8 @@ gossip5 heard: the miller is rich!!!!
 ## 12. Мир
 
 ```tainted
+written by "tainted"
+
 soul reader
     let heard = 0
     let longest = ""
@@ -528,6 +552,8 @@ that is
 ## 13. Списки и словари
 
 ```tainted
+written by "tainted"
+
 soul librarian
     let shelf = ["Ada", "Oberon"]
     put "Modula-2" into shelf
@@ -583,6 +609,8 @@ Oberon in 2 copies
 ## 14. Вопросы к миру
 
 ```tainted
+written by "tainted"
+
 soul clerk
     ask world "date -u +%Y" into year
     say "the world says it is " + (number of year >= 2026)
@@ -624,6 +652,8 @@ one then two
 ## 15. Перетерпеть боль
 
 ```tainted
+written by "tainted"
+
 ritual open_door name
     let doors = {"front": "open"}
     give back doors[name]
@@ -665,6 +695,8 @@ and the guest goes on
 
 ```tainted
 # words.tainted: a few rituals to learn from.
+
+written by "tainted"
 ritual shout text
     ask world "tr a-z A-Z" telling text into loud
     give back loud
@@ -682,6 +714,8 @@ end
 ```
 
 ```tainted
+written by "tainted"
+
 learn "words.tainted"
 
 soul poet
@@ -706,6 +740,8 @@ sc
 ## 17. Чувства случаются
 
 ```tainted
+written by "tainted"
+
 soul ana
     meet ben
     let year = 1999
@@ -778,6 +814,8 @@ a letter: from far away
 
 ```tainted
 # Two moves together, then one of them withdraws halfway through the second.
+
+written by "tainted"
 soul ana
     meet ben
     consent to ben
@@ -833,6 +871,8 @@ ben: I withdrew
 
 ```tainted
 # Some things anyone trusted may read; some only a heart given lets you near.
+
+written by "tainted"
 soul ana
     meet ben
     meet cal
@@ -883,6 +923,8 @@ cal: ana keeps fear behind a boundary cal may not cross
 
 ```tainted
 # The same meeting, lived by souls who love in different ways.
+
+written by "tainted"
 soul erin is eros
     meet luca
     say "erin at first sight: passion " + passion luca
@@ -1010,6 +1052,8 @@ tainted: line 3: alice and bob cannot get along: here alice tells bob, but at li
 # Mira. In the third year it still hurts, and he apologizes; in the eighth,
 # love is stronger than the hurt. Every year Mira says where they are.
 
+written by "tainted"
+
 ritual season of_whom, year
     let who = of_whom
     give back "year " + year + ": " + phase with soul named who + ", " + bond with soul named who + "; passion " + passion soul named who + ", love " + love for soul named who
@@ -1118,6 +1162,8 @@ mira and teo, ten years on: consummate love, love
 ## 22. Во второй раз
 
 ```tainted
+written by "tainted"
+
 soul stranger
     first time
         say "I have never been here before."
@@ -1155,6 +1201,8 @@ Tainted считает, сколько раз выполнялась кажда�
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again
 # once it is back, but only the nodes it cordoned itself.
+
+written by "tainted"
 
 ritual without name, list
     let rest = ""

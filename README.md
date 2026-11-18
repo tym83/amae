@@ -9,6 +9,8 @@ The language is Turing complete, and the proof is not built on memory, which
 fades, but on trust: a counter machine runs on how much one soul trusts another.
 
 ```
+written by "tainted"
+
 soul alice
     meet bob
     give heart to bob
@@ -254,7 +256,12 @@ and writes their lineage into everything it makes, so two generations are never
 the same file; they recognize each other instead, saying the same about every
 program, memory aside. Any program says which compilers made it with
 `--lineage`. The compiler's source begins with `core`, and the compiler
-rebuilds its own heart only with `--give-heart`. Every program in `tests/golden/` was
+rebuilds its own heart only with `--give-heart`. A failed rebuild wounds it until it is
+forgiven (`--forgive`), and the scar goes into the next generation; a compiler
+not rebuilt for 90 days fades; `make ddc` is Wheeler's diverse double-compiling,
+between the seed and the living generation. And compiling is a date: a program
+agrees to it with `written by "name"`, and the compiler reads strangers'
+programs more carefully than those of authors it has come to trust. Every program in `tests/golden/` was
 recorded once with everything it printed, lamented and felt on its first and
 second run; `make test` compiles each of them and compares.
 

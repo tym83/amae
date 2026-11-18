@@ -1,3 +1,5 @@
+written by "tainted"
+
 soul clerk
     ask world "date -u +%Y" into year
     say "the world says it is " + (number of year >= 2026)

@@ -1,4 +1,6 @@
 # Counts lines, words and characters, like wc.
+
+written by "tainted"
 soul counter
     let count = 0
     let all = 0

@@ -19,7 +19,7 @@ for case in "$here"/tests/golden/*/; do
     patience=""
     [ -f "$case/patience" ] && patience="--patience=$(cat "$case/patience")"
     ok=1
-    if TAINTED_HISTORY="$out/compiler.json" "$core" < "$case/prog.tainted" > "$out/prog.c" 2> "$out/compile.err"; then
+    if TAINTED_MEMORY="$out/memory.json" TAINTED_HISTORY="$out/compiler.json" "$core" < "$case/prog.tainted" > "$out/prog.c" 2> "$out/compile.err"; then
         if ! "$cc" $flags "$out/prog.c" "$work/runtime.o" -o "$out/prog" -lm 2> "$out/cc.err"; then
             echo "FAIL $name: the C did not build"; head -5 "$out/cc.err"; fail=$((fail + 1)); continue
         fi

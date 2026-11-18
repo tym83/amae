@@ -1,6 +1,8 @@
 # A producer that never waits for an answer frightens its consumer:
 # every third message in a row has to wait until the fear passes.
 # Acknowledgements are not politeness here, they are flow control.
+
+written by "tainted"
 soul producer
     meet consumer
     let n = 1

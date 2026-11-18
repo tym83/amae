@@ -1,3 +1,5 @@
+written by "tainted"
+
 soul librarian
     let shelf = ["Ada", "Oberon"]
     put "Modula-2" into shelf

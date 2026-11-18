@@ -44,6 +44,8 @@ here are of first runs.
 ## 1. A soul
 
 ```tainted
+written by "tainted"
+
 soul alice
     say "hello, world"
 end
@@ -57,9 +59,16 @@ A program is made of souls. A soul is written as `soul <name>`, the things it
 does one per line, and `end`. `say` prints a value. When every soul reaches its
 `end`, the program ends with exit code 0.
 
+A program begins by saying who wrote it. Compiling is a date: the compiler
+does not translate a program that has not agreed to it, and `written by` is
+how a program agrees. The compiler remembers its authors, and the programs of
+an author it does not know yet it reads more carefully.
+
 ## 2. Two souls
 
 ```tainted
+written by "tainted"
+
 soul alice
     meet bob
     tell bob "hello"
@@ -93,6 +102,8 @@ ends with exit code 2 and says on standard error who was waiting for whom.
 ## 3. Thinking alone
 
 ```tainted
+written by "tainted"
+
 soul counter
     let i = 1
     while i <= 15
@@ -141,6 +152,8 @@ text. There are no booleans: a comparison is `1` or `0`, and `and`, `or`,
 ## 4. Too many words
 
 ```tainted
+written by "tainted"
+
 soul ben
     meet ana
     tell ana "I saw you and forgot my own name"
@@ -181,6 +194,8 @@ the intimacy that lets the next conversation be longer.
 ## 5. Trust, promises and bonds
 
 ```tainted
+written by "tainted"
+
 soul alice
     meet bob
     let n = 0
@@ -233,6 +248,8 @@ consummate love.
 ## 6. The heart and the knife
 
 ```tainted
+written by "tainted"
+
 soul alice
     meet bob
     meet carol
@@ -280,6 +297,8 @@ The heart given is what lets a relationship survive a wound. It is also what
 ## 7. Leaving
 
 ```tainted
+written by "tainted"
+
 soul ana
     meet ben
     tell ben "stay"
@@ -318,6 +337,8 @@ reach the other again. Scars are numbered from one: `scars of ben` counts them,
 ## 8. Memory fades
 
 ```tainted
+written by "tainted"
+
 soul penelope
     let year = 1999
     let name = "Odysseus"
@@ -358,6 +379,8 @@ notes never fade. Programs that wait a lot keep what matters in notes.
 ## 9. Many souls
 
 ```tainted
+written by "tainted"
+
 kind worker
     meet anyone as boss
     hear soul named boss into task
@@ -400,6 +423,8 @@ hears whoever speaks first and says who it was.
 ## 10. Rituals
 
 ```tainted
+written by "tainted"
+
 ritual gcd a, b
     while b != 0
         let r = a % b
@@ -443,6 +468,8 @@ whatever the ritual takes, the soul comes back as it left.
 ```tainted
 # A rumour passes from soul to soul. Nobody knows how far it went
 # until everyone falls silent.
+
+written by "tainted"
 kind gossip
     meet anyone as teller
     hear soul named teller into rumour
@@ -487,6 +514,8 @@ stable matching.
 ## 12. The world
 
 ```tainted
+written by "tainted"
+
 soul reader
     let heard = 0
     let longest = ""
@@ -518,6 +547,8 @@ the number `0`. The `input` above is what this program was given.
 ## 13. Lists and maps
 
 ```tainted
+written by "tainted"
+
 soul librarian
     let shelf = ["Ada", "Oberon"]
     put "Modula-2" into shelf
@@ -571,6 +602,8 @@ their last items first.
 ## 14. Asking the world
 
 ```tainted
+written by "tainted"
+
 soul clerk
     ask world "date -u +%Y" into year
     say "the world says it is " + (number of year >= 2026)
@@ -612,6 +645,8 @@ seconds, `wait 5 seconds` lets the other souls live while this one sleeps, and
 ## 15. Enduring
 
 ```tainted
+written by "tainted"
+
 ritual open_door name
     let doors = {"front": "open"}
     give back doors[name]
@@ -651,6 +686,8 @@ the soul comes back to where it endured, and the rituals it was in are let go.
 
 ```tainted
 # words.tainted: a few rituals to learn from.
+
+written by "tainted"
 ritual shout text
     ask world "tr a-z A-Z" telling text into loud
     give back loud
@@ -668,6 +705,8 @@ end
 ```
 
 ```tainted
+written by "tainted"
+
 learn "words.tainted"
 
 soul poet
@@ -692,6 +731,8 @@ twice is learned once, and a mistake in it is reported with its own name:
 ## 17. Feelings that happen
 
 ```tainted
+written by "tainted"
+
 soul ana
     meet ben
     let year = 1999
@@ -764,6 +805,8 @@ every meeting brings them closer again.
 
 ```tainted
 # Two moves together, then one of them withdraws halfway through the second.
+
+written by "tainted"
 soul ana
     meet ben
     consent to ben
@@ -818,6 +861,8 @@ any moment, even halfway: then both stop where they are and go to `apart`.
 
 ```tainted
 # Some things anyone trusted may read; some only a heart given lets you near.
+
+written by "tainted"
 soul ana
     meet ben
     meet cal
@@ -867,6 +912,8 @@ owner gave its heart to, and every crossing is counted on both sides.
 
 ```tainted
 # The same meeting, lived by souls who love in different ways.
+
+written by "tainted"
 soul erin is eros
     meet luca
     say "erin at first sight: passion " + passion luca
@@ -992,6 +1039,8 @@ moves and both the one who lost it and the one who gave it keep the scar.
 # Mira. In the third year it still hurts, and he apologizes; in the eighth,
 # love is stronger than the hurt. Every year Mira says where they are.
 
+written by "tainted"
+
 ritual season of_whom, year
     let who = of_whom
     give back "year " + year + ": " + phase with soul named who + ", " + bond with soul named who + "; passion " + passion soul named who + ", love " + love for soul named who
@@ -1100,6 +1149,8 @@ stronger every year.
 ## 22. The second time
 
 ```tainted
+written by "tainted"
+
 soul stranger
     first time
         say "I have never been here before."
@@ -1136,6 +1187,8 @@ the same life every run; infrastructure does.
 ```tainted
 # watchman: cordons a node that stops being ready and lets it work again
 # once it is back, but only the nodes it cordoned itself.
+
+written by "tainted"
 
 ritual without name, list
     let rest = ""

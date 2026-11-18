@@ -1,4 +1,6 @@
 # Repeats everything the world says, line by line.
+
+written by "tainted"
 soul echo
     hear world into line
     while line != 0

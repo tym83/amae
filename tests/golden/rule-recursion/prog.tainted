@@ -1,3 +1,4 @@
+written by "tests"
 ritual f n
  if n <= 1
  give back 1

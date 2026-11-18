@@ -1,5 +1,7 @@
 # Insertion sort of the numbers the world says, one per line.
 # A list lives in notes, because notes do not fade.
+
+written by "tainted"
 soul sorter
     let size = 0
     hear world into line

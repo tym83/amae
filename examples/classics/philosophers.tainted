@@ -1,6 +1,8 @@
 # Dining philosophers. Each fork is a soul that belongs to one hand at a time.
 # Every philosopher takes the lower-numbered fork first, so nobody starves.
 # When the room falls silent, the host lets the forks rest.
+
+written by "tainted"
 kind philosopher
     meet host
     hear host into one

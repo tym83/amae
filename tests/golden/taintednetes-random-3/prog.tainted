@@ -19,6 +19,8 @@
 # Everything that has to survive a wait is written down with note:
 # a soul that waits forgets, and a scheduler that forgets loses its pods.
 
+written by "tainted"
+
 # Infrastructure lives the same life every run: no chemistry.
 deterministic
 

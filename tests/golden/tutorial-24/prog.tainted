@@ -1,6 +1,8 @@
 # watchman: cordons a node that stops being ready and lets it work again
 # once it is back, but only the nodes it cordoned itself.
 
+written by "tainted"
+
 ritual without name, list
     let rest = ""
     let i = 1

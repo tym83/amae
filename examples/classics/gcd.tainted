@@ -1,5 +1,7 @@
 # Euclid as a conversation: two souls hand the remainder back and forth
 # until one of them has nothing left to give.
+
+written by "tainted"
 soul euclid
     meet bezout
     let a = 1071

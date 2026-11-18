@@ -8,6 +8,8 @@
 # Mira. In the third year it still hurts, and he apologizes; in the eighth,
 # love is stronger than the hurt. Every year Mira says where they are.
 
+written by "tainted"
+
 ritual season of_whom, year
     let who = of_whom
     give back "year " + year + ": " + phase with soul named who + ", " + bond with soul named who + "; passion " + passion soul named who + ", love " + love for soul named who

@@ -1,3 +1,5 @@
+written by "tainted"
+
 ritual gcd a, b
     while b != 0
         let r = a % b

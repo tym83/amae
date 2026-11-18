@@ -1,4 +1,6 @@
 # Primes below 100 by trial division.
+
+written by "tainted"
 soul sieve
     let n = 2
     while n < 100

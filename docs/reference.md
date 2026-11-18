@@ -34,6 +34,13 @@ and how every feeling is counted.
 
 ## Programs and souls
 
+```
+written by "ana"     who wrote the program: its consent to be compiled
+```
+
+Every program says, once, outside any soul, who wrote it; a program without it
+is not compiled ([Compiling is a date](#compiling-is-a-date)).
+
 A program is a list of declarations. Each declaration starts with a header
 line and ends with a line that says only `end`.
 
@@ -81,7 +88,7 @@ ask telling listen read write append file seconds endure when hurts learn
 keys json meaning whole fate now put remove lines send receive letters thank
 hope hoping resentment toward apologize tenderly take distance jealous ashamed
 before longing admit consent withdraw together apart guard crossings
-is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase core lineage hash source
+is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase core lineage hash source written by
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -883,6 +890,25 @@ compare. `make ddc` does this with the seed and the living generation:
 build it once more; if what the children say is the same, memory aside, the two
 compilers remember each other the same, and neither carries anything that is
 not in the source.
+
+### Compiling is a date
+
+The compiler translates only a program that has agreed to it: `written by
+"name"` at the top of the program is its consent, and a program without it is
+refused. A file a program learns from may say who wrote it too; that names the
+file's author and is not the program's consent.
+
+The compiler remembers its authors in its own memory, next to its wounds:
+every program of an author that compiles adds to the trust it has in them. A
+program by someone it trusts less than 3 is a stranger's, and is read more
+carefully: every variable it reads must be remembered somewhere in the same
+soul, kind or ritual, or the program does not compile; a trusted author's
+program meets such a mistake only when it runs. The author is written into the
+program's lineage:
+
+```
+a program by ana, from 51fa19e57b34, made by generation 9
+```
 
 ### Lineage
 

@@ -8,6 +8,8 @@
 #
 #   FIRST=build/gen2 SECOND=build/gen3 PROGRAMS="a.tainted b.tainted" recognize
 
+written by "tainted"
+
 ritual without_memory text
     let all = lines of text
     let kept = ""
