@@ -1,41 +1,8 @@
-# watchman: cordons a node that stops being ready and lets it work again
-# once it is back, but only the nodes it cordoned itself.
-
-ritual without name, list
-    let rest = ""
-    let i = 1
-    while i <= words of list
-        if word i of list != name
-            rest = rest + " " + word i of list
-        end
-        i = i + 1
+soul stranger
+    first time
+        say "I have never been here before."
     end
-    give back rest
-end
-
-soul watchman
-    note "mine" = ""
-    hear world into line
-    while line != 0
-        if word 1 of line == "node"
-            let name = word 2 of line
-            let ready = word 3 of line == "ready"
-            let open = word 4 of line == "schedulable"
-            if not ready and open
-                say "cordon " + name
-                say "log " + name + " is not ready; nobody new goes there"
-                note "mine" = note "mine" + " " + name
-            end
-            if ready and not open and place of name in note "mine" > 0
-                say "uncordon " + name
-                say "log " + name + " is back"
-                perform without with name, note "mine" into rest
-                note "mine" = rest
-            end
-        end
-        if line == "end"
-            say "done"
-        end
-        hear world into line
+    if runs > 0
+        say "Runs before this one: " + runs
     end
 end

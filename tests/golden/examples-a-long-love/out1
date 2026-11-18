@@ -1,10 +1,14 @@
-they meet: acquaintance, nothing yet
-year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
-year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
-year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
-      mira resents it: 1, and is still open to him
-      after his apology: 0
-year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
-year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
-year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
-mira and teo: companionate love, attachment
+they meet: acquaintance, nothing yet, love 0
+year 1: attraction, romantic love; passion 6, love 1
+year 2: attachment, consummate love; passion 6, love 3
+      year 3, he hurts her: resentment 1, still open
+year 3: attachment, companionate love; passion 2, love 5
+year 4: attachment, companionate love; passion 2, love 9
+year 5: love, companionate love; passion 2, love 11
+year 6: love, consummate love; passion 3, love 14
+year 7: love, consummate love; passion 5, love 21
+      year 8, he hurts her: resentment 0, still open
+year 8: love, consummate love; passion 6, love 27
+year 9: love, consummate love; passion 6, love 40
+year 10: love, consummate love; passion 6, love 49
+mira and teo, ten years on: consummate love, love

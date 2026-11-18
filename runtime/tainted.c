@@ -431,7 +431,8 @@ typedef struct {
     int resentment, shame, hope, jealous;
     int consent;
     int64_t crossings, chemistry;
-    int64_t attachment, close;   /* what long closeness grows, and the closeness not yet counted */
+    int64_t love, close;   /* the love built so far, and the closeness not yet counted into it */
+    int kindled;           /* passion has once been full: building can begin */
     List heard, scars;
 } Rel;
 
@@ -520,24 +521,25 @@ static void settle(Rel *r, Soul *owner) {
     int64_t every = r->resentment ? FADE : 2 * FADE;
     int64_t lost = apart / every;
     if (lost > r->attention_counted) {
-        int64_t floor_ = r->intimacy < r->attachment ? r->intimacy : r->attachment;
+        int64_t floor_ = r->intimacy < r->love ? r->intimacy : r->love;
         r->intimacy -= lost - r->attention_counted;
-        if (r->intimacy < floor_) r->intimacy = floor_;   /* attachment holds what attention cannot */
+        if (r->intimacy < floor_) r->intimacy = floor_;   /* love holds what attention cannot */
         r->attention_counted = lost;
     }
 }
 
-#define ATTACHING (3 * FADE)
+#define BUILDING (3 * FADE)
 
-/* Attachment grows out of time spent close: every ATTACHING steps in which
- * the two kept in touch, with no resentment between them, bind them a little
- * more. It is what remains when passion has cooled. */
+/* Love is built. Passion is only the spark: until it has once been full,
+ * nothing is built. After that, every BUILDING steps the two spend in touch,
+ * with no resentment between them, add to it, and the more love there is the
+ * more each such stretch adds: it grows stronger with time. */
 static void in_touch(Rel *r, Soul *owner) {
     settle(r, owner);
     int64_t gap = owner->step - r->contact;
-    if (r->met && gap < FADE && !r->resentment) {
+    if (r->met && r->kindled && gap < FADE && !r->resentment) {
         r->close += gap;
-        while (r->close >= ATTACHING) { r->close -= ATTACHING; r->attachment++; }
+        while (r->close >= BUILDING) { r->close -= BUILDING; r->love += 1 + r->love / 5; }
     }
     r->contact = owner->step;
     r->apart_counted = 0;
@@ -546,6 +548,10 @@ static void in_touch(Rel *r, Soul *owner) {
 
 static void cool_down(Rel *r, Soul *owner) {
     settle(r, owner);
+    /* built love brings the fire back: passion is kept at a quarter of it, up
+     * to full */
+    int64_t warmth = r->love / 4 < 2 * PRESENT ? r->love / 4 : 2 * PRESENT;
+    if (r->passion < warmth && !r->left) r->passion = warmth;
     if (r->hope) { r->last_meet = owner->step; r->faded = 0; return; }
     if (r->met && !r->left && owner->step > r->last_meet) {
         int64_t due = (owner->step - r->last_meet) / (owner->style & S_EROS ? PASSION_FADE / 2 : PASSION_FADE);
@@ -1225,11 +1231,13 @@ Value t_feeling(World *w, Soul *s, int what, Value who) {
     case F_CONSENT: return t_int(rel(w, b, s)->consent);
     case F_CROSSINGS: return t_int(r->crossings);
     case F_CHEMISTRY: return t_int(r->chemistry);
-    case F_ATTACHMENT: return t_int(r->attachment);
+    case F_LOVE: return t_int(r->love);
     case F_PHASE:
-        /* Helen Fisher's three: lust, attraction, attachment */
+        /* Helen Fisher's lust, attraction and attachment, and the love that
+         * is built on them */
         if (!r->met) return t_cstr("strangers");
-        if (r->attachment >= PRESENT) return t_cstr("attachment");
+        if (r->love >= 10) return t_cstr("love");
+        if (r->love >= PRESENT) return t_cstr("attachment");
         if (r->passion >= PRESENT && r->intimacy >= PRESENT) return t_cstr("attraction");
         if (r->passion >= PRESENT) return t_cstr("lust");
         return t_cstr("acquaintance");
@@ -1451,6 +1459,7 @@ static int try_meet(World *w, Soul *a, Soul *b) {
         else if (rs[k]->passion < 2 * PRESENT) rs[k]->passion++;
         if (chemistry) { rs[k]->chemistry += chemistry; rs[k]->passion += chemistry; }
         if (rs[k]->passion < 0) rs[k]->passion = 0;
+        if (rs[k]->passion >= PRESENT) rs[k]->kindled = 1;
         rs[k]->last_meet = pair[k][0]->step;
         rs[k]->faded = 0;
         in_touch(rs[k], pair[k][0]);
@@ -1710,6 +1719,8 @@ int t_apologize(World *w, Soul *s, const Ins *ins, Value scar) {
     them->resentment = 0;
     mine->shame = 0;
     them->trust++;
+    if (them->love) them->love++;     /* what love lives through, it is built of */
+    if (mine->love) mine->love++;
     list_push(&them->scars, printf_value("%s apologized for: wounded by %s", s->name, s->name));
     advance(s);
     return 1;
@@ -1939,7 +1950,7 @@ static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     if (!rr->met || rr->closed || rr->left || rs->left) return 0;
     int64_t *f = fear_of(rcv, snd->id);
     if (f && *f > 0) return 0;
-    if (w->round - snd->arrived < rs->distance) { w->in_transit = 1; return 0; }  /* still on their way */
+    if (rr->love < 6 && w->round - snd->arrived < rs->distance) { w->in_transit = 1; return 0; }  /* still on their way */
     if (rcv->style & S_AVOIDANT && w->round - rcv->arrived < 2) { w->in_transit = 1; return 0; }
     if (si->op == OP_CONFIDE && !rs->gift)
         t_fail(w, "%s can confide only in someone they gave their heart to", snd->name);
@@ -1956,7 +1967,7 @@ static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     else rs->pressure++;
     if (si->op == OP_CONFIDE) jealousy(w, snd, rcv, 0);
     else if (w->mania) jealousy(w, snd, rcv, 1);
-    if (rs->pressure > rr->intimacy + 2 + rr->attachment) {
+    if (rs->pressure > rr->intimacy + 2 + rr->love) {
         frighten(rcv, snd->id, 3 + rs->pressure);
         if (rr->passion > 0) rr->passion--;
         rs->pressure = 0;
@@ -2039,8 +2050,8 @@ int t_feel(World *w, Soul *s, const Ins *ins) {
         them->trust = b->style & S_STORGE ? them->trust / 2 : 0;
         them->intimacy /= 2;
         list_push(&them->scars, printf_value("wounded by %s", s->name));
-        if (!them->gift && !(b->style & S_AGAPE) && them->attachment < 3) them->closed = 1;
-        them->resentment = !(b->style & S_AGAPE);
+        if (!them->gift && !(b->style & S_AGAPE) && them->love < 3) them->closed = 1;
+        them->resentment = !(b->style & S_AGAPE) && them->love < 6;
         if (them->gift) mine->shame = 1;
         break;
     }

@@ -493,15 +493,18 @@ class BeforeTheyMeet(unittest.TestCase):
 
 
 class ALongLove(unittest.TestCase):
-    def test_infatuation_becomes_attachment(self):
+    def test_love_is_built_and_grows_stronger(self):
         life = run(example("a-long-love.tainted"))
         self.assertEqual(life.code, 0)
-        self.assertEqual(life.lines[0], "they meet: lust, infatuation")
-        self.assertTrue(life.lines[1].startswith("year 1: attraction, romantic love"))
-        self.assertTrue(life.lines[2].startswith("year 2: attachment, consummate love"))
-        self.assertIn("      mira resents it: 1, and is still open to him", life.lines)
-        self.assertTrue(life.lines[-2].startswith("year 6: attachment, companionate love; passion 0"))
-        self.assertEqual(life.lines[-1], "mira and teo: companionate love, attachment")
+        self.assertEqual(life.lines[0], "they meet: lust, infatuation, love 0")
+        loves = [int(l.rsplit(" ", 1)[1]) for l in life.lines if l.startswith("year ") and ", love " in l]
+        self.assertEqual(len(loves), 10)
+        self.assertTrue(all(b > a for a, b in zip(loves, loves[1:])))
+        steps = [b - a for a, b in zip(loves, loves[1:])]
+        self.assertGreater(sum(steps[-3:]), sum(steps[:3]))
+        self.assertIn("      year 3, he hurts her: resentment 1, still open", life.lines)
+        self.assertIn("      year 8, he hurts her: resentment 0, still open", life.lines)
+        self.assertEqual(life.lines[-1], "mira and teo, ten years on: consummate love, love")
 
 
 class Chemistry(unittest.TestCase):

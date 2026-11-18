@@ -393,24 +393,28 @@ ana is still waiting for ben, who left
 
 ### A long love
 
-`a-long-love.tainted` shows what time does. Mira and Teo meet at first sight;
-two years of dates feed a passion that does not grow without end, every
-answered question builds intimacy, and the wedding brings commitment. Then
-they stop running to meet: passion cools, while time spent close binds them,
-and attachment lets them live through a wound and an apology. What remains in
-the sixth year is calm and strong.
+`a-long-love.tainted` shows what time does. Passion and infatuation are the
+spark: Mira and Teo's two years of dates fill passion up, and from then on
+every stretch of time spent close builds love, a little more each year than
+the year before. The spark cools; the love does not, and it shows more and
+more: a wound in the third year hurts but cannot close Mira, a wound in the
+eighth leaves no resentment, and the love they built brings the passion back.
 
 ```
-they meet: lust, infatuation
-year 1: attraction, romantic love; passion 6, intimacy 59, commitment 0, attachment 1
-year 2: attachment, consummate love; passion 6, intimacy 119, commitment 3, attachment 3
-year 3: attachment, companionate love; passion 2, intimacy 179, commitment 3, attachment 4
-      mira resents it: 1, and is still open to him
-      after his apology: 0
-year 4: attachment, companionate love; passion 0, intimacy 121, commitment 3, attachment 6
-year 5: attachment, companionate love; passion 0, intimacy 181, commitment 3, attachment 7
-year 6: attachment, companionate love; passion 0, intimacy 241, commitment 3, attachment 8
-mira and teo: companionate love, attachment
+they meet: lust, infatuation, love 0
+year 1: attraction, romantic love; passion 6, love 1
+year 2: attachment, consummate love; passion 6, love 3
+      year 3, he hurts her: resentment 1, still open
+year 3: attachment, companionate love; passion 2, love 5
+year 4: attachment, companionate love; passion 2, love 9
+year 5: love, companionate love; passion 2, love 11
+year 6: love, consummate love; passion 3, love 14
+year 7: love, consummate love; passion 5, love 21
+      year 8, he hurts her: resentment 0, still open
+year 8: love, consummate love; passion 6, love 33
+year 9: love, consummate love; passion 6, love 40
+year 10: love, consummate love; passion 6, love 49
+mira and teo, ten years on: consummate love, love
 ```
 
 ### Classic programs

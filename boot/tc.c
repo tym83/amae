@@ -4001,17 +4001,17 @@ static Value E361(World *w, Soul *s) {
 }
 static Value E362(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("distance resentment hoping jealous ashamed longing letters consent crossings chemistry attachment phase");
+    Value t1 = t_cstr("distance resentment hoping jealous ashamed longing letters consent crossings chemistry love phase");
     return t1;
 }
 static Value E363(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("from toward for of before for from from with with to with");
+    Value t1 = t_cstr("from toward for of before for from from with with for with");
     return t1;
 }
 static Value E364(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY F_ATTACHMENT F_PHASE");
+    Value t1 = t_cstr("F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY F_LOVE F_PHASE");
     return t1;
 }
 static Value E365(World *w, Soul *s) {
@@ -14035,7 +14035,7 @@ static Value E1358(World *w, Soul *s) {
 }
 static Value E1359(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry attachment phase");
+    Value t1 = t_cstr("soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase");
     return t1;
 }
 static Value E1360(World *w, Soul *s) {
@@ -15357,9 +15357,9 @@ static const char SOURCE[] =
     "        perform tmp with \"t_runs(w)\" into t\n"
     "        give back t\n"
     "    end\n"
-    "    let feelings = \"distance resentment hoping jealous ashamed longing letters consent crossings chemistry attachment phase\"\n"
-    "    let joins = \"from toward for of before for from from with with to with\"\n"
-    "    let kinds = \"F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY F_ATTACHMENT F_PHASE\"\n"
+    "    let feelings = \"distance resentment hoping jealous ashamed longing letters consent crossings chemistry love phase\"\n"
+    "    let joins = \"from toward for of before for from from with with for with\"\n"
+    "    let kinds = \"F_DISTANCE F_RESENTMENT F_HOPING F_JEALOUS F_ASHAMED F_LONGING F_LETTERS F_CONSENT F_CROSSINGS F_CHEMISTRY F_LOVE F_PHASE\"\n"
     "    let at = place of v in feelings\n"
     "    if at > 0\n"
     "        perform expect_word with word at of joins\n"
@@ -16703,7 +16703,7 @@ static const char SOURCE[] =
     "end\n"
     "\n"
     "soul compiler\n"
-    "    note \"keywords\" = \"soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry attachment phase\"\n"
+    "    note \"keywords\" = \"soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase\"\n"
     "    note \"none\" = \", .var=-1, .var2=-1, .unit=-1\"\n"
     "    note \"hn\" = 0\n"
     "    note \"bn\" = 0\n"

@@ -1,8 +1,82 @@
-soul stranger
-    first time
-        say "I have never been here before."
+# A long love: passion is only the spark; love is built, and grows stronger
+# every year.
+#
+# Mira and Teo meet. For two years every day is a date, and passion is full:
+# that is the spark, and from then on every stretch of time they spend close
+# builds love, and the more love there is, the more each stretch builds. They
+# marry, and keep talking every day without running to meet. Twice Teo hurts
+# Mira. In the third year it still hurts, and he apologizes; in the eighth,
+# love is stronger than the hurt. Every year Mira says where they are.
+
+ritual season of_whom, year
+    let who = of_whom
+    give back "year " + year + ": " + phase with soul named who + ", " + bond with soul named who + "; passion " + passion soul named who + ", love " + love for soul named who
+end
+
+soul mira
+    meet teo
+    say "they meet: " + phase with teo + ", " + bond with teo + ", love " + love for teo
+    note "year" = 1
+    while note "year" <= 10
+        note "day" = 1
+        while note "day" <= 30
+            if note "year" <= 2
+                meet teo
+            end
+            tell teo "how was your day?"
+            hear teo into answer
+            wait
+            wait
+            note "day" = note "day" + 1
+        end
+        if note "year" == 2
+            promise teo
+            promise teo
+            promise teo
+        end
+        if note "year" == 3 or note "year" == 8
+            hear teo into hurtful
+            say "      year " + note "year" + ", he hurts her: resentment " + resentment toward teo + ", still open"
+            tell teo "that hurt"
+            hear teo into sorry
+        end
+        perform season with "teo", note "year" into said
+        say said
+        note "year" = note "year" + 1
     end
-    if runs > 0
-        say "Runs before this one: " + runs
+    say "mira and teo, ten years on: " + bond with teo + ", " + phase with teo
+end
+
+soul teo
+    meet mira
+    note "her scars" = 0
+    note "year" = 1
+    while note "year" <= 10
+        note "day" = 1
+        while note "day" <= 30
+            if note "year" <= 2
+                meet mira
+            end
+            hear mira into question
+            tell mira "better now that you ask"
+            wait
+            wait
+            note "day" = note "day" + 1
+        end
+        if note "year" == 2
+            promise mira
+            promise mira
+            promise mira
+        end
+        if note "year" == 3 or note "year" == 8
+            note "her scars" = note "her scars" + 1
+            knowingly wound mira
+            tell mira "I said what I should not have"
+            hear mira into how_it_felt
+            apologize to mira for scar note "her scars"
+            note "her scars" = note "her scars" + 1
+            tell mira "I am sorry"
+        end
+        note "year" = note "year" + 1
     end
 end
