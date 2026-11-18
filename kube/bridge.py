@@ -116,6 +116,7 @@ class Bridge:
         with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
             self.source = f.read()
         self.program = tainted.compile_program(self.source)
+        self.last_story = None
 
     def kubectl(self, *args, stdin=None):
         cmd = ["kubectl", "--context", self.context, *args]
@@ -214,10 +215,13 @@ class Bridge:
                      "-f", "-", stdin=json.dumps(binding))
 
     def once(self):
+        """Schedule what is pending. A pass that changes nothing and tells the
+        same story as the one before it is not told again."""
         text, pid = self.describe()
         if text is None:
+            self.last_story = None
             return 0
-        bound = 0
+        bound, story = 0, []
         for line in self.decide(text):
             words = line.split()
             if words[1:3] == ["lives", "on"] and words[0] in pid:
@@ -226,7 +230,11 @@ class Bridge:
                 print(f"{words[0][4:]} lives on {node}", flush=True)
                 bound += 1
             else:
-                print(line.replace("pod:", "").replace("node:", ""), flush=True)
+                story.append(line.replace("pod:", "").replace("node:", ""))
+        if bound or story != self.last_story:
+            for line in story:
+                print(line, flush=True)
+        self.last_story = None if bound else story
         return bound
 
 

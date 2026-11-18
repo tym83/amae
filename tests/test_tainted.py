@@ -455,6 +455,19 @@ class Bridge(unittest.TestCase):
         self.assertEqual(sum(1 for n in placed.values() if n == "a"), 1)
         self.assertEqual(sum(1 for n in placed.values() if n == "b"), 1)
 
+    def test_a_pass_that_changes_nothing_is_not_told_again(self):
+        b = bridge.Bridge.__new__(bridge.Bridge)
+        b.last_story = None
+        b.describe = lambda: ("text", {})
+        b.decide = lambda text: ["pod:ns/web has nowhere to live", "the cluster is at rest"]
+        told = []
+        for _ in range(3):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                b.once()
+            told.append(out.getvalue())
+        self.assertEqual(told, ["ns/web has nowhere to live\nthe cluster is at rest\n", "", ""])
+
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
             c = {"resources": {"requests": {"cpu": cpu}}}
