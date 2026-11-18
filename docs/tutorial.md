@@ -5,10 +5,11 @@ looks after a Kubernetes cluster. Every program in it is checked by the test
 suite: what you see under each one is exactly what it prints. The
 [reference](reference.md) has the precise rules behind every chapter.
 
-Run a program with
+Build the compiler once with `make`, then compile a program and run it:
 
 ```
-python3 tainted.py program.tainted
+bin/tc program.tainted
+./program
 ```
 
 Tainted remembers every program it has run (see [chapter 13](#13-the-second-time)),

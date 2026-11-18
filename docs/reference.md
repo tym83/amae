@@ -1,6 +1,6 @@
 # Tainted reference
 
-This is the complete description of Tainted as `tainted.py` runs it. The
+This is the complete description of Tainted as its compiler builds it. The
 [tutorial](tutorial.md) teaches the language from the first program on; this
 document is where to look up exactly what a statement does, when a soul waits,
 and how every feeling is counted.
@@ -21,7 +21,7 @@ and how every feeling is counted.
 - [The world](#the-world)
 - [How a program ends](#how-a-program-ends)
 - [The command line](#the-command-line)
-- [Tainted assembly](#tainted-assembly)
+- [The compiler](#the-compiler)
 - [Constants](#constants)
 - [What Tainted does not have](#what-tainted-does-not-have)
 
@@ -52,7 +52,9 @@ learn anything from another is to be told.
 - A number is a run of decimal digits. There are no fractions; a minus sign is
   the unary operator.
 - A string is written in double quotes. Inside it `\n` is a new line, `\"` a
-  quote and `\\` a backslash.
+  quote and `\\` a backslash, read once from left to right; a backslash before
+  anything else stays a backslash.
+- A number written in the program must fit in 64 bits.
 - A name starts with a letter or `_` and goes on with letters, digits and `_`.
   Names are case-sensitive.
 - Operators: `+ - * / % == != < <= > >= = ( ) ,`.
@@ -67,7 +69,7 @@ afraid and anyone as back bond bring commitment confide cool end else
 first for forgive from give goodbye hear heart if in intimacy into kind
 leave length let mark me meet named not note number of or part passion
 perform place promise recall return ritual runs say scar scars silence
-soul tell time to trust wait warm while with word words world wound
+soul tell time to trust wait warm while with word words world wound cry
 ```
 
 Common words such as `word`, `words`, `first`, `back` and `kind` are among
@@ -76,7 +78,8 @@ something else.
 
 ## Values
 
-There are two kinds of values: whole numbers of any size and strings. There
+There are two kinds of values: whole numbers of 64 bits, from −2⁶³ to 2⁶³ − 1,
+and strings. A calculation whose result does not fit is an error. There
 are no booleans: a comparison gives `1` or `0`, and a condition is true unless
 it is `0` or the empty string. There are no lists or maps; the
 [text expressions](#text) treat a string as a list of words separated by
@@ -88,8 +91,8 @@ From the loosest binding to the tightest:
 
 | Level | Operators | Notes |
 |---|---|---|
-| 1 | `a or b` | `1` if either is true, else `0`; both sides are evaluated |
-| 2 | `a and b` | `1` if both are true, else `0`; both sides are evaluated |
+| 1 | `a or b` | `1` if either is true, else `0`; `b` is looked at only if `a` is false |
+| 2 | `a and b` | `1` if both are true, else `0`; `b` is looked at only if `a` is true |
 | 3 | `not a` | `1` if `a` is false, else `0` |
 | 4 | `== != < <= > >=` | one comparison per level; `a < b < c` is an error |
 | 5 | `+ -` | left to right |
@@ -155,6 +158,7 @@ something in parentheses. `word i + 1 of s` is an error; write
 |---|---|---|
 | `let x = e` or `x = e` | stores `e` in the variable `x` | no |
 | `say e` | prints `e` and a new line to standard output | no |
+| `cry e` | prints `e` and a new line to standard error | no |
 | `meet S` | [meets](#meeting) `S` | until `S` meets back |
 | `meet anyone as x` | meets whoever is looking for this soul; their name goes to `x` | until someone does |
 | `tell S e` | [tells](#speaking-and-hearing) `S` the value of `e` | until `S` hears |
@@ -178,6 +182,7 @@ something in parentheses. `word i + 1 of s` is an error; write
 | `wait` | does nothing for one step | one step |
 | `wait for silence` | waits until nobody else can do anything ([Silence](#silence)) | yes |
 | `goodbye` | ends this soul's life | — |
+| `goodbye with e` | ends this soul's life; the program ends with the exit code `e` ([How a program ends](#how-a-program-ends)) | — |
 | `mark m` | names this moment of the soul's life `m` | no |
 | `return to m` | goes back to the moment `m` | no |
 
@@ -409,7 +414,7 @@ an error. Notes are how a Tainted program keeps tables: `note ("likes " + name)`
 ## Runs
 
 Tainted remembers how many times every program has run. Before a program
-starts, `tainted.py` looks up the SHA-256 of its source in
+starts, it looks up the SHA-256 of the source it was compiled from in
 `~/.tainted/history.json` (or the file named by `TAINTED_HISTORY`), takes the
 count it finds as `runs` and writes back one more. Changing the program by a
 single character makes it a new program that has never run.
@@ -446,10 +451,11 @@ asks every pod where it lives.
 | Exit code | When |
 |---|---|
 | 0 | every soul reached its end or said `goodbye` |
+| `e` | every soul reached its end, and the last to say `goodbye with e` said this number, from 0 to 255 |
 | 1 | an error: a mistake in the program or something a soul cannot do |
 | 2 | everyone left is waiting for someone and nobody can move |
 | 4 | the world ran out of patience ([Constants](#constants)) |
-| 64 | `tainted.py` was called wrongly |
+| 64 | the program was called wrongly |
 
 When everyone is waiting, Tainted laments on standard error:
 
@@ -465,14 +471,13 @@ An error names the line and the soul:
 ## The command line
 
 ```
-python3 tainted.py program.tainted         run a program
-python3 tainted.py program.tas             run Tainted assembly
-python3 tainted.py --compile program.tainted
-                                           print the program as assembly
-python3 tainted.py --feelings program.tainted
-                                           run, then print every relationship
-python3 tainted.py --patience=N program.tainted
-                                           give up after N rounds
+make                                build the compiler, build/tc-core, from the seed
+bin/tc program.tainted              compile a program to ./program
+bin/tc program.tainted -o path      compile it to path
+bin/tc program.tainted -c           print the C the compiler makes of it
+./program                           run it; the world is its standard input
+./program --feelings                run it, then print every relationship
+./program --patience=N              give up after N rounds
 ```
 
 `--feelings` prints, on standard error, one line per soul and soul it met:
@@ -481,27 +486,40 @@ python3 tainted.py --patience=N program.tainted
 alice -> bob: romantic love; trust 3, intimacy 4, passion 3, commitment 0, scars 0, heart given
 ```
 
-## Tainted assembly
+A program that does not compile ends the compiler with exit code 1 and the
+reason: `tainted: line 4: expected 'of'`.
 
-Tainted assembly is a program with `if`, `while`, `first time`, `mark` and
-`return to` lowered into labels and jumps; `compiler.tainted` produces it and
-`tainted.py --compile` is the reference that it must match.
+## The compiler
 
-```
-# compiled by …           a comment; the compiler counts its runs here
-soul alice                headers and end as in Tainted
-    W1:                   a label: a name followed by a colon
-    jz L1e i < 3          jump to L1e when the condition is false
-    i = i + 1             every other statement as in Tainted
-    jmp W1                jump to W1
-    L1e:
-    first L2e             jump to L2e unless this is the first run
-end
-```
+`compiler.tainted` is the compiler. It is a Tainted program: it hears a program
+from the world, line by line, and says a C program that, built together with
+`runtime/tainted.c`, lives the same life. `bin/tc` runs the compiler and the C
+compiler one after the other.
 
-Labels are local to their soul, kind or ritual. The compiler names them
-`W<n>` for the top of a loop, `L<n>e` for the end of a block, `L<n>x` for the
-end of an `if` with an `else`, and `M_<moment>` for a marked moment.
+- Every soul, kind and ritual becomes a unit: a table of its instructions and
+  a step function. Other souls look at the table (whether this one waits to
+  meet them, to tell them something, to hear them); the step function carries
+  out the instruction in front of the soul.
+- Every expression becomes a C function of its own, evaluated from left to
+  right; `and` and `or` look at their right side only when they need to.
+- The runtime owns everything between souls: rounds, meetings, words, fear,
+  relationships, memory and its fading, rituals, the world and the history of
+  runs. Its rules are the ones in this reference.
+- The source of the program is kept inside the program it compiles to, so the
+  program counts its own runs.
+
+The compiler compiles itself. `boot/tc.c` is the seed: the C that the
+compiler says of its own source. `make` builds the compiler from the seed;
+`make bootstrap` lets it compile itself twice more and checks that the
+generations say the same program; `make seed` replaces the seed after a change
+to the compiler. A new rule of the language is first taught to the compiler in
+the words the previous generation already understands.
+
+The compiler forgets like any soul. It writes down in notes everything that has
+to outlive a few steps; where a loop runs long, it recalls what it will need
+afterwards. A compiler that does not recall the name of the function it is
+writing loses letters from it and builds C that does not compile; the test
+suite checks this.
 
 ## Constants
 
@@ -522,10 +540,8 @@ them.
 
 - Values are whole numbers and strings. There are no fractions, lists or
   maps; strings of words and notes stand in for them.
-- Input is standard input line by line, output is standard output. There are
-  no files, no clock, no randomness and no way to choose the exit code: the
-  only uncertainty in a run is the number of runs before it.
+- Input is standard input line by line, output is standard output and
+  standard error. There are no files, no clock and no randomness: the only
+  uncertainty in a run is the number of runs before it.
 - A ritual call is a statement, not an expression.
 - Errors cannot be caught; the soul that makes one ends the program.
-- `compiler.tainted` lowers the control flow of a program into assembly; the
-  expressions and statements are still read and run by `tainted.py`.
