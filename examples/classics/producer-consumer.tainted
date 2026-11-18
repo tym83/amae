@@ -1,0 +1,23 @@
+# A producer that never waits for an answer frightens its consumer:
+# every third message in a row has to wait until the fear passes.
+# Acknowledgements are not politeness here, they are flow control.
+soul producer
+    meet consumer
+    let n = 1
+    while n <= 9
+        tell consumer n
+        n = n + 1
+    end
+end
+
+soul consumer
+    meet producer
+    let total = 0
+    let n = 1
+    while n <= 9
+        hear producer into item
+        total = total + item
+        n = n + 1
+    end
+    say "sum " + total + ", afraid of the producer: " + afraid of producer
+end

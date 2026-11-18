@@ -1,8 +1,0 @@
-# Three pods, three nodes, and everyone has an opinion.
-pod web:   alpha beta gamma
-pod db:    alpha gamma beta
-pod cache: beta alpha gamma
-
-node alpha: db cache web
-node beta:  web db cache
-node gamma: cache web db

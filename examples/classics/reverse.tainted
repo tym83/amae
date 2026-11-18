@@ -1,0 +1,14 @@
+# Reads lines and says each of them backwards.
+soul mirror
+    hear world into line
+    while line != 0
+        let back = ""
+        let i = length of line
+        while i > 0
+            back = back + part i i of line
+            i = i - 1
+        end
+        say back
+        hear world into line
+    end
+end

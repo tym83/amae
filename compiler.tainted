@@ -25,16 +25,16 @@ soul compiler
             recall stack blocks
             j = j + 1
         end
-        let word = part 1 (j - 1) of text
+        let head = part 1 (j - 1) of text
         let rest = part (j + 1) n of text
-        if word == "" or part 1 1 of word == "#"
+        if head == "" or part 1 1 of head == "#"
             return to next
         end
-        if word == "soul"
+        if head == "soul" or head == "kind"
             say text
             return to next
         end
-        if word == "end" or word == "else"
+        if head == "end" or head == "else"
             if stack == ""
                 say "end"
                 return to next
@@ -45,48 +45,48 @@ soul compiler
             end
             let top = part (k + 1) (length of stack) of stack
             stack = part 1 (k - 1) of stack
-            let kind = part 1 1 of top
+            let sort = part 1 1 of top
             let num = part 2 (length of top) of top
-            if word == "else"
+            if head == "else"
                 say "    jmp L" + num + "x"
                 say "    L" + num + "e:"
                 stack = stack + ";e" + num
                 return to next
             end
-            if kind == "w"
+            if sort == "w"
                 say "    jmp W" + num
             end
-            if kind == "e"
+            if sort == "e"
                 say "    L" + num + "x:"
             else
                 say "    L" + num + "e:"
             end
             return to next
         end
-        if word == "if"
+        if head == "if"
             blocks = blocks + 1
             say "    jz L" + blocks + "e " + rest
             stack = stack + ";i" + blocks
             return to next
         end
-        if word == "while"
+        if head == "while"
             blocks = blocks + 1
             say "    W" + blocks + ":"
             say "    jz L" + blocks + "e " + rest
             stack = stack + ";w" + blocks
             return to next
         end
-        if word == "first"
+        if head == "first"
             blocks = blocks + 1
             say "    first L" + blocks + "e"
             stack = stack + ";f" + blocks
             return to next
         end
-        if word == "mark"
+        if head == "mark"
             say "    M_" + rest + ":"
             return to next
         end
-        if word == "return"
+        if head == "return"
             say "    jmp M_" + part 4 (length of rest) of rest
             return to next
         end

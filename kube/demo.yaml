@@ -1,0 +1,64 @@
+# Pods for taintednetes to place. Apply, then run:
+#   kubectl --context <ctx> create namespace <ns>
+#   kubectl --context <ctx> -n <ns> apply -f kube/demo.yaml
+#   python3 kube/bridge.py --context <ctx> --once
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  annotations:
+    taintednetes.io/likes: "taintednetes-worker taintednetes-worker2"
+spec:
+  schedulerName: taintednetes
+  containers:
+    - name: pause
+      image: registry.k8s.io/pause:3.10
+      resources:
+        requests: {cpu: 100m, memory: 16Mi}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db
+  annotations:
+    taintednetes.io/likes: "taintednetes-worker"
+spec:
+  schedulerName: taintednetes
+  containers:
+    - name: pause
+      image: registry.k8s.io/pause:3.10
+      resources:
+        requests: {cpu: 100m, memory: 16Mi}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cache
+  annotations:
+    taintednetes.io/likes: "taintednetes-worker2 taintednetes-worker"
+spec:
+  schedulerName: taintednetes
+  containers:
+    - name: pause
+      image: registry.k8s.io/pause:3.10
+      resources:
+        requests: {cpu: 100m, memory: 16Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crowd
+spec:
+  replicas: 4
+  selector:
+    matchLabels: {app: crowd}
+  template:
+    metadata:
+      labels: {app: crowd}
+    spec:
+      schedulerName: taintednetes
+      containers:
+        - name: pause
+          image: registry.k8s.io/pause:3.10
+          resources:
+            requests: {cpu: 100m, memory: 16Mi}

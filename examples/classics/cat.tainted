@@ -1,0 +1,8 @@
+# Repeats everything the world says, line by line.
+soul echo
+    hear world into line
+    while line != 0
+        say line
+        hear world into line
+    end
+end
