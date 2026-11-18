@@ -17,7 +17,7 @@ soul bob
     meet alice
     let n = 0
     while n < 4
-        hear alice into words
+        hear alice into greeting
         tell alice "and a little more about me"
         n = n + 1
     end

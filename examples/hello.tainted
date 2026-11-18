@@ -9,7 +9,7 @@ end
 
 soul bob
     meet alice
-    hear alice into words
+    hear alice into greeting
     tell alice "hello to you"
-    say "bob heard: " + words
+    say "bob heard: " + greeting
 end

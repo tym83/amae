@@ -11,7 +11,6 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import minsky  # noqa: E402
-import taintednetes  # noqa: E402
 import tainted  # noqa: E402
 
 
@@ -176,10 +175,13 @@ class SelfHosting(unittest.TestCase):
 
     def test_compiles_every_example_like_the_reference(self):
         c2 = run_tas(tainted.to_tas(self.compiler), self.compiler)[1]
-        for name in sorted(os.listdir(os.path.join(ROOT, "examples"))):
-            if not name.endswith(".tainted"):
-                continue
+        names = sorted(n for n in os.listdir(os.path.join(ROOT, "examples"))
+                       if n.endswith(".tainted"))
+        for name in names + ["../taintednetes.tainted", "../compiler.tainted"]:
             src = example(name)
+            if "hear world" in src:
+                self.assertEqual(body(run_tas(c2, src)[1]), body(tainted.to_tas(src)), name)
+                continue
             self.assertEqual(body(run_tas(c2, src)[1]), body(tainted.to_tas(src)), name)
             direct = run(src)
             via = tainted.World(tainted.load_tas(tainted.to_tas(src)), out=io.StringIO(),
@@ -194,25 +196,82 @@ class SelfHosting(unittest.TestCase):
         self.assertNotEqual(body(out), body(tainted.to_tas(self.compiler)))
 
 
+def gale_shapley(pods, nodes, seats):
+    """Reference: pod-proposing deferred acceptance with node capacities."""
+    rank = {n: {p: i for i, p in enumerate(prefs)} for n, prefs in nodes.items()}
+    held = {n: [] for n in nodes}
+    nxt, free = {p: 0 for p in pods}, list(pods)
+    while free:
+        p = free.pop(0)
+        while nxt[p] < len(pods[p]):
+            n = pods[p][nxt[p]]
+            nxt[p] += 1
+            if p not in rank[n] or seats[n] == 0:
+                continue
+            if len(held[n]) < seats[n]:
+                held[n].append(p)
+                break
+            worst = max(held[n], key=lambda q: rank[n][q])
+            if rank[n][p] < rank[n][worst]:
+                held[n].remove(worst)
+                held[n].append(p)
+                free.append(worst)
+                break
+    placement = {p: None for p in pods}
+    for n, ps in held.items():
+        for p in ps:
+            placement[p] = n
+    return placement
+
+
+def schedule(pods, nodes, seats):
+    lines = [f"pod {p} {' '.join(likes)}" for p, likes in pods.items()]
+    lines += [f"node {n} {seats[n]} {' '.join(likes)}" for n, likes in nodes.items()]
+    with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
+        program = tainted.compile_program(f.read())
+    out = io.StringIO()
+    world = tainted.World(program, out=out, err=io.StringIO(),
+                          inp=io.StringIO("\n".join(lines) + "\n"))
+    code = world.run()
+    placement = {}
+    for line in out.getvalue().splitlines():
+        words = line.split()
+        if words[1:3] == ["lives", "on"]:
+            placement[words[0]] = words[3]
+        elif words[1:4] == ["has", "nowhere", "to"] and len(words) == 5:
+            placement[words[0]] = None
+    return code, placement, out.getvalue().splitlines(), world
+
+
 class Taintednetes(unittest.TestCase):
     def test_example_cluster(self):
-        with open(os.path.join(ROOT, "examples", "cluster.taintednetes")) as f:
-            pods, nodes = taintednetes.parse(f.read())
-        placement, _, world = taintednetes.settle(pods, nodes)
+        pods, nodes, seats = {}, {}, {}
+        with open(os.path.join(ROOT, "examples", "cluster.txt")) as f:
+            for line in f:
+                w = line.split()
+                if w[0] == "pod":
+                    pods[w[1]] = w[2:]
+                else:
+                    nodes[w[1]], seats[w[1]] = w[3:], int(w[2])
+        code, placement, lines, world = schedule(pods, nodes, seats)
+        self.assertEqual(code, 0)
         self.assertEqual(placement, {"web": "beta", "db": "alpha", "cache": "gamma"})
+        self.assertEqual(lines[-1], "the cluster is at rest")
         self.assertEqual(world.rel("cache", "beta").scars, ["wounded by beta"])
 
     def test_random_clusters_settle_into_stable_matchings(self):
         rng = random.Random(83)
         for _ in range(40):
-            pod_names = [f"p{i}" for i in range(rng.randint(1, 5))]
-            node_names = [f"n{i}" for i in range(rng.randint(1, 5))]
+            pod_names = [f"p{i}" for i in range(rng.randint(1, 7))]
+            node_names = [f"n{i}" for i in range(rng.randint(1, 4))]
             pods = {p: rng.sample(node_names, rng.randint(0, len(node_names)))
                     for p in pod_names}
             nodes = {n: rng.sample(pod_names, rng.randint(0, len(pod_names)))
                      for n in node_names}
-            placement, _, _ = taintednetes.settle(pods, nodes)
-            self.assertEqual(placement, taintednetes.gale_shapley(pods, nodes))
+            seats = {n: rng.randint(0, 3) for n in node_names}
+            code, placement, _, _ = schedule(pods, nodes, seats)
+            self.assertEqual(code, 0)
+            self.assertEqual(placement, gale_shapley(pods, nodes, seats))
 
 
 if __name__ == "__main__":

@@ -35,7 +35,9 @@ KEYWORDS = {
     "forgive", "leave", "wait", "mark", "return", "if", "else", "while",
     "first", "time", "goodbye", "and", "or", "not", "trust", "intimacy",
     "passion", "commitment", "bond", "with", "scars", "scar", "of", "runs",
-    "afraid", "world", "recall", "length", "part",
+    "afraid", "world", "recall", "length", "part", "me", "note", "word",
+    "words", "place", "in", "number", "named", "kind", "bring", "from",
+    "silence", "for",
 }
 
 
@@ -124,6 +126,13 @@ class Cursor:
             self.fail(f"expected a name, got '{val}'")
         return val
 
+    def target(self):
+        """A soul named in the code, or `soul named <expr>` computed at run time."""
+        if self.word('soul'):
+            self.expect_word('named')
+            return ('expr', self.unary())
+        return ('name', self.name())
+
     def done(self):
         if self.i != len(self.t):
             self.fail(f"unexpected '{self.t[self.i][1]}'")
@@ -194,20 +203,36 @@ class Cursor:
             return e
         if kind == 'id':
             if val in ('trust', 'intimacy', 'passion', 'commitment'):
-                return ('rel', val, self.name())
+                return ('rel', val, self.target())
             if val == 'afraid':
                 self.expect_word('of')
-                return ('afraid', self.name())
+                return ('afraid', self.target())
             if val == 'bond':
                 self.expect_word('with')
-                return ('bond', self.name())
+                return ('bond', self.target())
             if val == 'scars':
                 self.expect_word('of')
-                return ('scars', self.name())
+                return ('scars', self.target())
             if val == 'scar':
                 idx = self.unary()
                 self.expect_word('of')
-                return ('scar', idx, self.name())
+                return ('scar', idx, self.target())
+            if val == 'me':
+                return ('me',)
+            if val == 'note':
+                return ('note', self.unary())
+            if val == 'word':
+                idx = self.unary()
+                self.expect_word('of')
+                return ('word', idx, self.unary())
+            if val in ('words', 'number'):
+                self.expect_word('of')
+                return (val, self.unary())
+            if val == 'place':
+                self.expect_word('of')
+                x = self.unary()
+                self.expect_word('in')
+                return ('place', x, self.unary())
             if val == 'runs':
                 return ('runs',)
             if val == 'length':
@@ -237,16 +262,20 @@ class Parser:
         while self.i < len(self.lines):
             n, toks = self.lines[self.i]
             c = Cursor(toks, n)
-            if not c.word('soul'):
-                c.fail("everything must belong to a soul")
+            if c.word('soul'):
+                decl = 'soul'
+            elif c.word('kind'):
+                decl = 'kind'
+            else:
+                c.fail("everything must belong to a soul or a kind of soul")
             name = c.name()
             c.done()
             self.i += 1
             body = self.block(('end',))
             self.i += 1
-            if any(s[0] == name for s in souls):
-                c.fail(f"there is already a soul called {name}")
-            souls.append((name, body))
+            if any(s[:2] == (decl, name) for s in souls):
+                c.fail(f"there is already a {decl} called {name}")
+            souls.append((decl, name, body))
         if not souls:
             raise TaintedError("a program needs at least one soul")
         return souls
@@ -286,30 +315,47 @@ class Parser:
         elif head == 'say':
             st = ('say', n, c.expr())
         elif head == 'meet':
-            st = ('meet', n, c.name())
+            st = ('meet', n, c.target())
         elif head in ('tell', 'confide'):
-            who = c.name()
+            who = c.target()
             st = (head, n, who, c.expr())
+        elif head == 'note':
+            key = c.unary()
+            if not c.op('='):
+                c.fail("expected '='")
+            st = ('note', n, key, c.expr())
+        elif head == 'bring':
+            kind = c.name()
+            c.expect_word('named')
+            st = ('bring', n, kind, c.expr())
         elif head == 'hear':
             if c.word('anyone'):
                 who = None
             elif c.word('world'):
                 who = 'world'
             else:
-                who = c.name()
+                who = c.target()
             c.expect_word('into')
-            st = ('hear', n, who, c.name())
+            var = c.name()
+            speaker = c.name() if c.word('from') else None
+            if speaker and who is not None:
+                c.fail("only 'hear anyone' needs to ask who it was")
+            st = ('hear', n, who, var, speaker)
         elif head in ('warm', 'cool'):
             c.expect_word('to')
-            st = (head, n, c.name())
+            st = (head, n, c.target())
         elif head == 'give':
             c.expect_word('heart')
             c.expect_word('to')
-            st = ('give', n, c.name())
+            st = ('give', n, c.target())
         elif head in ('promise', 'wound', 'forgive', 'leave'):
-            st = (head, n, c.name())
+            st = (head, n, c.target())
         elif head == 'wait':
-            st = ('wait', n)
+            if c.word('for'):
+                c.expect_word('silence')
+                st = ('silence', n)
+            else:
+                st = ('wait', n)
         elif head == 'recall':
             names = [c.name()]
             while c.peek()[0] is not None:
@@ -400,7 +446,7 @@ def compile_soul(name, body):
 
 
 def compile_program(source):
-    return [(n, compile_soul(n, b)) for n, b in Parser(source).parse()]
+    return [(d, n, compile_soul(n, b)) for d, n, b in Parser(source).parse()]
 
 
 # ------------------------------------------------------- tainted assembly
@@ -424,7 +470,7 @@ def to_tas(source):
         rest = text[len(word) + 1:]
         if not word or word.startswith('#'):
             continue
-        if word == 'soul':
+        if word in ('soul', 'kind'):
             out.append(text)
         elif word in ('end', 'else'):
             if not stack:
@@ -467,11 +513,13 @@ def load_tas(text):
             continue
         if soul is None:
             c = Cursor(tokenize(line, n), n)
-            c.expect_word('soul')
-            soul = (c.name(), [], {})
+            decl = 'kind' if c.word('kind') else 'soul'
+            if decl == 'soul':
+                c.expect_word('soul')
+            soul = (decl, c.name(), [], {})
             c.done()
             continue
-        name, code, labels = soul
+        decl, name, code, labels = soul
         if line == 'end':
             for ins in code:
                 slot = {'jz': 3, 'jmp': 2, 'first': 2}.get(ins[0])
@@ -479,7 +527,7 @@ def load_tas(text):
                     if ins[slot] not in labels:
                         raise TaintedError(f"line {ins[1]}: no label {ins[slot]}")
                     ins[slot] = labels[ins[slot]]
-            program.append((name, code))
+            program.append((decl, name, code))
             soul = None
             continue
         m = LABEL.match(line)
@@ -537,7 +585,9 @@ class Soul:
         self.code = code
         self.pc = 0
         self.mem = {}
+        self.notes = {}
         self.step = 0
+        self.arrived = 0
         self.done = False
         self.afraid = {}
 
@@ -565,7 +615,10 @@ def show(v):
 class World:
     def __init__(self, program, runs=0, out=sys.stdout, patience=DEFAULT_PATIENCE,
                  err=None, inp=None):
-        self.order = [Soul(n, code) for n, code in program]
+        self.kinds = {n: code for d, n, code in program if d == 'kind'}
+        self.order = [Soul(n, code) for d, n, code in program if d == 'soul']
+        if not self.order:
+            raise TaintedError("a program needs at least one soul")
         self.souls = {s.name: s for s in self.order}
         k = runs % len(self.order)
         self.order = self.order[k:] + self.order[:k]
@@ -575,13 +628,23 @@ class World:
         self.err = err or sys.stderr
         self.input = inp or sys.stdin
         self.rels = {}
+        self.mine = {}
         self.round = 0
 
     def rel(self, a, b):
         key = (a, b)
         if key not in self.rels:
-            self.rels[key] = Rel()
+            r = self.rels[key] = Rel()
+            self.mine.setdefault(a, []).append(r)
         return self.rels[key]
+
+    def resolve(self, s, target):
+        if target[0] == 'name':
+            return target[1]
+        who = self.ev(s, target[1])
+        if not isinstance(who, str):
+            raise TaintedError(f"{s.name} looks for a soul named {who}, but names are words")
+        return who
 
     def other(self, s, who):
         if who not in self.souls:
@@ -630,24 +693,48 @@ class World:
         if k == 'or':
             return int(bool(self.ev(s, e[1])) or bool(self.ev(s, e[2])))
         if k == 'rel':
-            self.other(s, e[2])
-            return getattr(self.rel(s.name, e[2]), e[1])
+            who = self.other(s, self.resolve(s, e[2])).name
+            return getattr(self.rel(s.name, who), e[1])
         if k == 'afraid':
-            self.other(s, e[1])
-            return int(s.afraid.get(e[1], 0) > 0)
+            who = self.other(s, self.resolve(s, e[1])).name
+            return int(s.afraid.get(who, 0) > 0)
         if k == 'bond':
-            self.other(s, e[1])
-            return bond_name(self.rel(s.name, e[1]))
+            who = self.other(s, self.resolve(s, e[1])).name
+            return bond_name(self.rel(s.name, who))
         if k == 'scars':
-            self.other(s, e[1])
-            return len(self.rel(s.name, e[1]).scars)
+            who = self.other(s, self.resolve(s, e[1])).name
+            return len(self.rel(s.name, who).scars)
         if k == 'scar':
             idx = self.ev(s, e[1])
-            self.other(s, e[2])
-            scars = self.rel(s.name, e[2]).scars
+            who = self.other(s, self.resolve(s, e[2])).name
+            scars = self.rel(s.name, who).scars
             if not isinstance(idx, int) or not 1 <= idx <= len(scars):
-                raise TaintedError(f"{s.name} has no scar number {idx} from {e[2]}")
+                raise TaintedError(f"{s.name} has no scar number {idx} from {who}")
             return scars[idx - 1]
+        if k == 'me':
+            return s.name
+        if k == 'note':
+            key = show(self.ev(s, e[1]))
+            if key not in s.notes:
+                raise TaintedError(f"{s.name} never wrote down {key}")
+            return s.notes[key]
+        if k in ('word', 'words', 'place', 'number'):
+            args = [self.ev(s, a) for a in e[1:]]
+            text = args[-1]
+            if not isinstance(text, str):
+                raise TaintedError(f"'{k}' needs a word, not {text}")
+            if k == 'number':
+                try:
+                    return int(text.strip())
+                except ValueError:
+                    raise TaintedError(f"'{text}' is not a number") from None
+            ws = text.split()
+            if k == 'words':
+                return len(ws)
+            if k == 'word':
+                idx = args[0]
+                return ws[idx - 1] if isinstance(idx, int) and 1 <= idx <= len(ws) else ""
+            return ws.index(show(args[0])) + 1 if show(args[0]) in ws else 0
         if k == 'length':
             v = self.ev(s, e[1])
             if not isinstance(v, str):
@@ -692,7 +779,7 @@ class World:
 
     def try_meet(self, a, b):
         bi = b.current()
-        if not (bi and bi[0] == 'meet' and bi[2] == a.name):
+        if not (bi and bi[0] == 'meet' and self.resolve(b, bi[2]) == a.name):
             return False
         ra, rb = self.rel(a.name, b.name), self.rel(b.name, a.name)
         if ra.left or rb.left or ra.closed or rb.closed:
@@ -707,9 +794,11 @@ class World:
 
     def try_transfer(self, snd, rcv):
         si, ri = snd.current(), rcv.current()
-        if not (si and si[0] in ('tell', 'confide') and si[2] == rcv.name):
+        if not (si and si[0] in ('tell', 'confide')
+                and self.resolve(snd, si[2]) == rcv.name):
             return False
-        if not (ri and ri[0] == 'hear' and ri[2] in (None, snd.name)):
+        if not (ri and ri[0] == 'hear' and ri[2] != 'world'
+                and (ri[2] is None or self.resolve(rcv, ri[2]) == snd.name)):
             return False
         rs, rr = self.rel(snd.name, rcv.name), self.rel(rcv.name, snd.name)
         if not rr.met or rr.closed or rr.left or rs.left:
@@ -721,6 +810,8 @@ class World:
                 f"{snd.name} can confide only in someone they gave their heart to")
         value = self.ev(snd, si[3])
         rcv.mem[ri[3]] = (value, rcv.step)
+        if ri[4]:
+            rcv.mem[ri[4]] = (snd.name, rcv.step)
         rr.heard.append(value)
         if rr.pressure > 0:
             rs.intimacy += 1
@@ -765,13 +856,29 @@ class World:
         elif op == 'goodbye':
             s.done = True
             return True
+        elif op == 'silence':
+            return False
+        elif op == 'note':
+            s.notes[show(self.ev(s, ins[2]))] = self.ev(s, ins[3])
+        elif op == 'bring':
+            if ins[2] not in self.kinds:
+                raise TaintedError(f"there is no kind of soul called {ins[2]}")
+            name = self.ev(s, ins[3])
+            if not isinstance(name, str) or not name:
+                raise TaintedError(f"a soul needs a name, not {name}")
+            if name in self.souls:
+                raise TaintedError(f"there is already a soul called {name}")
+            child = Soul(name, self.kinds[ins[2]])
+            child.arrived = self.round
+            self.order.append(child)
+            self.souls[name] = child
         elif op == 'meet':
-            b = self.other(s, ins[2])
+            b = self.other(s, self.resolve(s, ins[2]))
             if self.rel(s.name, b.name).left:
                 raise TaintedError(f"{s.name} left {b.name}; there is nothing more to do")
             return self.try_meet(s, b)
         elif op in ('tell', 'confide'):
-            b = self.other(s, ins[2])
+            b = self.other(s, self.resolve(s, ins[2]))
             r = self.known(s, b.name)
             if op == 'confide' and not r.gift:
                 raise TaintedError(
@@ -785,48 +892,52 @@ class World:
             s.mem[ins[3]] = (line.rstrip('\r\n') if line else 0, s.step)
         elif op == 'hear':
             if ins[2] is not None:
-                b = self.other(s, ins[2])
+                b = self.other(s, self.resolve(s, ins[2]))
                 self.known(s, b.name)
                 return self.try_transfer(b, s)
             for b in self.order:
                 if b is not s and self.try_transfer(b, s):
                     return True
             return False
-        elif op in ('warm', 'cool'):
-            r = self.known(s, ins[2])
+        elif op in ('warm', 'cool', 'promise', 'give', 'wound', 'forgive', 'leave'):
+            return self.feel(s, op, self.resolve(s, ins[2]))
+        else:
+            raise TaintedError(f"unknown instruction {op}")
+        self.advance(s)
+        return True
+
+    def feel(self, s, op, who):
+        if op in ('warm', 'cool'):
+            r = self.known(s, who)
             r.trust = r.trust + 1 if op == 'warm' else max(0, r.trust - 1)
         elif op == 'promise':
-            self.known(s, ins[2]).commitment += 1
+            self.known(s, who).commitment += 1
         elif op == 'give':
-            self.known(s, ins[2]).gift = True
+            self.known(s, who).gift = True
         elif op == 'wound':
-            self.known(s, ins[2])
-            them = self.rel(ins[2], s.name)
+            self.known(s, who)
+            them = self.rel(who, s.name)
             them.trust = 0
             them.intimacy //= 2
             them.scars.append(f"wounded by {s.name}")
             if not them.gift:
                 them.closed = True
         elif op == 'forgive':
-            r = self.known(s, ins[2])
+            r = self.known(s, who)
             r.closed = False
         elif op == 'leave':
-            mine = self.known(s, ins[2])
-            them = self.rel(ins[2], s.name)
+            mine = self.known(s, who)
+            them = self.rel(who, s.name)
             mine.left = True
             mine.commitment = 0
             mine.scars.extend(mine.heard)
             them.scars.extend(them.heard)
             them.scars.append(f"{s.name} left")
             them.abandoned = True
-        else:
-            raise TaintedError(f"unknown instruction {op}")
         self.advance(s)
         return True
 
     def run(self):
-        for s in self.order:
-            s.arrived = 0
         while True:
             alive = [s for s in self.order if not s.done]
             if not alive:
@@ -838,8 +949,8 @@ class World:
             moved = False
             for s in alive:
                 s.step += 1
-                for other, r in self.rels.items():
-                    if other[0] == s.name and r.met and not r.left:
+                for r in self.mine.get(s.name, ()):
+                    if r.met and not r.left:
                         idle = s.step - r.last_meet
                         if idle and idle % PASSION_FADE == 0 and r.passion:
                             r.passion -= 1
@@ -859,6 +970,12 @@ class World:
                     if s.afraid[k] <= 0:
                         del s.afraid[k]
             if not moved:
+                listening = [s for s in alive if s.current()[0] == 'silence']
+                if listening:
+                    for s in listening:
+                        self.advance(s)
+                        s.arrived = self.round
+                    continue
                 self.lament()
                 return 2
 
@@ -868,7 +985,15 @@ class World:
             if s.done:
                 continue
             ins = s.current()
-            who = ins[2] if ins[0] in ('meet', 'tell', 'confide', 'hear') else None
+            who = None
+            if ins[0] in ('meet', 'tell', 'confide', 'hear') and ins[2] is not None:
+                try:
+                    who = self.resolve(s, ins[2])
+                except TaintedError:
+                    who = "someone they no longer remember"
+            if who is not None and who not in self.souls:
+                print(f"{s.name} is still waiting for {who}", file=self.err)
+                continue
             if who is None:
                 print(f"{s.name} is still waiting for anyone at all", file=self.err)
             elif self.rel(who, s.name).left:
