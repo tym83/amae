@@ -7,7 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <math.h>
+#include <poll.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #define FADE 50
 #define PASSION_FADE 50
@@ -19,8 +25,10 @@
 
 typedef struct Block { struct Block *next; size_t used, size; char data[]; } Block;
 static Block *arena;
-static void **doomed;
+static Value *doomed;
 static size_t ndoomed, capdoomed;
+static Obj **temps;
+static size_t ntemps, captemps;
 
 static void *oom(void *p) {
     if (!p) { fputs("tainted: out of memory\n", stderr); exit(1); }
@@ -40,92 +48,7 @@ static void *scratch(size_t n) {
     return p;
 }
 
-/* Values made during a step live until the step is over; anything kept
- * longer is copied to the heap, and the heap copy it replaces is freed only
- * when the step is over, so a value still in hand never disappears. */
-static void step_over(void) {
-    while (arena && arena->next) { Block *b = arena->next; arena->next = b->next; free(b); }
-    if (arena) arena->used = 0;
-    for (size_t i = 0; i < ndoomed; i++) free(doomed[i]);
-    ndoomed = 0;
-}
-
-static void doom(const void *p) {
-    if (!p) return;
-    if (ndoomed == capdoomed) {
-        capdoomed = capdoomed ? capdoomed * 2 : 64;
-        doomed = oom(realloc(doomed, capdoomed * sizeof *doomed));
-    }
-    doomed[ndoomed++] = (void *)p;
-}
-
-static Value keep(Value v) {
-    if (v.tag != T_STR) return v;
-    char *p = oom(malloc((size_t)v.n + 1));
-    memcpy(p, v.s, (size_t)v.n);
-    p[v.n] = 0;
-    v.s = p;
-    return v;
-}
-
-static void drop(Value v) { if (v.tag == T_STR) doom(v.s); }
-
-Value t_int(int64_t i) { Value v = {0}; v.tag = T_INT; v.i = i; return v; }
-Value t_str(const char *s, int64_t n) { Value v = {0}; v.tag = T_STR; v.s = s; v.n = n; return v; }
-Value t_cstr(const char *s) { return t_str(s, (int64_t)strlen(s)); }
-
-static Value fresh(const char *s, int64_t n) {
-    char *p = scratch((size_t)n + 1);
-    memcpy(p, s, (size_t)n);
-    p[n] = 0;
-    return t_str(p, n);
-}
-
-static Value printf_value(const char *fmt, ...) {
-    va_list ap; va_start(ap, fmt);
-    int n = vsnprintf(NULL, 0, fmt, ap); va_end(ap);
-    char *p = scratch((size_t)n + 1);
-    va_start(ap, fmt); vsnprintf(p, (size_t)n + 1, fmt, ap); va_end(ap);
-    return t_str(p, n);
-}
-
-/* A value as text, the way `say` shows it. */
-static Value show(Value v) {
-    if (v.tag == T_STR) return v;
-    return printf_value("%lld", (long long)v.i);
-}
-
-static const char *cs(Value v) {      /* show, terminated, for messages */
-    Value t = show(v);
-    char *p = scratch((size_t)t.n + 1);
-    memcpy(p, t.s, (size_t)t.n);
-    p[t.n] = 0;
-    return p;
-}
-
-static int same(Value a, Value b) {
-    if (a.tag != b.tag) return 0;
-    if (a.tag == T_INT) return a.i == b.i;
-    return a.n == b.n && memcmp(a.s, b.s, (size_t)a.n) == 0;
-}
-
-/* Text is UTF-8; lengths and parts count characters, as people do. */
-static int64_t chars(Value v) {
-    int64_t n = 0;
-    for (int64_t i = 0; i < v.n; i++) if (((unsigned char)v.s[i] & 0xC0) != 0x80) n++;
-    return n;
-}
-
-static int64_t offset(Value v, int64_t k) {   /* byte offset of character k */
-    int64_t seen = 0;
-    for (int64_t i = 0; i < v.n; i++) {
-        if (((unsigned char)v.s[i] & 0xC0) != 0x80) {
-            if (seen == k) return i;
-            seen++;
-        }
-    }
-    return v.n;
-}
+static Value keep(Value v);
 
 /* ------------------------------------------------------------- tables */
 
@@ -185,6 +108,268 @@ static void list_push(List *l, Value v) {
     l->v[l->n++] = keep(v);
 }
 
+/* Lists and maps. A map keeps its keys, which are words, in the order they
+ * were first written. */
+struct Obj {
+    int kind;
+    Value *v;
+    char **keys;
+    int64_t *klen;
+    size_t n, cap;
+    Table index;
+};
+
+static void free_value(Value v);
+
+static void free_obj(Obj *o) {
+    for (size_t i = 0; i < o->n; i++) {
+        free_value(o->v[i]);
+        if (o->keys) free(o->keys[i]);
+    }
+    free(o->v);
+    free(o->keys);
+    free(o->klen);
+    for (size_t i = 0; i < o->index.cap; i++) free(o->index.e[i].key);
+    free(o->index.e);
+    free(o);
+}
+
+static void free_value(Value v) {
+    if (v.tag == T_STR) free((void *)v.s);
+    else if (v.tag == T_LIST || v.tag == T_MAP) free_obj(v.o);
+}
+
+/* Values made during a step live until the step is over; anything kept
+ * longer is copied to the heap, and the heap copy it replaces is freed only
+ * when the step is over, so a value still in hand never disappears. */
+static void step_over(void) {
+    while (arena && arena->next) { Block *b = arena->next; arena->next = b->next; free(b); }
+    if (arena) arena->used = 0;
+    for (size_t i = 0; i < ndoomed; i++) free_value(doomed[i]);
+    ndoomed = 0;
+    for (size_t i = 0; i < ntemps; i++) free_obj(temps[i]);
+    ntemps = 0;
+}
+
+static void drop(Value v) {
+    if (v.tag != T_STR && v.tag != T_LIST && v.tag != T_MAP) return;
+    if (ndoomed == capdoomed) {
+        capdoomed = capdoomed ? capdoomed * 2 : 64;
+        doomed = oom(realloc(doomed, capdoomed * sizeof *doomed));
+    }
+    doomed[ndoomed++] = v;
+}
+
+static Obj *new_obj(int kind, int temporary) {
+    Obj *o = oom(calloc(1, sizeof(Obj)));
+    o->kind = kind;
+    if (temporary) {
+        if (ntemps == captemps) {
+            captemps = captemps ? captemps * 2 : 64;
+            temps = oom(realloc(temps, captemps * sizeof *temps));
+        }
+        temps[ntemps++] = o;
+    }
+    return o;
+}
+
+static void grow(Obj *o) {
+    if (o->n < o->cap) return;
+    o->cap = o->cap ? o->cap * 2 : 4;
+    o->v = oom(realloc(o->v, o->cap * sizeof(Value)));
+    if (o->kind == T_MAP) {
+        o->keys = oom(realloc(o->keys, o->cap * sizeof(char *)));
+        o->klen = oom(realloc(o->klen, o->cap * sizeof(int64_t)));
+    }
+}
+
+/* A copy that belongs to whoever keeps it: strings, lists and maps are
+ * copied all the way down. */
+static Value keep(Value v) {
+    if (v.tag == T_STR) {
+        char *p = oom(malloc((size_t)v.n + 1));
+        memcpy(p, v.s, (size_t)v.n);
+        p[v.n] = 0;
+        v.s = p;
+        return v;
+    }
+    if (v.tag == T_LIST || v.tag == T_MAP) {
+        Obj *o = new_obj(v.tag, 0), *from = v.o;
+        o->cap = from->n;
+        o->n = from->n;
+        if (o->n) {
+            o->v = oom(malloc(o->n * sizeof(Value)));
+            if (v.tag == T_MAP) {
+                o->keys = oom(malloc(o->n * sizeof(char *)));
+                o->klen = oom(malloc(o->n * sizeof(int64_t)));
+            }
+        }
+        for (size_t i = 0; i < o->n; i++) {
+            o->v[i] = keep(from->v[i]);
+            if (v.tag == T_MAP) {
+                o->keys[i] = oom(malloc((size_t)from->klen[i] + 1));
+                memcpy(o->keys[i], from->keys[i], (size_t)from->klen[i] + 1);
+                o->klen[i] = from->klen[i];
+                table_put(&o->index, o->keys[i], o->klen[i], (int)i);
+            }
+        }
+        v.o = o;
+    }
+    return v;
+}
+
+Value t_int(int64_t i) { Value v = {0}; v.tag = T_INT; v.i = i; return v; }
+Value t_dec(double d) { Value v = {0}; v.tag = T_DEC; v.d = d; return v; }
+Value t_str(const char *s, int64_t n) { Value v = {0}; v.tag = T_STR; v.s = s; v.n = n; return v; }
+Value t_cstr(const char *s) { return t_str(s, (int64_t)strlen(s)); }
+
+static Value fresh(const char *s, int64_t n) {
+    char *p = scratch((size_t)n + 1);
+    memcpy(p, s, (size_t)n);
+    p[n] = 0;
+    return t_str(p, n);
+}
+
+static Value printf_value(const char *fmt, ...) {
+    va_list ap; va_start(ap, fmt);
+    int n = vsnprintf(NULL, 0, fmt, ap); va_end(ap);
+    char *p = scratch((size_t)n + 1);
+    va_start(ap, fmt); vsnprintf(p, (size_t)n + 1, fmt, ap); va_end(ap);
+    return t_str(p, n);
+}
+
+/* Growing text, for show and json. */
+typedef struct { char *p; size_t n, cap; } Text;
+
+static void text_add(Text *t, const char *s, size_t n) {
+    if (t->n + n + 1 > t->cap) {
+        t->cap = (t->n + n + 1) * 2;
+        t->p = oom(realloc(t->p, t->cap));
+    }
+    memcpy(t->p + t->n, s, n);
+    t->n += n;
+    t->p[t->n] = 0;
+}
+
+static void text_c(Text *t, const char *s) { text_add(t, s, strlen(s)); }
+
+static Value text_value(Text *t) {
+    Value v = fresh(t->p ? t->p : "", (int64_t)t->n);
+    free(t->p);
+    return v;
+}
+
+/* The shortest decimal that reads back as the same number, with a point. */
+static void decimal_text(double d, char out[40]) {
+    if (d != d) { strcpy(out, "nan"); return; }
+    if (d == 1.0 / 0.0) { strcpy(out, "inf"); return; }
+    if (d == -1.0 / 0.0) { strcpy(out, "-inf"); return; }
+    for (int p = 1; p <= 17; p++) {
+        snprintf(out, 40, "%.*g", p, d);
+        if (strtod(out, NULL) == d) break;
+    }
+    if (!strchr(out, '.') && !strchr(out, 'e') && !strchr(out, 'n')) strcat(out, ".0");
+}
+
+static void json_text(Text *t, Value v, int quoted);
+
+static void json_string(Text *t, const char *s, int64_t n) {
+    text_c(t, "\"");
+    for (int64_t i = 0; i < n; i++) {
+        unsigned char c = (unsigned char)s[i];
+        if (c == '"') text_c(t, "\\\"");
+        else if (c == '\\') text_c(t, "\\\\");
+        else if (c == '\n') text_c(t, "\\n");
+        else if (c == '\r') text_c(t, "\\r");
+        else if (c == '\t') text_c(t, "\\t");
+        else if (c < 0x20) { char u[8]; snprintf(u, sizeof u, "\\u%04x", c); text_c(t, u); }
+        else text_add(t, (const char *)&c, 1);
+    }
+    text_c(t, "\"");
+}
+
+/* Strings inside lists and maps are shown quoted, as JSON writes them. */
+static void json_text(Text *t, Value v, int quoted) {
+    char buf[40];
+    switch (v.tag) {
+    case T_INT: snprintf(buf, sizeof buf, "%lld", (long long)v.i); text_c(t, buf); break;
+    case T_DEC: decimal_text(v.d, buf); text_c(t, buf); break;
+    case T_STR:
+        if (quoted) json_string(t, v.s, v.n); else text_add(t, v.s, (size_t)v.n);
+        break;
+    case T_LIST:
+        text_c(t, "[");
+        for (size_t i = 0; i < v.o->n; i++) { if (i) text_c(t, ", "); json_text(t, v.o->v[i], 1); }
+        text_c(t, "]");
+        break;
+    case T_MAP:
+        text_c(t, "{");
+        for (size_t i = 0; i < v.o->n; i++) {
+            if (i) text_c(t, ", ");
+            json_string(t, v.o->keys[i], v.o->klen[i]);
+            text_c(t, ": ");
+            json_text(t, v.o->v[i], 1);
+        }
+        text_c(t, "}");
+        break;
+    }
+}
+
+/* A value as text, the way `say` shows it. */
+static Value show(Value v) {
+    if (v.tag == T_STR) return v;
+    if (v.tag == T_INT) return printf_value("%lld", (long long)v.i);
+    Text t = {0};
+    json_text(&t, v, 0);
+    return text_value(&t);
+}
+
+static const char *cs(Value v) {      /* show, terminated, for messages */
+    Value t = show(v);
+    char *p = scratch((size_t)t.n + 1);
+    memcpy(p, t.s, (size_t)t.n);
+    p[t.n] = 0;
+    return p;
+}
+
+static int numeric(Value v) { return v.tag == T_INT || v.tag == T_DEC; }
+static double as_double(Value v) { return v.tag == T_INT ? (double)v.i : v.d; }
+
+static int same(Value a, Value b) {
+    if (numeric(a) && numeric(b)) {
+        if (a.tag == T_INT && b.tag == T_INT) return a.i == b.i;
+        return as_double(a) == as_double(b);
+    }
+    if (a.tag != b.tag) return 0;
+    if (a.tag == T_STR) return a.n == b.n && memcmp(a.s, b.s, (size_t)a.n) == 0;
+    if (a.o->n != b.o->n) return 0;
+    for (size_t i = 0; i < a.o->n; i++) {
+        if (a.tag == T_MAP && (a.o->klen[i] != b.o->klen[i] ||
+                               memcmp(a.o->keys[i], b.o->keys[i], (size_t)a.o->klen[i])))
+            return 0;
+        if (!same(a.o->v[i], b.o->v[i])) return 0;
+    }
+    return 1;
+}
+
+/* Text is UTF-8; lengths and parts count characters, as people do. */
+static int64_t chars(Value v) {
+    int64_t n = 0;
+    for (int64_t i = 0; i < v.n; i++) if (((unsigned char)v.s[i] & 0xC0) != 0x80) n++;
+    return n;
+}
+
+static int64_t offset(Value v, int64_t k) {   /* byte offset of character k */
+    int64_t seen = 0;
+    for (int64_t i = 0; i < v.n; i++) {
+        if (((unsigned char)v.s[i] & 0xC0) != 0x80) {
+            if (seen == k) return i;
+            seen++;
+        }
+    }
+    return v.n;
+}
+
 /* -------------------------------------------------------------- souls */
 
 typedef struct { Value v; int64_t touched; int set; } Slot;
@@ -213,7 +398,17 @@ struct Soul {
     int done;
     Fear *fears;
     size_t nfears, capfears;
+    int sleeping;
+    double wake;
+    struct Handler *handlers;   /* the enduring this soul is inside of */
+    size_t nhandlers, caphandlers;
 };
+
+typedef struct Handler { int unit, depth, start, end, to, slot; } Handler;
+
+/* Where the world's lines come from: standard input, and every process the
+ * program listens to. */
+typedef struct { int fd; char *buf; size_t n, cap; int closed; } Source;
 
 typedef struct {
     int a, b;
@@ -234,6 +429,8 @@ struct World {
     int ending;
     char *error;
     jmp_buf *trap;
+    Source *src;
+    size_t nsrc, capsrc;
 };
 
 int t_pc(const Soul *s) { return s->pc; }
@@ -344,6 +541,9 @@ static void frighten(Soul *s, int who, int64_t steps) {
 
 /* --------------------------------------------------------------- memory */
 
+/* What a memory keeps after `periods` times fifty steps untouched: a number
+ * loses its last digits, a decimal the last digits after its point first, a
+ * word its last letters, a list its last items and a map its last keys. */
 static Value fade(Value v, int64_t periods) {
     if (v.tag == T_INT) {
         if (periods >= 19) return t_int(0);
@@ -351,6 +551,36 @@ static Value fade(Value v, int64_t periods) {
         for (int64_t k = 0; k < periods; k++) lost *= 10;
         int64_t a = v.i < 0 ? -v.i : v.i;
         return t_int((v.i < 0 ? -1 : 1) * (a / lost * lost));
+    }
+    if (v.tag == T_DEC) {
+        char buf[40];
+        decimal_text(v.d, buf);
+        char *point = strchr(buf, '.');
+        if (!point || strchr(buf, 'e')) return v;
+        int64_t places = (int64_t)strlen(point + 1);
+        if (periods < places) {
+            point[1 + places - periods] = 0;
+            return t_dec(strtod(buf, NULL));
+        }
+        double whole = v.d < 0 ? -(double)(int64_t)(-v.d) : (double)(int64_t)v.d;
+        int64_t rest = periods - places;
+        double lost = 1;
+        for (int64_t k = 0; k < rest && k < 300; k++) lost *= 10;
+        return t_dec(whole < 0 ? -((double)(int64_t)(-whole / lost)) * lost
+                               : ((double)(int64_t)(whole / lost)) * lost);
+    }
+    if (v.tag == T_LIST || v.tag == T_MAP) {
+        Obj *o = new_obj(v.tag, 1);
+        size_t n = v.o->n > (size_t)periods ? v.o->n - (size_t)periods : 0;
+        for (size_t i = 0; i < n; i++) {
+            if (v.tag == T_LIST) t_list_push(NULL, (Value){.tag = T_LIST, .o = o}, v.o->v[i]);
+            else t_map_put(NULL, (Value){.tag = T_MAP, .o = o},
+                           t_str(v.o->keys[i], v.o->klen[i]), v.o->v[i]);
+        }
+        Value faded = {0};
+        faded.tag = v.tag;
+        faded.o = o;
+        return faded;
     }
     int64_t keepn = chars(v) - periods;
     if (keepn < 0) keepn = 0;
@@ -379,9 +609,17 @@ Value t_var(World *w, Soul *s, int slot) {
 
 /* ---------------------------------------------------------- expressions */
 
-int t_truthy(Value v) { return v.tag == T_INT ? v.i != 0 : v.n != 0; }
+int t_truthy(Value v) {
+    switch (v.tag) {
+    case T_INT: return v.i != 0;
+    case T_DEC: return v.d != 0;
+    case T_STR: return v.n != 0;
+    default: return v.o->n != 0;
+    }
+}
 
 Value t_neg(World *w, Value v) {
+    if (v.tag == T_DEC) return t_dec(-v.d);
     if (v.tag != T_INT) t_fail(w, "only numbers can be negated");
     if (v.i == INT64_MIN) t_fail(w, "the number grew too large to hold");
     return t_int(-v.i);
@@ -392,11 +630,22 @@ Value t_and(Value a, Value b) { return t_int(t_truthy(a) && t_truthy(b)); }
 Value t_or(Value a, Value b) { return t_int(t_truthy(a) || t_truthy(b)); }
 
 static int compare(Value a, Value b) {
-    if (a.tag == T_INT) return (a.i > b.i) - (a.i < b.i);
+    if (a.tag == T_INT && b.tag == T_INT) return (a.i > b.i) - (a.i < b.i);
+    if (numeric(a)) { double x = as_double(a), y = as_double(b); return (x > y) - (x < y); }
     int64_t n = a.n < b.n ? a.n : b.n;
     int c = memcmp(a.s, b.s, (size_t)n);
     if (c) return c < 0 ? -1 : 1;
     return (a.n > b.n) - (a.n < b.n);
+}
+
+static Value concat(Value a, Value b) {
+    Obj *o = new_obj(T_LIST, 1);
+    Value l = {0};
+    l.tag = T_LIST;
+    l.o = o;
+    for (size_t i = 0; i < a.o->n; i++) t_list_push(NULL, l, a.o->v[i]);
+    for (size_t i = 0; i < b.o->n; i++) t_list_push(NULL, l, b.o->v[i]);
+    return l;
 }
 
 Value t_bin(World *w, int op, Value a, Value b) {
@@ -410,15 +659,36 @@ Value t_bin(World *w, int op, Value a, Value b) {
     }
     if (op == B_EQ) return t_int(same(a, b));
     if (op == B_NE) return t_int(!same(a, b));
-    if (a.tag != b.tag) t_fail(w, "cannot compare or combine '%s' and '%s'", cs(a), cs(b));
-    switch (op) {
-    case B_LT: return t_int(compare(a, b) < 0);
-    case B_GT: return t_int(compare(a, b) > 0);
-    case B_LE: return t_int(compare(a, b) <= 0);
-    case B_GE: return t_int(compare(a, b) >= 0);
+    if (op == B_ADD && a.tag == T_LIST && b.tag == T_LIST) return concat(a, b);
+    int both_numbers = numeric(a) && numeric(b);
+    if (a.tag != b.tag && !both_numbers)
+        t_fail(w, "cannot compare or combine '%s' and '%s'", cs(a), cs(b));
+    if (op >= B_LT) {
+        if (a.tag == T_LIST || a.tag == T_MAP)
+            t_fail(w, "cannot compare or combine '%s' and '%s'", cs(a), cs(b));
+        int c = compare(a, b);
+        switch (op) {
+        case B_LT: return t_int(c < 0);
+        case B_GT: return t_int(c > 0);
+        case B_LE: return t_int(c <= 0);
+        default: return t_int(c >= 0);
+        }
     }
     static const char *ops[] = {"+", "-", "*", "/", "%"};
-    if (a.tag != T_INT) t_fail(w, "'%s' works only on numbers", ops[op]);
+    if (!both_numbers) t_fail(w, "'%s' works only on numbers", ops[op]);
+    if (a.tag == T_DEC || b.tag == T_DEC) {
+        double x = as_double(a), y = as_double(b);
+        switch (op) {
+        case B_ADD: return t_dec(x + y);
+        case B_SUB: return t_dec(x - y);
+        case B_MUL: return t_dec(x * y);
+        }
+        if (y == 0) t_fail(w, "a number cannot be divided by nothing");
+        if (op == B_DIV) return t_dec(x / y);
+        double m = fmod(x, y);
+        if (m != 0 && ((m < 0) != (y < 0))) m += y;
+        return t_dec(m);
+    }
     int64_t r;
     switch (op) {
     case B_ADD:
@@ -546,7 +816,17 @@ Value t_words(World *w, Value text) {
     return t_int(count_words(text));
 }
 
+static int key_at(Obj *o, Value key) {
+    Value k = show(key);
+    return table_get(&o->index, k.s, k.n);
+}
+
 Value t_place(World *w, Value x, Value text) {
+    if (text.tag == T_LIST) {
+        for (size_t i = 0; i < text.o->n; i++) if (same(text.o->v[i], x)) return t_int((int64_t)i + 1);
+        return t_int(0);
+    }
+    if (text.tag == T_MAP) return t_int(key_at(text.o, x) + 1);
     needs_word(w, "place", text);
     Value want = show(x);
     int64_t b, n;
@@ -564,6 +844,18 @@ Value t_number(World *w, Value text) {
     int64_t k = i;
     if (k < j && (text.s[k] == '+' || text.s[k] == '-')) { neg = text.s[k] == '-'; k++; }
     if (k >= j) t_fail(w, "'%s' is not a number", cs(text));
+    int64_t dot = -1;
+    for (int64_t q = k; q < j; q++) if (text.s[q] == '.' || text.s[q] == 'e' || text.s[q] == 'E') dot = q;
+    if (dot >= 0) {
+        char buf[128];
+        int64_t len = j - i < 127 ? j - i : 127;
+        memcpy(buf, text.s + i, (size_t)len);
+        buf[len] = 0;
+        char *end;
+        double d = strtod(buf, &end);
+        if (*end || !(text.s[k] >= '0' && text.s[k] <= '9')) t_fail(w, "'%s' is not a number", cs(text));
+        return t_dec(d);
+    }
     int64_t r = 0;
     int prev_digit = 0;
     for (; k < j; k++) {
@@ -581,7 +873,8 @@ Value t_number(World *w, Value text) {
 }
 
 Value t_length(World *w, Value text) {
-    if (text.tag != T_STR) t_fail(w, "only words have a length");
+    if (text.tag == T_LIST || text.tag == T_MAP) return t_int((int64_t)text.o->n);
+    if (text.tag != T_STR) t_fail(w, "only words, lists and maps have a length");
     return t_int(chars(text));
 }
 
@@ -594,6 +887,271 @@ Value t_part(World *w, Value a, Value b, Value text) {
     if (from >= to) return t_str("", 0);
     int64_t x = offset(text, from), y = offset(text, to);
     return t_str(text.s + x, y - x);
+}
+
+/* ------------------------------------------------------- lists and maps */
+
+Value t_list_new(World *w) {
+    (void)w;
+    Value v = {0};
+    v.tag = T_LIST;
+    v.o = new_obj(T_LIST, 1);
+    return v;
+}
+
+void t_list_push(World *w, Value list, Value v) {
+    (void)w;
+    grow(list.o);
+    list.o->v[list.o->n++] = keep(v);
+}
+
+Value t_map_new(World *w) {
+    (void)w;
+    Value v = {0};
+    v.tag = T_MAP;
+    v.o = new_obj(T_MAP, 1);
+    return v;
+}
+
+void t_map_put(World *w, Value map, Value key, Value v) {
+    (void)w;
+    Obj *o = map.o;
+    Value k = show(key);
+    int i = table_get(&o->index, k.s, k.n);
+    if (i >= 0) { drop(o->v[i]); o->v[i] = keep(v); return; }
+    grow(o);
+    o->keys[o->n] = oom(malloc((size_t)k.n + 1));
+    memcpy(o->keys[o->n], k.s, (size_t)k.n);
+    o->keys[o->n][k.n] = 0;
+    o->klen[o->n] = k.n;
+    o->v[o->n] = keep(v);
+    table_put(&o->index, o->keys[o->n], k.n, (int)o->n);
+    o->n++;
+}
+
+static Value *item(World *w, Value x, Value i) {
+    if (x.tag == T_LIST) {
+        if (i.tag != T_INT || i.i < 1 || i.i > (int64_t)x.o->n)
+            t_fail(w, "there is no item %s in a list of %zu", cs(i), x.o->n);
+        return &x.o->v[i.i - 1];
+    }
+    if (x.tag == T_MAP) {
+        int k = key_at(x.o, i);
+        if (k < 0) t_fail(w, "there is nothing under %s", cs(i));
+        return &x.o->v[k];
+    }
+    t_fail(w, "only lists and maps have items, not %s", cs(x));
+}
+
+Value t_index(World *w, Value x, Value i) {
+    if (x.tag == T_STR) {
+        if (i.tag != T_INT || i.i < 1 || i.i > chars(x))
+            t_fail(w, "there is no letter %s in a word of %lld", cs(i), (long long)chars(x));
+        int64_t a = offset(x, i.i - 1), b = offset(x, i.i);
+        return t_str(x.s + a, b - a);
+    }
+    return *item(w, x, i);
+}
+
+Value t_keys(World *w, Value m) {
+    if (m.tag != T_MAP) t_fail(w, "only maps have keys, not %s", cs(m));
+    Value l = t_list_new(w);
+    for (size_t i = 0; i < m.o->n; i++) t_list_push(w, l, t_str(m.o->keys[i], m.o->klen[i]));
+    return l;
+}
+
+Value t_json(World *w, Value v) {
+    (void)w;
+    Text t = {0};
+    json_text(&t, v, 1);
+    return text_value(&t);
+}
+
+typedef struct { World *w; const char *s; int64_t n, i; Value text; } Reader;
+
+_Noreturn static void not_json(Reader *r) {
+    t_fail(r->w, "this is not json: %s", cs(r->text));
+}
+
+static void skip_space(Reader *r) { while (r->i < r->n && space(r->s[r->i])) r->i++; }
+
+static Value read_json(Reader *r, int depth);
+
+static Value read_json_string(Reader *r) {
+    Text t = {0};
+    r->i++;
+    while (r->i < r->n && r->s[r->i] != '"') {
+        char c = r->s[r->i++];
+        if (c != '\\') { text_add(&t, &c, 1); continue; }
+        if (r->i >= r->n) not_json(r);
+        char e = r->s[r->i++];
+        switch (e) {
+        case 'n': text_c(&t, "\n"); break;
+        case 't': text_c(&t, "\t"); break;
+        case 'r': text_c(&t, "\r"); break;
+        case 'b': text_c(&t, "\b"); break;
+        case 'f': text_c(&t, "\f"); break;
+        case 'u': {
+            if (r->i + 4 > r->n) not_json(r);
+            char hex[5] = {0};
+            memcpy(hex, r->s + r->i, 4);
+            r->i += 4;
+            unsigned cp = (unsigned)strtoul(hex, NULL, 16);
+            if (cp >= 0xD800 && cp < 0xDC00 && r->i + 6 <= r->n && r->s[r->i] == '\\' && r->s[r->i + 1] == 'u') {
+                memcpy(hex, r->s + r->i + 2, 4);
+                unsigned lo = (unsigned)strtoul(hex, NULL, 16);
+                r->i += 6;
+                cp = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
+            }
+            char u[4];
+            int k = 0;
+            if (cp < 0x80) u[k++] = (char)cp;
+            else if (cp < 0x800) { u[k++] = (char)(0xC0 | cp >> 6); u[k++] = (char)(0x80 | (cp & 0x3F)); }
+            else if (cp < 0x10000) {
+                u[k++] = (char)(0xE0 | cp >> 12); u[k++] = (char)(0x80 | ((cp >> 6) & 0x3F));
+                u[k++] = (char)(0x80 | (cp & 0x3F));
+            } else {
+                u[k++] = (char)(0xF0 | cp >> 18); u[k++] = (char)(0x80 | ((cp >> 12) & 0x3F));
+                u[k++] = (char)(0x80 | ((cp >> 6) & 0x3F)); u[k++] = (char)(0x80 | (cp & 0x3F));
+            }
+            text_add(&t, u, (size_t)k);
+            break;
+        }
+        default: text_add(&t, &e, 1);
+        }
+    }
+    if (r->i >= r->n) not_json(r);
+    r->i++;
+    return text_value(&t);
+}
+
+static Value read_json(Reader *r, int depth) {
+    if (depth > 1000) not_json(r);
+    skip_space(r);
+    if (r->i >= r->n) not_json(r);
+    char c = r->s[r->i];
+    if (c == '{') {
+        Value m = t_map_new(r->w);
+        r->i++;
+        skip_space(r);
+        if (r->i < r->n && r->s[r->i] == '}') { r->i++; return m; }
+        for (;;) {
+            skip_space(r);
+            if (r->i >= r->n || r->s[r->i] != '"') not_json(r);
+            Value k = read_json_string(r);
+            skip_space(r);
+            if (r->i >= r->n || r->s[r->i] != ':') not_json(r);
+            r->i++;
+            Value v = read_json(r, depth + 1);
+            t_map_put(r->w, m, k, v);
+            skip_space(r);
+            if (r->i < r->n && r->s[r->i] == ',') { r->i++; continue; }
+            if (r->i < r->n && r->s[r->i] == '}') { r->i++; return m; }
+            not_json(r);
+        }
+    }
+    if (c == '[') {
+        Value l = t_list_new(r->w);
+        r->i++;
+        skip_space(r);
+        if (r->i < r->n && r->s[r->i] == ']') { r->i++; return l; }
+        for (;;) {
+            t_list_push(r->w, l, read_json(r, depth + 1));
+            skip_space(r);
+            if (r->i < r->n && r->s[r->i] == ',') { r->i++; continue; }
+            if (r->i < r->n && r->s[r->i] == ']') { r->i++; return l; }
+            not_json(r);
+        }
+    }
+    if (c == '"') return read_json_string(r);
+    if (r->n - r->i >= 4 && memcmp(r->s + r->i, "true", 4) == 0) { r->i += 4; return t_int(1); }
+    if (r->n - r->i >= 5 && memcmp(r->s + r->i, "false", 5) == 0) { r->i += 5; return t_int(0); }
+    if (r->n - r->i >= 4 && memcmp(r->s + r->i, "null", 4) == 0) { r->i += 4; return t_str("", 0); }
+    int64_t b = r->i;
+    int decimal = 0;
+    if (r->i < r->n && (r->s[r->i] == '-' || r->s[r->i] == '+')) r->i++;
+    while (r->i < r->n && strchr("0123456789.eE+-", r->s[r->i])) {
+        if (strchr(".eE", r->s[r->i])) decimal = 1;
+        r->i++;
+    }
+    if (r->i == b) not_json(r);
+    char buf[64];
+    int64_t len = r->i - b < 63 ? r->i - b : 63;
+    memcpy(buf, r->s + b, (size_t)len);
+    buf[len] = 0;
+    char *end;
+    if (!decimal) {
+        errno = 0;
+        long long v = strtoll(buf, &end, 10);
+        if (!*end && errno == 0) return t_int(v);
+    }
+    double d = strtod(buf, &end);
+    if (*end) not_json(r);
+    return t_dec(d);
+}
+
+Value t_meaning(World *w, Value text) {
+    needs_word(w, "meaning", text);
+    Reader r = {w, text.s, text.n, 0, text};
+    Value v = read_json(&r, 0);
+    skip_space(&r);
+    if (r.i != r.n) not_json(&r);
+    return v;
+}
+
+Value t_whole(World *w, Value v) {
+    if (v.tag == T_INT) return v;
+    if (v.tag != T_DEC) t_fail(w, "only numbers have a whole part, not %s", cs(v));
+    double f = floor(v.d);
+    if (!(f >= -9223372036854775808.0 && f < 9223372036854775808.0))
+        t_fail(w, "the number grew too large to hold");
+    return t_int((int64_t)f);
+}
+
+Value t_env(World *w, Value name) {
+    needs_word(w, "world", name);
+    char *n = (char *)cs(name);
+    const char *v = getenv(n);
+    return v ? fresh(v, (int64_t)strlen(v)) : t_str("", 0);
+}
+
+static double clock_now(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (double)tv.tv_sec + tv.tv_usec / 1e6;
+}
+
+Value t_now(World *w) { (void)w; return t_dec(floor(clock_now() * 1000) / 1000); }
+
+Value t_lines(World *w, Value text) {
+    needs_word(w, "lines", text);
+    Value l = t_list_new(w);
+    int64_t start = 0;
+    for (int64_t i = 0; i <= text.n; i++) {
+        if (i == text.n || text.s[i] == '\n') {
+            if (i == text.n && start == text.n) break;
+            int64_t end = i;
+            if (end > start && text.s[end - 1] == '\r') end--;
+            t_list_push(w, l, t_str(text.s + start, end - start));
+            start = i + 1;
+        }
+    }
+    return l;
+}
+
+static uint64_t fate_state;
+
+Value t_fate(World *w, Value n) {
+    if (n.tag != T_INT || n.i < 1) t_fail(w, "fate needs a number of choices, not %s", cs(n));
+    if (!fate_state) {
+        const char *seed = getenv("TAINTED_FATE");
+        fate_state = seed ? strtoull(seed, NULL, 10) * 2654435761ULL + 1
+                          : ((uint64_t)clock_now() * 1000003ULL) ^ ((uint64_t)getpid() << 21) ^ 0x9E3779B97F4A7C15ULL;
+    }
+    fate_state ^= fate_state << 13;
+    fate_state ^= fate_state >> 7;
+    fate_state ^= fate_state << 17;
+    return t_int((int64_t)(fate_state % (uint64_t)n.i));
 }
 
 /* ---------------------------------------------------------- instructions */
@@ -713,7 +1271,8 @@ static void finish_ritual(World *w, Soul *s, Value value) {
     const Unit *u = unit_of(w, s);
     for (int i = 0; i < u->nslots; i++) if (s->mem[i].set) drop(s->mem[i].v);
     Value v = keep(value);      /* the value may live in the memory being let go */
-    doom(s->mem);
+    free(s->mem);
+    while (s->nhandlers && s->handlers[s->nhandlers - 1].depth > (int)s->nframes) s->nhandlers--;
     int64_t held = s->step - f.began;
     s->unit = f.unit;
     s->pc = f.pc;
@@ -771,6 +1330,277 @@ int t_meet(World *w, Soul *s, const Ins *ins) {
     return wants_to_meet(w, b, s, 1) && try_meet(w, s, b);
 }
 
+/* ---------------------------------------------------------------- world */
+
+static void add_source(World *w, int fd) {
+    if (w->nsrc == w->capsrc) {
+        w->capsrc = w->capsrc ? w->capsrc * 2 : 4;
+        w->src = oom(realloc(w->src, w->capsrc * sizeof(Source)));
+    }
+    memset(&w->src[w->nsrc], 0, sizeof(Source));
+    w->src[w->nsrc++].fd = fd;
+}
+
+static int take_line(Source *src, Value *line, int partial) {
+    char *nl = src->n ? memchr(src->buf, '\n', src->n) : NULL;
+    size_t len;
+    if (nl) len = (size_t)(nl - src->buf);
+    else if (partial && src->n) len = src->n;
+    else return 0;
+    size_t used = nl ? len + 1 : len;
+    size_t keepn = len;
+    while (keepn > 0 && (src->buf[keepn - 1] == '\r' || src->buf[keepn - 1] == '\n')) keepn--;
+    *line = fresh(src->buf, (int64_t)keepn);
+    memmove(src->buf, src->buf + used, src->n - used);
+    src->n -= used;
+    return 1;
+}
+
+static void listen_once(Source *src) {
+    struct pollfd p = {src->fd, POLLIN, 0};
+    if (poll(&p, 1, 0) <= 0) return;
+    if (src->cap - src->n < 65536) {
+        src->cap = src->n + 65536 * 2;
+        src->buf = oom(realloc(src->buf, src->cap));
+    }
+    ssize_t got = read(src->fd, src->buf + src->n, 65536);
+    if (got <= 0) { src->closed = 1; if (src->fd > 2) close(src->fd); }
+    else src->n += (size_t)got;
+}
+
+/* 1 and a line, 0 if the world has nothing to say yet, -1 once it has
+ * fallen silent for good. */
+static int world_line(World *w, Value *line) {
+    for (size_t i = 0; i < w->nsrc; i++) if (take_line(&w->src[i], line, 0)) return 1;
+    for (size_t i = 0; i < w->nsrc; i++) if (!w->src[i].closed) listen_once(&w->src[i]);
+    for (size_t i = 0; i < w->nsrc; i++) if (take_line(&w->src[i], line, 0)) return 1;
+    int open = 0;
+    for (size_t i = 0; i < w->nsrc; i++) {
+        if (w->src[i].closed && take_line(&w->src[i], line, 1)) return 1;
+        if (!w->src[i].closed) open = 1;
+    }
+    return open ? 0 : -1;
+}
+
+/* Wait until a source has something to say or the earliest sleeper wakes. */
+static void await_world(World *w, double timeout) {
+    struct pollfd *p = scratch(sizeof(struct pollfd) * (w->nsrc ? w->nsrc : 1));
+    int n = 0;
+    for (size_t i = 0; i < w->nsrc; i++)
+        if (!w->src[i].closed) { p[n].fd = w->src[i].fd; p[n].events = POLLIN; p[n].revents = 0; n++; }
+    int ms = timeout < 0 ? -1 : (int)(timeout * 1000) + 1;
+    if (n) poll(p, (nfds_t)n, ms);
+    else if (ms > 0) usleep((useconds_t)ms * 1000);
+}
+
+static char *temp_path(const char *what) {
+    const char *dir = getenv("TMPDIR");
+    if (!dir || !*dir) dir = "/tmp";
+    size_t n = strlen(dir) + 40;
+    char *p = oom(malloc(n));
+    snprintf(p, n, "%s/tainted-%s-XXXXXX", dir, what);
+    int fd = mkstemp(p);
+    if (fd < 0) { free(p); return NULL; }
+    close(fd);
+    return p;
+}
+
+int t_ask(World *w, Soul *s, int slot, Value command, int telling, Value input) {
+    needs_word(w, "ask", command);
+    char *in = NULL, *err = temp_path("err");
+    if (!err) t_fail(w, "the world has no room to answer: %s", strerror(errno));
+    if (telling) {
+        in = temp_path("in");
+        if (!in) t_fail(w, "the world has no room to listen: %s", strerror(errno));
+        FILE *f = fopen(in, "w");
+        Value t = show(input);
+        if (f) { fwrite(t.s, 1, (size_t)t.n, f); fclose(f); }
+    }
+    const char *cmd = cs(command);
+    size_t n = strlen(cmd) + strlen(err) + (in ? strlen(in) : 12) + 32;
+    char *full = scratch(n);
+    snprintf(full, n, "{ %s\n} <%s 2>%s", cmd, in ? in : "/dev/null", err);
+    fflush(stdout);
+    FILE *p = popen(full, "r");
+    if (!p) { unlink(err); free(err); if (in) { unlink(in); free(in); } t_fail(w, "the world cannot be asked: %s", strerror(errno)); }
+    Text out = {0};
+    char buf[65536];
+    size_t got;
+    while ((got = fread(buf, 1, sizeof buf, p)) > 0) text_add(&out, buf, got);
+    int status = pclose(p);
+    if (in) { unlink(in); free(in); }
+    if (status != 0) {
+        char said[512] = {0};
+        FILE *e = fopen(err, "r");
+        if (e) { size_t k = fread(said, 1, sizeof said - 1, e); said[k] = 0; fclose(e); }
+        unlink(err); free(err);
+        free(out.p);
+        size_t k = strlen(said);
+        while (k && (said[k - 1] == '\n' || said[k - 1] == '\r')) said[--k] = 0;
+        int code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+        t_fail(w, "the world said no to %s (%d): %s", cmd, code, said);
+    }
+    unlink(err); free(err);
+    Value v = text_value(&out);
+    if (v.n && v.s[v.n - 1] == '\n') v.n--;
+    store(&s->mem[slot], v, s->step);
+    advance(s);
+    return 1;
+}
+
+int t_listen(World *w, Soul *s, Value command) {
+    needs_word(w, "listen", command);
+    int fds[2];
+    if (pipe(fds) < 0) t_fail(w, "the world cannot be listened to: %s", strerror(errno));
+    fflush(stdout);
+    pid_t pid = fork();
+    if (pid < 0) t_fail(w, "the world cannot be listened to: %s", strerror(errno));
+    if (pid == 0) {
+        close(fds[0]);
+        dup2(fds[1], 1);
+        close(fds[1]);
+        int null = open("/dev/null", O_RDONLY);
+        if (null >= 0) { dup2(null, 0); close(null); }
+        execl("/bin/sh", "sh", "-c", cs(command), (char *)NULL);
+        _exit(127);
+    }
+    close(fds[1]);
+    add_source(w, fds[0]);
+    advance(s);
+    return 1;
+}
+
+int t_read(World *w, Soul *s, int slot, Value file) {
+    needs_word(w, "read", file);
+    FILE *f = fopen(cs(file), "rb");
+    if (!f) t_fail(w, "there is no reading %s: %s", cs(file), strerror(errno));
+    Text t = {0};
+    char buf[65536];
+    size_t got;
+    while ((got = fread(buf, 1, sizeof buf, f)) > 0) text_add(&t, buf, got);
+    fclose(f);
+    store(&s->mem[slot], text_value(&t), s->step);
+    advance(s);
+    return 1;
+}
+
+int t_write(World *w, Soul *s, Value v, Value file, int append) {
+    needs_word(w, append ? "append" : "write", file);
+    FILE *f = fopen(cs(file), append ? "ab" : "wb");
+    if (!f) t_fail(w, "there is no writing %s: %s", cs(file), strerror(errno));
+    Value t = show(v);
+    fwrite(t.s, 1, (size_t)t.n, f);
+    fclose(f);
+    advance(s);
+    return 1;
+}
+
+int t_sleep(World *w, Soul *s, Value seconds) {
+    if (!numeric(seconds)) t_fail(w, "a soul can wait a number of seconds, not %s", cs(seconds));
+    if (!s->sleeping) { s->sleeping = 1; s->wake = clock_now() + as_double(seconds); }
+    if (clock_now() < s->wake) return 0;
+    s->sleeping = 0;
+    advance(s);
+    return 1;
+}
+
+int t_endure(World *w, Soul *s, const Ins *ins) {
+    (void)w;
+    if (s->nhandlers == s->caphandlers) {
+        s->caphandlers = s->caphandlers ? s->caphandlers * 2 : 4;
+        s->handlers = oom(realloc(s->handlers, s->caphandlers * sizeof(Handler)));
+    }
+    Handler *h = &s->handlers[s->nhandlers++];
+    h->unit = s->unit;
+    h->depth = (int)s->nframes;
+    h->start = s->pc + 1;
+    h->end = ins->until;
+    h->to = ins->jump;
+    h->slot = ins->var;
+    advance(s);
+    return 1;
+}
+
+int t_endured(World *w, Soul *s, int to) {
+    (void)w;
+    if (s->nhandlers) {
+        Handler *h = &s->handlers[s->nhandlers - 1];
+        if (h->unit == s->unit && h->depth == (int)s->nframes) s->nhandlers--;
+    }
+    s->pc = to;
+    return 1;
+}
+
+/* -------------------------------------------------- lists and maps, deeds */
+
+static Value *place_in(World *w, Soul *s, int slot, int n, const Value *path) {
+    (void)t_var(w, s, slot);
+    Value *v = &s->mem[slot].v;
+    for (int i = 0; i < n; i++) v = item(w, *v, path[i]);
+    return v;
+}
+
+int t_set(World *w, Soul *s, int slot, int n, const Value *path, Value v) {
+    Value *box = place_in(w, s, slot, n - 1, path);
+    Value i = path[n - 1];
+    if (box->tag == T_MAP) {
+        t_map_put(w, *box, i, v);
+    } else if (box->tag == T_LIST) {
+        if (i.tag != T_INT || i.i < 1 || i.i > (int64_t)box->o->n)
+            t_fail(w, "there is no item %s in a list of %zu", cs(i), box->o->n);
+        Value kept = keep(v);
+        drop(box->o->v[i.i - 1]);
+        box->o->v[i.i - 1] = kept;
+    } else {
+        t_fail(w, "only lists and maps have items, not %s", cs(*box));
+    }
+    advance(s);
+    return 1;
+}
+
+int t_put(World *w, Soul *s, int slot, int n, const Value *path, Value v) {
+    Value *box = place_in(w, s, slot, n, path);
+    if (box->tag != T_LIST) t_fail(w, "only a list can be put into, not %s", cs(*box));
+    t_list_push(w, *box, v);
+    advance(s);
+    return 1;
+}
+
+int t_remove(World *w, Soul *s, int slot, int n, const Value *path, Value key) {
+    Value *box = place_in(w, s, slot, n, path);
+    Obj *o;
+    size_t at;
+    if (box->tag == T_LIST) {
+        o = box->o;
+        if (key.tag != T_INT || key.i < 1 || key.i > (int64_t)o->n)
+            t_fail(w, "there is no item %s in a list of %zu", cs(key), o->n);
+        at = (size_t)key.i - 1;
+    } else if (box->tag == T_MAP) {
+        o = box->o;
+        int k = key_at(o, key);
+        if (k < 0) t_fail(w, "there is nothing under %s", cs(key));
+        at = (size_t)k;
+    } else {
+        t_fail(w, "only lists and maps have items, not %s", cs(*box));
+    }
+    drop(o->v[at]);
+    memmove(&o->v[at], &o->v[at + 1], (o->n - at - 1) * sizeof(Value));
+    if (o->kind == T_MAP) {
+        free(o->keys[at]);
+        memmove(&o->keys[at], &o->keys[at + 1], (o->n - at - 1) * sizeof(char *));
+        memmove(&o->klen[at], &o->klen[at + 1], (o->n - at - 1) * sizeof(int64_t));
+    }
+    o->n--;
+    if (o->kind == T_MAP) {
+        for (size_t i = 0; i < o->index.cap; i++) free(o->index.e[i].key);
+        free(o->index.e);
+        memset(&o->index, 0, sizeof o->index);
+        for (size_t i = 0; i < o->n; i++) table_put(&o->index, o->keys[i], o->klen[i], (int)i);
+    }
+    advance(s);
+    return 1;
+}
+
 static int try_transfer(World *w, Soul *snd, Soul *rcv) {
     const Ins *si = current(w, snd), *ri = current(w, rcv);
     if (!si || (si->op != OP_TELL && si->op != OP_CONFIDE)) return 0;
@@ -810,16 +1640,10 @@ int t_tell(World *w, Soul *s, const Ins *ins) {
 
 int t_hear(World *w, Soul *s, const Ins *ins) {
     if (ins->mode == TO_WORLD) {
-        char *line = NULL;
-        size_t cap = 0;
-        ssize_t n = getline(&line, &cap, stdin);
-        if (n < 0) {
-            store(&s->mem[ins->var], t_int(0), s->step);
-        } else {
-            while (n > 0 && (line[n - 1] == '\n' || line[n - 1] == '\r')) n--;
-            store(&s->mem[ins->var], t_str(line, n), s->step);
-        }
-        free(line);
+        Value line;
+        int got = world_line(w, &line);
+        if (got == 0) return 0;     /* the world is slow, not silent */
+        store(&s->mem[ins->var], got > 0 ? line : t_int(0), s->step);
         advance(s);
         return 1;
     }
@@ -922,23 +1746,88 @@ static void feelings(World *w) {
     }
 }
 
-/* Returns the exit code; on an error, leaves it in w->error and returns -1. */
-static int live(World *w) {
+/* A soul that is inside `endure` when something goes wrong goes on where its
+ * enduring says, with the pain in hand; the rituals it was in are let go. */
+static int endure_pain(World *w, Soul *s) {
+    while (s->nhandlers) {
+        Handler h = s->handlers[--s->nhandlers];
+        if (h.depth > (int)s->nframes) continue;
+        int unit = s->unit, pc = s->pc;
+        if (h.depth < (int)s->nframes) { unit = s->frames[h.depth].unit; pc = s->frames[h.depth].pc - 1; }
+        if (unit != h.unit || pc < h.start || pc >= h.end) continue;
+        while ((int)s->nframes > h.depth) {
+            Frame f = s->frames[--s->nframes];
+            const Unit *u = unit_of(w, s);
+            for (int i = 0; i < u->nslots; i++) if (s->mem[i].set) drop(s->mem[i].v);
+            free(s->mem);
+            int64_t held = s->step - f.began;
+            s->unit = f.unit;
+            s->mem = f.mem;
+            const Unit *back = unit_of(w, s);
+            for (int i = 0; i < back->nslots; i++) if (s->mem[i].set) s->mem[i].touched += held;
+        }
+        s->pc = h.to;
+        store(&s->mem[h.slot], t_cstr(w->error), s->step);
+        return 1;
+    }
+    return 0;
+}
+
+/* One step of one soul: 1 if it did something, 0 if it waits, -1 if it made
+ * a mistake nobody endures (the error is then in w->error). */
+static int attempt(World *w, Soul *s) {
     jmp_buf trap;
+    jmp_buf *outer = w->trap;
     w->trap = &trap;
-    Soul *volatile who = NULL;
     if (setjmp(trap)) {
-        Soul *s = who;
+        w->trap = outer;
+        if (endure_pain(w, s)) return 1;
         const Ins *ins = current(w, s);
         char *inner = w->error;
         size_t n = strlen(inner) + strlen(s->name) + 64;
         w->error = oom(malloc(n));
-        if (ins) snprintf(w->error, n, "line %d, %s: %s", ins->line, s->name, inner);
+        const char *file = unit_of(w, s)->file;
+        n += file ? strlen(file) : 0;
+        w->error = oom(realloc(w->error, n));
+        if (ins && file) snprintf(w->error, n, "line %d of %s, %s: %s", ins->line, file, s->name, inner);
+        else if (ins) snprintf(w->error, n, "line %d, %s: %s", ins->line, s->name, inner);
         else snprintf(w->error, n, "%s: %s", s->name, inner);
         free(inner);
-        step_over();
         return -1;
     }
+    int r = step_soul(w, s);
+    w->trap = outer;
+    return r;
+}
+
+/* Is anyone waiting for the world or for time? Then nobody is stuck: the
+ * world is only slow. Returns how long to wait, or -2 if no one waits. */
+static double waiting_for_world(World *w, Soul **alive, size_t n) {
+    double soonest = -1;
+    int world = 0, sleepers = 0;
+    for (size_t k = 0; k < n; k++) {
+        const Ins *ins = current(w, alive[k]);
+        if (!ins) continue;
+        if (ins->op == OP_HEAR && ins->mode == TO_WORLD) world = 1;
+        if (ins->op == OP_SLEEP && alive[k]->sleeping) {
+            double left = alive[k]->wake - clock_now();
+            if (left < 0) left = 0;
+            if (!sleepers || left < soonest) soonest = left;
+            sleepers = 1;
+        }
+    }
+    if (world) {
+        int open = 0;
+        for (size_t i = 0; i < w->nsrc; i++) if (!w->src[i].closed) open = 1;
+        if (open) return sleepers ? soonest : -1;
+    }
+    return sleepers ? soonest : -2;
+}
+
+/* Returns the exit code; on an error, leaves it in w->error and returns -1. */
+static int live(World *w) {
+    jmp_buf trap;
+    w->trap = &trap;
     for (;;) {
         size_t nalive = 0;
         Soul **alive = scratch(sizeof(Soul *) * (w->nsouls ? w->nsouls : 1));
@@ -956,10 +1845,11 @@ static int live(World *w) {
         int moved = 0;
         for (size_t k = 0; k < nalive; k++) {
             Soul *s = list[k];
-            who = s;
             s->step++;
             int pc = s->pc;
-            if (step_soul(w, s)) moved = 1;
+            int r = attempt(w, s);
+            if (r < 0) { free(list); step_over(); return -1; }
+            if (r) moved = 1;
             if (s->pc != pc) s->arrived = w->round;
             for (size_t f = 0; f < s->nfears;) {
                 s->fears[f].left--;
@@ -970,6 +1860,12 @@ static int live(World *w) {
             step_over();
         }
         if (!moved) {
+            double wait = waiting_for_world(w, list, nalive);
+            if (wait > -2) {
+                await_world(w, wait);
+                free(list);
+                continue;
+            }
             int any = 0;
             for (size_t k = 0; k < nalive; k++) {
                 const Ins *ins = current(w, list[k]);
@@ -1116,6 +2012,7 @@ int tainted_main(const Program *p, int argc, char **argv) {
     }
     World *w = oom(calloc(1, sizeof(World)));
     w->p = p;
+    add_source(w, 0);
     w->patience = patience;
     for (int u = 0; u < p->nunits; u++)
         if (p->units[u].decl == D_SOUL) new_soul(w, p->units[u].name, (int64_t)strlen(p->units[u].name), u);

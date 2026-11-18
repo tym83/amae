@@ -15,12 +15,16 @@
 typedef struct World World;
 typedef struct Soul Soul;
 
-enum { T_INT = 0, T_STR = 1 };
+enum { T_INT = 0, T_STR = 1, T_DEC = 2, T_LIST = 3, T_MAP = 4 };
+
+typedef struct Obj Obj;
 
 typedef struct Value {
     int64_t i;          /* the number, for T_INT */
+    double d;           /* the number, for T_DEC */
     const char *s;      /* the bytes, for T_STR; not necessarily terminated */
     int64_t n;          /* the length in bytes, for T_STR */
+    Obj *o;             /* the items, for T_LIST and T_MAP */
     int tag;
 } Value;
 
@@ -31,7 +35,9 @@ enum {
     OP_LET, OP_SAY, OP_MEET, OP_TELL, OP_CONFIDE, OP_HEAR, OP_WARM, OP_COOL,
     OP_PROMISE, OP_GIVE, OP_WOUND, OP_FORGIVE, OP_LEAVE, OP_WAIT, OP_SILENCE,
     OP_RECALL, OP_GOODBYE, OP_NOTE, OP_BRING, OP_PERFORM, OP_GIVEBACK,
-    OP_JZ, OP_JMP, OP_FIRST, OP_CRY
+    OP_JZ, OP_JMP, OP_FIRST, OP_CRY,
+    OP_SET, OP_PUT, OP_REMOVE, OP_ASK, OP_LISTEN, OP_READ, OP_WRITE, OP_APPEND,
+    OP_SLEEP, OP_ENDURE, OP_ENDURED
 };
 
 enum { TO_NAMED = 0, TO_ANYONE = 1, TO_WORLD = 2 };
@@ -44,7 +50,8 @@ typedef struct Ins {
     int var;            /* the variable it fills: hear, meet anyone, let, perform into */
     int var2;           /* hear anyone ... from */
     Expr a, b;          /* the values it needs */
-    int jump;           /* jz, jmp and first */
+    int jump;           /* jz, jmp and first; where endure goes when it hurts */
+    int until;          /* endure: where the enduring ends */
     int unit;           /* the ritual performed or the kind brought, -1 if none */
     const char *name;   /* its name, for errors */
     int nargs;
@@ -65,6 +72,7 @@ typedef struct Unit {
     int nparams;
     const int *params;
     Step step;
+    const char *file;   /* the file it was learned from, or 0 for the program itself */
 } Unit;
 
 typedef struct Program {
@@ -102,6 +110,20 @@ Value t_place(World *w, Value x, Value text);
 Value t_number(World *w, Value text);
 Value t_length(World *w, Value text);
 Value t_part(World *w, Value a, Value b, Value text);
+Value t_dec(double d);
+Value t_list_new(World *w);
+void t_list_push(World *w, Value list, Value v);
+Value t_map_new(World *w);
+void t_map_put(World *w, Value map, Value key, Value v);
+Value t_index(World *w, Value x, Value i);
+Value t_keys(World *w, Value m);
+Value t_json(World *w, Value v);
+Value t_meaning(World *w, Value text);
+Value t_whole(World *w, Value v);
+Value t_env(World *w, Value name);
+Value t_now(World *w);
+Value t_fate(World *w, Value n);
+Value t_lines(World *w, Value text);
 
 enum { B_ADD, B_SUB, B_MUL, B_DIV, B_MOD, B_EQ, B_NE, B_LT, B_LE, B_GT, B_GE };
 enum { R_TRUST, R_INTIMACY, R_PASSION, R_COMMITMENT };
@@ -126,5 +148,16 @@ int t_meet(World *w, Soul *s, const Ins *ins);
 int t_tell(World *w, Soul *s, const Ins *ins);
 int t_hear(World *w, Soul *s, const Ins *ins);
 int t_feel(World *w, Soul *s, const Ins *ins);
+/* path: the variable, then the indexes inside it */
+int t_set(World *w, Soul *s, int slot, int n, const Value *path, Value v);
+int t_put(World *w, Soul *s, int slot, int n, const Value *path, Value v);
+int t_remove(World *w, Soul *s, int slot, int n, const Value *path, Value key);
+int t_ask(World *w, Soul *s, int slot, Value command, int telling, Value input);
+int t_listen(World *w, Soul *s, Value command);
+int t_read(World *w, Soul *s, int slot, Value file);
+int t_write(World *w, Soul *s, Value v, Value file, int append);
+int t_sleep(World *w, Soul *s, Value seconds);
+int t_endure(World *w, Soul *s, const Ins *ins);
+int t_endured(World *w, Soul *s, int to);
 
 #endif

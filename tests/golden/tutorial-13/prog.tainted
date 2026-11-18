@@ -1,8 +1,0 @@
-soul stranger
-    first time
-        say "I have never been here before."
-    end
-    if runs > 0
-        say "Runs before this one: " + runs
-    end
-end
