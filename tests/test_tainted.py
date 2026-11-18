@@ -57,7 +57,8 @@ def compile_source(source, history=None):
         return program, None
     with tempfile.TemporaryDirectory() as d:
         res = subprocess.run([CORE], input=source, capture_output=True, text=True,
-                             env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json")))
+                             env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h.json"),
+                                      TAINTED_MEMORY=os.path.join(d, "memory.json")))
         if res.returncode:
             return None, (res.returncode, res.stderr)
         c = os.path.join(d, "p.c")
@@ -169,25 +170,25 @@ class ALife(unittest.TestCase):
 
 class Rituals(unittest.TestCase):
     def test_recursion_and_values(self):
-        src = ("ritual f n\n if n <= 1\n give back 1\n end\n"
+        src = ("written by \"tests\"\nritual f n\n if n <= 1\n give back 1\n end\n"
                " perform f with n - 1 into m\n give back n * m\nend\n"
                "soul s\n perform f with 12 into x\n say x\nend\n")
         self.assertEqual(run(src).lines, ["479001600"])
 
     def test_memories_outside_are_held(self):
-        src = ("ritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
+        src = ("written by \"tests\"\nritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
                "soul s\n let year = 1999\n perform long\n say year\nend\n")
         self.assertEqual(run(src).lines, ["1999"])
 
     def test_wrong_number_of_things(self):
-        life = run("ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n")
+        life = run("written by \"tests\"\nritual r a\nend\nsoul s\n perform r with 1, 2\nend\n")
         self.assertEqual(life.code, 1)
         self.assertIn("takes 1 things", life.err)
 
 
 class Rules(unittest.TestCase):
     def test_passion_cools_while_apart(self):
-        src = ("soul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
+        src = ("written by \"tests\"\nsoul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
                " say passion b\nend\nsoul b\n meet a\nend\n")
         self.assertEqual(run(src).lines, ["0"])
         self.assertEqual(run(src.replace("i < 60", "i < 20")).lines, ["2"])
@@ -198,36 +199,36 @@ class Rules(unittest.TestCase):
         self.assertIn(text, life.err)
 
     def test_cannot_tell_a_stranger(self):
-        self.errs("soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n", "never met")
+        self.errs("written by \"tests\"\nsoul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n", "never met")
 
     def test_confide_needs_the_heart(self):
-        self.errs("soul a\n meet b\n knowingly confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
+        self.errs("written by \"tests\"\nsoul a\n meet b\n knowingly confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
                   "gave their heart")
 
     def test_leaving_is_irreversible(self):
-        self.errs("soul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n", "nothing more")
+        self.errs("written by \"tests\"\nsoul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n", "nothing more")
 
     def test_forgiveness_reopens_but_keeps_the_scar(self):
-        src = ("soul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
+        src = ("written by \"tests\"\nsoul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
                "soul b\n meet a\n forgive a\n tell a \"still here\"\n say scars of a\nend\n")
         life = run(src)
         self.assertEqual(life.code, 0)
         self.assertEqual(sorted(life.lines), ["1", "still here"])
 
     def test_waiting_has_no_timeout(self):
-        self.assertEqual(run("soul a\n meet b\nend\nsoul b\n goodbye\nend\n").code, 2)
+        self.assertEqual(run("written by \"tests\"\nsoul a\n meet b\nend\nsoul b\n goodbye\nend\n").code, 2)
 
     def test_numbers_are_64_bits(self):
-        self.errs("soul s\n say 9223372036854775807 + 1\nend\n", "too large to hold")
+        self.errs("written by \"tests\"\nsoul s\n say 9223372036854775807 + 1\nend\n", "too large to hold")
 
     def test_cry_and_the_ending(self):
-        life = run("soul s\n cry \"it hurts\"\n goodbye with 3\n say \"never\"\nend\n")
+        life = run("written by \"tests\"\nsoul s\n cry \"it hurts\"\n goodbye with 3\n say \"never\"\nend\n")
         self.assertEqual(life.code, 3)
         self.assertEqual(life.lines, [])
         self.assertIn("it hurts", life.err)
 
     def test_escapes_are_read_once(self):
-        life = run('soul s\n say "a\\\\nb"\n say "q\\"q"\n say "x\\ny"\nend\n')
+        life = run('written by "tests"\nsoul s\n say "a\\\\nb"\n say "q\\"q"\n say "x\\ny"\nend\n')
         self.assertEqual(life.lines, ["a\\nb", 'q"q', "x", "y"])
 
     def test_runs_are_counted_on_disk(self):
@@ -242,7 +243,7 @@ class Rules(unittest.TestCase):
 
 class Values(unittest.TestCase):
     def test_lists_maps_and_decimals(self):
-        src = """soul s
+        src = """written by \"tests\"\nsoul s
     let xs = [3, 1, 2]
     put 10 into xs
     xs[2] = 5
@@ -274,7 +275,7 @@ end
             "2", "7", "0.25", "3", "[1, 2, 3]", "1", "1", "o", "[[1, 2, 5], [9, 4]]", "7.5"])
 
     def test_json_both_ways(self):
-        src = """soul s
+        src = """written by \"tests\"\nsoul s
     say json of [1, "two", {"three": 3.25, "q": "a\\"b"}]
     let parsed = meaning of "{\\"pods\\": [{\\"name\\": \\"web\\", \\"ready\\": true}], \\"n\\": 2.5}"
     say parsed["pods"][1]["name"] + " " + parsed["pods"][1]["ready"] + " " + parsed["n"]
@@ -289,7 +290,7 @@ end
                                           "this is not json: {nope"])
 
     def test_values_fade_too(self):
-        src = """soul s
+        src = """written by \"tests\"\nsoul s
     let xs = [1, 2, 3, 4]
     let d = 3.14159
     let i = 0
@@ -303,7 +304,7 @@ end
         self.assertEqual(run(src).lines, ["[1, 2]", "3.141"])
 
     def test_items_that_are_not_there(self):
-        life = run("soul s\n say [1][2]\nend\n")
+        life = run("written by \"tests\"\nsoul s\n say [1][2]\nend\n")
         self.assertEqual(life.code, 1)
         self.assertIn("there is no item 2 in a list of 1", life.err)
 
@@ -311,7 +312,7 @@ end
 class TheWorld(unittest.TestCase):
     def test_asking_listening_files_and_time(self):
         with tempfile.TemporaryDirectory() as d:
-            src = """soul s
+            src = """written by \"tests\"\nsoul s
     ask world "echo hello; echo world" into said
     say said
     ask world "tr a-z A-Z" telling "quiet words" into loud
@@ -343,7 +344,7 @@ end
                                                    '["first", "second"]', "calm", "1", "0", "abc", "0"])
 
     def test_enduring_what_hurts(self):
-        src = """ritual risky depth
+        src = """written by \"tests\"\nritual risky depth
     if depth == 0
         let nothing = [1][5]
     end
@@ -373,18 +374,18 @@ class Learning(unittest.TestCase):
     def test_a_program_learns_from_a_file(self):
         with tempfile.TemporaryDirectory() as d:
             with open(os.path.join(d, "greetings.tainted"), "w") as f:
-                f.write("ritual greet name\n give back \"hello, \" + name\nend\n"
+                f.write("written by \"tests\"\nritual greet name\n give back \"hello, \" + name\nend\n"
                         "ritual broken\n say [1][2]\nend\n")
             main = os.path.join(d, "main.tainted")
             with open(main, "w") as f:
-                f.write('learn "greetings.tainted"\nlearn "greetings.tainted"\n'
+                f.write('written by "tests"\nlearn "greetings.tainted"\nlearn "greetings.tainted"\n'
                         "soul s\n perform greet with \"ana\" into g\n say g\n perform broken\nend\n")
             out = os.path.join(d, "main")
             subprocess.run([os.path.join(ROOT, "bin", "tc"), main, "-o", out], check=True)
             res = subprocess.run([out], capture_output=True, text=True,
                                  env=dict(os.environ, TAINTED_HISTORY=os.path.join(d, "h")))
         self.assertEqual(res.stdout, "hello, ana\n")
-        self.assertIn("line 5 of greetings.tainted, s: there is no item 2", res.stderr)
+        self.assertIn("line 6 of greetings.tainted, s: there is no item 2", res.stderr)
 
     def test_a_file_that_is_not_there(self):
         life = run('learn "nowhere.tainted"\nsoul s\nend\n')
@@ -394,7 +395,7 @@ class Learning(unittest.TestCase):
 
 class Feelings(unittest.TestCase):
     def test_remembering_rewrites(self):
-        src = ("soul a\n meet b\n let year = 1999\n hear b into n\n let i = 0\n"
+        src = ("written by \"tests\"\nsoul a\n meet b\n let year = 1999\n hear b into n\n let i = 0\n"
                " while i < 20\n i = i + 1\n end\n say year\nend\nsoul b\n meet a\n tell a 47\nend\n")
         self.assertEqual(run(src).lines, ["1997"])
 
@@ -408,7 +409,7 @@ class Feelings(unittest.TestCase):
         self.assertEqual(life.feelings[("ben", "ana")]["commitment"], 1)
 
     def test_an_apology_names_the_wound(self):
-        life = run("soul a\n meet b\n apologize to b\nend\nsoul b\n meet a\nend\n")
+        life = run("written by \"tests\"\nsoul a\n meet b\n apologize to b\nend\nsoul b\n meet a\nend\n")
         self.assertEqual(life.code, 1)
         self.assertIn("an apology names the wound", life.err)
 
@@ -423,7 +424,7 @@ class Feelings(unittest.TestCase):
         self.assertIn("eve, far from dan: distance 4, longing 0", lines)
 
     def test_words_take_longer_after_a_long_silence(self):
-        src = ("soul a\n meet b\n let i = 0\n while i < 100\n i = i + 1\n end\n"
+        src = ("written by \"tests\"\nsoul a\n meet b\n let i = 0\n while i < 100\n i = i + 1\n end\n"
                " say distance from b\n tell b 1\n meet b\n say distance from b\nend\n"
                "soul b\n meet a\n hear a into x\n meet a\nend\n")
         self.assertEqual(run(src).lines, ["6", "3"])
@@ -437,7 +438,7 @@ class Consent(unittest.TestCase):
                                       "ana: ben withdrew, so we both stopped", "ben: I withdrew"])
 
     def test_nothing_together_without_consent(self):
-        life = run("soul a\n meet b\n consent to b\n together with b\n say 1\n end\nend\n"
+        life = run("written by \"tests\"\nsoul a\n meet b\n consent to b\n together with b\n say 1\n end\nend\n"
                    "soul b\n meet a\n together with a\n say 2\n end\nend\n")
         self.assertEqual(life.code, 2)
         self.assertEqual(life.lines, [])
@@ -459,7 +460,7 @@ class Styles(unittest.TestCase):
             "aga, wounded, still hears: and you, resentment 0"])
 
     def test_there_is_no_such_way(self):
-        life = run("soul a is shy\nend\n")
+        life = run("written by \"tests\"\nsoul a is shy\nend\n")
         self.assertEqual(life.code, 1)
         self.assertIn("there is no such way to love: shy", life.err)
 
@@ -473,23 +474,23 @@ class BeforeTheyMeet(unittest.TestCase):
         self.assertIn(text, life.err)
 
     def test_what_cannot_be_undone_is_done_knowingly(self):
-        self.refused("soul a\n meet b\n wound b\nend\nsoul b\n meet a\nend\n", "knowingly wound")
-        self.refused("soul a\n meet b\n leave b\nend\nsoul b\n meet a\nend\n", "knowingly leave")
+        self.refused("written by \"tests\"\nsoul a\n meet b\n wound b\nend\nsoul b\n meet a\nend\n", "knowingly wound")
+        self.refused("written by \"tests\"\nsoul a\n meet b\n leave b\nend\nsoul b\n meet a\nend\n", "knowingly leave")
 
     def test_dialogues_must_fit(self):
-        self.refused("soul a\n meet b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n",
-                     "a and b cannot get along: here a tells b, but at line 7 b tells a")
-        self.refused("soul a\n meet b\n tell b 1\n tell b 2\nend\nsoul b\n meet a\n hear a into x\nend\n",
+        self.refused("written by \"tests\"\nsoul a\n meet b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n",
+                     "a and b cannot get along: here a tells b, but at line 8 b tells a")
+        self.refused("written by \"tests\"\nsoul a\n meet b\n tell b 1\n tell b 2\nend\nsoul b\n meet a\n hear a into x\nend\n",
                      "here a tells b, and b never answers")
 
     def test_after_a_wound_it_is_their_story(self):
-        life = run("soul a\n meet b\n knowingly wound b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n")
+        life = run("written by \"tests\"\nsoul a\n meet b\n knowingly wound b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n")
         self.assertEqual(life.code, 2)
 
     def test_one_heart(self):
-        self.refused("soul a\n meet b\n meet c\n give heart to b\n give heart to c\nend\n"
+        self.refused("written by \"tests\"\nsoul a\n meet b\n meet c\n give heart to b\n give heart to c\nend\n"
                      "soul b\n meet a\nend\nsoul c\n meet a\nend\n", "a heart is given to one at a time")
-        life = run("soul a\n meet b\n meet c\n give heart to b\n give heart to soul named \"c\"\nend\n"
+        life = run("written by \"tests\"\nsoul a\n meet b\n meet c\n give heart to b\n give heart to soul named \"c\"\nend\n"
                    "soul b\n meet a\n wait\n wait\n say scar 1 of a\nend\nsoul c\n meet a\nend\n")
         self.assertEqual(life.lines, ["a gave their heart to c"])
 
@@ -510,7 +511,7 @@ class ALongLove(unittest.TestCase):
 
 
 class Chemistry(unittest.TestCase):
-    SRC = "soul ana\n meet ben\n say chemistry with ben\nend\nsoul ben\n meet ana\nend\n"
+    SRC = "written by \"tests\"\nsoul ana\n meet ben\n say chemistry with ben\nend\nsoul ben\n meet ana\nend\n"
 
     def test_the_first_life_has_none(self):
         self.assertEqual(run(self.SRC).lines, ["0"])
@@ -597,7 +598,7 @@ class SelfHosting(unittest.TestCase):
     def test_every_program_carries_its_makers(self):
         program, _ = compile_source(example("hello.tainted"))
         said = subprocess.run([program, "--lineage"], capture_output=True, text=True).stdout.splitlines()
-        self.assertTrue(said[-1].startswith("a program, from "))
+        self.assertTrue(said[-1].startswith("a program by tainted, from "))
         self.assertTrue(any(l.startswith("generation ") for l in said))
 
     def test_a_failed_rebuild_wounds_and_forgiveness_leaves_a_scar(self):

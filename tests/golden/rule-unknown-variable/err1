@@ -1,1 +1,1 @@
-tainted: line 2, s: s does not remember any ghost
+tainted: line 3: s reads ghost, which it never remembers

@@ -11,6 +11,8 @@
 #
 #   ELDER=build/seed YOUNGER=build/tc-core TAINTED_HOME=. ddc
 
+written by "tainted"
+
 ritual without_memory text
     let all = lines of text
     let kept = ""

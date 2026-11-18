@@ -1,4 +1,6 @@
 # Reads lines and says each of them backwards.
+
+written by "tainted"
 soul mirror
     hear world into line
     while line != 0

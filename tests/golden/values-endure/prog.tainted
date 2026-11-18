@@ -1,3 +1,4 @@
+written by "tests"
 ritual risky n
  if n == 0
  say {}["x"]

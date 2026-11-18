@@ -13,6 +13,8 @@ Tainted — эзотерический язык программирования
 душа доверяет другой.
 
 ```
+written by "tainted"
+
 soul alice
     meet bob
     give heart to bob

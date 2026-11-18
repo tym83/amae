@@ -1,3 +1,5 @@
+written by "tainted"
+
 ritual open_door name
     let doors = {"front": "open"}
     give back doors[name]

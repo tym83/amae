@@ -2,6 +2,8 @@
 # as long as it is large, then goes to meet a listener it has never seen.
 # The smallest speak first. The listener keeps count in a note: it waits
 # between meetings, and a number held in memory would fade.
+
+written by "tainted"
 kind sleeper
     meet sorter
     hear sorter into n

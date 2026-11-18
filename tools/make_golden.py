@@ -20,90 +20,90 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import minsky  # noqa: E402
 
 INLINE = {
-    "rule-ritual-arity": "ritual r a\nend\nsoul s\n perform r with 1, 2\nend\n",
-    "rule-tell-a-stranger": "soul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n",
-    "rule-confide-needs-heart": "soul a\n meet b\n knowingly confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
-    "rule-leaving-is-final": "soul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n",
-    "rule-forgiveness": ("soul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
+    "rule-ritual-arity": "written by \"tests\"\nritual r a\nend\nsoul s\n perform r with 1, 2\nend\n",
+    "rule-tell-a-stranger": "written by \"tests\"\nsoul a\n tell b 1\nend\nsoul b\n hear a into x\nend\n",
+    "rule-confide-needs-heart": "written by \"tests\"\nsoul a\n meet b\n knowingly confide b 1\nend\nsoul b\n meet a\n hear a into x\nend\n",
+    "rule-leaving-is-final": "written by \"tests\"\nsoul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n",
+    "rule-forgiveness": ("written by \"tests\"\nsoul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
                          "soul b\n meet a\n forgive a\n tell a \"still here\"\n say scars of a\nend\n"),
-    "rule-no-timeout": "soul a\n meet b\nend\nsoul b\n goodbye\nend\n",
-    "rule-passion-cools": ("soul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
+    "rule-no-timeout": "written by \"tests\"\nsoul a\n meet b\nend\nsoul b\n goodbye\nend\n",
+    "rule-passion-cools": ("written by \"tests\"\nsoul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
                            " say passion b\nend\nsoul b\n meet a\nend\n"),
-    "rule-recursion": ("ritual f n\n if n <= 1\n give back 1\n end\n"
+    "rule-recursion": ("written by \"tests\"\nritual f n\n if n <= 1\n give back 1\n end\n"
                        " perform f with n - 1 into m\n give back n * m\nend\n"
                        "soul s\n perform f with 12 into x\n say x\nend\n"),
-    "rule-memory-held": ("ritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
+    "rule-memory-held": ("written by \"tests\"\nritual long\n let i = 0\n while i < 200\n i = i + 1\n end\nend\n"
                          "soul s\n let year = 1999\n perform long\n say year\nend\n"),
-    "rule-overflow": "soul s\n let x = 9223372036854775807\n say x\n say x + 1\nend\n",
-    "rule-division": "soul s\n say 7 / -2\n say 7 % -2\n say -7 / 2\n say -7 % 2\n say 1 / 0\nend\n",
-    "rule-types": "soul s\n say \"a\" < \"b\"\n say 1 == \"1\"\n say \"x\" - 1\nend\n",
-    "rule-text": ("soul s\n let t = \"  one two  three \"\n say words of t\n say word 2 of t\n"
+    "rule-overflow": "written by \"tests\"\nsoul s\n let x = 9223372036854775807\n say x\n say x + 1\nend\n",
+    "rule-division": "written by \"tests\"\nsoul s\n say 7 / -2\n say 7 % -2\n say -7 / 2\n say -7 % 2\n say 1 / 0\nend\n",
+    "rule-types": "written by \"tests\"\nsoul s\n say \"a\" < \"b\"\n say 1 == \"1\"\n say \"x\" - 1\nend\n",
+    "rule-text": ("written by \"tests\"\nsoul s\n let t = \"  one two  three \"\n say words of t\n say word 2 of t\n"
                   " say \"[\" + word 9 of t + \"]\"\n say place of \"three\" in t\n say length of \"héllo\"\n"
                   " say part 2 4 of \"héllo\"\n say number of \" -1_000 \"\n say number of \"x\"\nend\n"),
-    "rule-unknown-variable": "soul s\n say ghost\nend\n",
-    "rule-unknown-soul": "soul s\n meet nobody\nend\n",
-    "rule-themself": "soul s\n meet s\nend\n",
-    "rule-names-are-words": "soul s\n meet soul named 5\nend\n",
-    "rule-giveback-outside": "soul s\n give back 1\nend\n",
-    "rule-unknown-ritual": "soul s\n perform nothing\nend\n",
-    "rule-unknown-kind": "soul s\n bring ghost named \"g\"\nend\n",
-    "rule-bring-twice": "kind k\nend\nsoul s\n bring k named \"a\"\n bring k named \"a\"\nend\n",
-    "rule-scar-number": "soul a\n meet b\n say scar 1 of b\nend\nsoul b\n meet a\nend\n",
-    "rule-note-missing": "soul s\n note 1 = \"one\"\n say note \"1\"\n say note 2\nend\n",
-    "rule-fear": ("soul a\n meet b\n tell b 1\n tell b 2\n tell b 3\n tell b 4\nend\n"
+    "rule-unknown-variable": "written by \"tests\"\nsoul s\n say ghost\nend\n",
+    "rule-unknown-soul": "written by \"tests\"\nsoul s\n meet nobody\nend\n",
+    "rule-themself": "written by \"tests\"\nsoul s\n meet s\nend\n",
+    "rule-names-are-words": "written by \"tests\"\nsoul s\n meet soul named 5\nend\n",
+    "rule-giveback-outside": "written by \"tests\"\nsoul s\n give back 1\nend\n",
+    "rule-unknown-ritual": "written by \"tests\"\nsoul s\n perform nothing\nend\n",
+    "rule-unknown-kind": "written by \"tests\"\nsoul s\n bring ghost named \"g\"\nend\n",
+    "rule-bring-twice": "written by \"tests\"\nkind k\nend\nsoul s\n bring k named \"a\"\n bring k named \"a\"\nend\n",
+    "rule-scar-number": "written by \"tests\"\nsoul a\n meet b\n say scar 1 of b\nend\nsoul b\n meet a\nend\n",
+    "rule-note-missing": "written by \"tests\"\nsoul s\n note 1 = \"one\"\n say note \"1\"\n say note 2\nend\n",
+    "rule-fear": ("written by \"tests\"\nsoul a\n meet b\n tell b 1\n tell b 2\n tell b 3\n tell b 4\nend\n"
                   "soul b\n meet a\n hear a into x\n hear a into y\n hear a into z\n say afraid of a\n"
                   " hear a into q\n say q\n say afraid of a\nend\n"),
-    "rule-strangers": ("kind k\n meet anyone as who\n tell soul named who me\nend\n"
+    "rule-strangers": ("written by \"tests\"\nkind k\n meet anyone as who\n tell soul named who me\nend\n"
                        "soul s\n bring k named \"k1\"\n meet soul named \"k1\"\n"
                        " hear anyone into x from y\n say x + \" \" + y\nend\n"),
-    "rule-silence": ("soul a\n wait for silence\n say \"a\"\nend\nsoul b\n wait\n wait\n"
+    "rule-silence": ("written by \"tests\"\nsoul a\n wait for silence\n say \"a\"\nend\nsoul b\n wait\n wait\n"
                      " wait for silence\n say \"b\"\nend\n"),
-    "rule-patience": "soul s\n mark top\n return to top\nend\n",
-    "rule-short-circuit": ("soul s\n let j = 0\n say j >= 1 and note j > 1\n say j == 0 or note j > 1\n"
+    "rule-patience": "written by \"tests\"\nsoul s\n mark top\n return to top\nend\n",
+    "rule-short-circuit": ("written by \"tests\"\nsoul s\n let j = 0\n say j >= 1 and note j > 1\n say j == 0 or note j > 1\n"
                            " say 1 and 2\n say 0 or \"\"\nend\n"),
-    "rule-escapes": "soul s\n say \"a\\\\nb\"\n say \"q\\\"q\"\n say \"x\\ny\"\n say \"t\\tz\"\nend\n",
-    "rule-cry": "soul s\n cry \"it hurts\"\n say \"still\"\n goodbye with 3\n say \"never\"\nend\n",
-    "rule-bad-ending": "soul s\n goodbye with \"soon\"\nend\n",
-    "values-lists-maps": ("soul s\n let xs = [3, 1, 2]\n put 10 into xs\n xs[2] = 5\n say xs\n"
+    "rule-escapes": "written by \"tests\"\nsoul s\n say \"a\\\\nb\"\n say \"q\\\"q\"\n say \"x\\ny\"\n say \"t\\tz\"\nend\n",
+    "rule-cry": "written by \"tests\"\nsoul s\n cry \"it hurts\"\n say \"still\"\n goodbye with 3\n say \"never\"\nend\n",
+    "rule-bad-ending": "written by \"tests\"\nsoul s\n goodbye with \"soon\"\nend\n",
+    "values-lists-maps": ("written by \"tests\"\nsoul s\n let xs = [3, 1, 2]\n put 10 into xs\n xs[2] = 5\n say xs\n"
                           " let m = {\"a\": 1, \"b\": [2, 3]}\n m[\"c\"] = 2.5\n remove \"a\" from m\n"
                           " say m\n say keys of m\n say json of m\n say m[\"b\"][2] * 1.5\n"
                           " say meaning of \"[1, {\\\"x\\\": null}]\"\nend\n"),
-    "values-fade": ("soul s\n let xs = [1, 2, 3, 4]\n let d = 3.14159\n let i = 0\n"
+    "values-fade": ("written by \"tests\"\nsoul s\n let xs = [1, 2, 3, 4]\n let d = 3.14159\n let i = 0\n"
                     " while i < 40\n i = i + 1\n end\n say xs\n say d\nend\n"),
-    "values-endure": ("ritual risky n\n if n == 0\n say {}[\"x\"]\n end\n perform risky with n - 1\nend\n"
+    "values-endure": ("written by \"tests\"\nritual risky n\n if n == 0\n say {}[\"x\"]\n end\n perform risky with n - 1\nend\n"
                       "soul s\n endure\n perform risky with 2\n say \"no\"\n when it hurts as pain\n"
                       " say pain\n end\n endure\n say 1 / 0\n when it hurts as pain\n say pain\n end\n"
                       " say [1][3]\nend\n"),
-    "syntax-list": "soul s\n say [1, 2\nend\n",
-    "styles-anxious-avoidant": ("soul a is anxious\n meet b\n hear b into x\n say x\nend\n"
+    "syntax-list": "written by \"tests\"\nsoul s\n say [1, 2\nend\n",
+    "styles-anxious-avoidant": ("written by \"tests\"\nsoul a is anxious\n meet b\n hear b into x\n say x\nend\n"
                                 "soul b is avoidant and storge\n meet a\n let i = 0\n while i < 10\n"
                                 "  i = i + 1\n end\n tell a \"late\"\nend\n"),
-    "syntax-style": "soul a is shy\nend\n",
-    "syntax-knowingly": "soul a\n meet b\n wound b\nend\nsoul b\n meet a\nend\n",
-    "syntax-dialogue": "soul a\n meet b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n",
-    "syntax-unanswered": "soul a\n meet b\n tell b 1\n tell b 2\nend\nsoul b\n meet a\n hear a into x\nend\n",
-    "syntax-two-hearts": ("soul a\n meet b\n meet c\n give heart to b\n give heart to c\nend\n"
+    "syntax-style": "written by \"tests\"\nsoul a is shy\nend\n",
+    "syntax-knowingly": "written by \"tests\"\nsoul a\n meet b\n wound b\nend\nsoul b\n meet a\nend\n",
+    "syntax-dialogue": "written by \"tests\"\nsoul a\n meet b\n tell b 1\nend\nsoul b\n meet a\n tell a 2\nend\n",
+    "syntax-unanswered": "written by \"tests\"\nsoul a\n meet b\n tell b 1\n tell b 2\nend\nsoul b\n meet a\n hear a into x\nend\n",
+    "syntax-two-hearts": ("written by \"tests\"\nsoul a\n meet b\n meet c\n give heart to b\n give heart to c\nend\n"
                           "soul b\n meet a\nend\nsoul c\n meet a\nend\n"),
-    "rule-heart-moves": ("soul a\n meet b\n meet c\n give heart to b\n take back heart from b\n"
+    "rule-heart-moves": ("written by \"tests\"\nsoul a\n meet b\n meet c\n give heart to b\n take back heart from b\n"
                          " give heart to c\n give heart to soul named \"b\"\n say scars of c\nend\n"
                          "soul b\n meet a\nend\nsoul c\n meet a\n wait\n wait\n wait\n say scar 1 of a\nend\n"),
-    "consent-needed": ("soul a\n meet b\n consent to b\n together with b\n say \"never\"\n end\nend\n"
+    "consent-needed": ("written by \"tests\"\nsoul a\n meet b\n consent to b\n together with b\n say \"never\"\n end\nend\n"
                        "soul b\n meet a\n together with a\n say \"never\"\n end\nend\n"),
-    "syntax-map": "soul s\n say {\"a\" 1}\nend\n",
-    "syntax-endure": "soul s\n endure\n say 1\n end\nend\n",
-    "syntax-learn": "learn missing\nsoul s\nend\n",
+    "syntax-map": "written by \"tests\"\nsoul s\n say {\"a\" 1}\nend\n",
+    "syntax-endure": "written by \"tests\"\nsoul s\n endure\n say 1\n end\nend\n",
+    "syntax-learn": "written by \"tests\"\nlearn missing\nsoul s\nend\n",
     # compile errors
     "syntax-outside": "say 1\n",
-    "syntax-no-end": "soul s\n say 1\n",
-    "syntax-twice": "soul s\nend\nsoul s\nend\n",
-    "syntax-keyword-name": "soul s\n let word = 1\nend\n",
-    "syntax-no-moment": "soul s\n return to nowhere\nend\n",
-    "syntax-moment-twice": "soul s\n mark m\n mark m\nend\n",
-    "syntax-big-number": "soul s\n say 99999999999999999999\nend\n",
-    "syntax-while-else": "soul s\n while 1\n else\n end\nend\n",
-    "syntax-unread": "soul s\n say $\nend\n",
-    "syntax-not-a-deed": "soul s\n dance\nend\n",
-    "syntax-early-end": "soul s\n say 1 +\nend\n",
+    "syntax-no-end": "written by \"tests\"\nsoul s\n say 1\n",
+    "syntax-twice": "written by \"tests\"\nsoul s\nend\nsoul s\nend\n",
+    "syntax-keyword-name": "written by \"tests\"\nsoul s\n let word = 1\nend\n",
+    "syntax-no-moment": "written by \"tests\"\nsoul s\n return to nowhere\nend\n",
+    "syntax-moment-twice": "written by \"tests\"\nsoul s\n mark m\n mark m\nend\n",
+    "syntax-big-number": "written by \"tests\"\nsoul s\n say 99999999999999999999\nend\n",
+    "syntax-while-else": "written by \"tests\"\nsoul s\n while 1\n else\n end\nend\n",
+    "syntax-unread": "written by \"tests\"\nsoul s\n say $\nend\n",
+    "syntax-not-a-deed": "written by \"tests\"\nsoul s\n dance\nend\n",
+    "syntax-early-end": "written by \"tests\"\nsoul s\n say 1 +\nend\n",
 }
 
 # Cases where the program reads the world.
@@ -125,7 +125,8 @@ def run(prog, given, history, patience=None, cwd=None):
         with open(prog) as f:
             res = subprocess.run([os.path.join(ROOT, "build", "tc-core")], stdin=f,
                                  capture_output=True, text=True,
-                                 env=dict(os.environ, TAINTED_HISTORY=history + ".compiler"))
+                                 env=dict(os.environ, TAINTED_HISTORY=history + ".compiler",
+                                          TAINTED_MEMORY=history + ".memory"))
         if res.returncode:
             return "", res.stderr, str(res.returncode)
         with open(binary + ".c", "w") as f:
