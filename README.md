@@ -25,6 +25,15 @@ soul bob
 end
 ```
 
+## Documentation
+
+- [Learning Tainted](docs/tutorial.md): a tutorial in fourteen chapters, from
+  one soul to a Kubernetes operator; every program in it is tested.
+- [Tainted reference](docs/reference.md): every statement and expression, and
+  exactly how time, meetings, feelings and memory work.
+
+This README is an overview.
+
 ## Running
 
 ```

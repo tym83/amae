@@ -611,5 +611,34 @@ class Parting(unittest.TestCase):
                          ["log w2 cannot leave: its last pod has nowhere to come back from"])
 
 
+
+class Documentation(unittest.TestCase):
+    """Every program in the tutorial prints what the tutorial says it prints."""
+
+    def check(self, name):
+        import re
+        with open(os.path.join(ROOT, "docs", name)) as f:
+            text = f.read()
+        blocks = re.findall(r"```(\w*)\n(.*?)```", text, re.S)
+        checked = 0
+        for i, (lang, body) in enumerate(blocks):
+            if lang != "tainted":
+                continue
+            given, j = "", i + 1
+            if blocks[j][0] == "input":
+                given, j = blocks[j][1], j + 1
+            self.assertEqual(blocks[j][0], "output", body[:40])
+            code, lines, _ = run(body, given=given)
+            self.assertEqual(code, 0, body[:40])
+            self.assertEqual(lines, blocks[j][1].splitlines(), body[:40])
+            checked += 1
+        self.assertGreaterEqual(checked, 14)
+
+    def test_tutorial_programs(self):
+        self.check("tutorial.md")
+
+    def test_translated_tutorial_programs(self):
+        self.check("tutorial.ru.md")
+
 if __name__ == "__main__":
     unittest.main()
