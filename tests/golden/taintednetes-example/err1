@@ -1,13 +1,13 @@
+alpha -> cluster: liking; trust 0, intimacy 4, passion 1, commitment 0, scars 0
 cluster -> alpha: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
-alpha -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
-web -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
+web -> cluster: liking; trust 0, intimacy 4, passion 0, commitment 0, scars 0
 db -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
-cluster -> beta: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-beta -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-cluster -> gamma: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
-gamma -> cluster: liking; trust 0, intimacy 5, passion 0, commitment 0, scars 0
+beta -> cluster: liking; trust 0, intimacy 5, passion 1, commitment 0, scars 0
+cluster -> beta: liking; trust 0, intimacy 5, passion 1, commitment 0, scars 0
+gamma -> cluster: liking; trust 0, intimacy 5, passion 1, commitment 0, scars 0
+cluster -> gamma: liking; trust 0, intimacy 5, passion 1, commitment 0, scars 0
 cache -> cluster: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
-cluster -> web: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> web: liking; trust 0, intimacy 3, passion 0, commitment 0, scars 0
 web -> alpha: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 2
 cluster -> db: nothing yet; trust 0, intimacy 2, passion 0, commitment 0, scars 0
 db -> alpha: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0, heart given

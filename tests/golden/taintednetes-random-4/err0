@@ -15,17 +15,17 @@ p13 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars
 p14 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p15 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p16 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n0 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p17 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 p18 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n1 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p19 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n2 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
-cluster -> n3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n2: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 n3 -> cluster: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
+cluster -> n3: nothing yet; trust 0, intimacy 1, passion 0, commitment 0, scars 0
 cluster -> p0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
 p0 -> n0: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 1, heart given
 cluster -> p1: nothing yet; trust 0, intimacy 0, passion 0, commitment 0, scars 0
