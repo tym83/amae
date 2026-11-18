@@ -120,8 +120,11 @@ ritual reconcile
                 if sent == 0 and calm
                     perform first_pod_to_let_go with name into pod
                     if pod == ""
-                        perform pods with count into many
-                        say "log " + name + " cannot leave: its last " + many + " have nowhere to come back from"
+                        if count == 1
+                            say "log " + name + " cannot leave: its last pod has nowhere to come back from"
+                        else
+                            say "log " + name + " cannot leave: its last " + count + " pods have nowhere to come back from"
+                        end
                     else
                         note "let go" = word 1 of pod
                         note "owner" = word 4 of pod
