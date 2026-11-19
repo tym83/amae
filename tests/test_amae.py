@@ -888,6 +888,95 @@ AFFINITY_Z1 = {"nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution"
 class Scheduler(unittest.TestCase):
     """amaenetes.amae deciding, in Amae, who may live where."""
 
+    def test_expired_refusals_are_removed_from_notes(self):
+        # Enough pods and nodes to expose fading across both loops.
+        refused = {"ns/gone" + str(i): {"n" + str(j): 1 for j in range(20)}
+                   for i in range(20)}
+        refused["ns/mixed"] = {"expired": 1, "boundary": 2, "recent": 7}
+        source = scheduler_source().split("soul cluster\n", 1)[0] + '''
+soul check
+    hear world into line
+    note "refused" = meaning of line
+    note "looks" = 8
+    perform prune_refused
+    say json of note "refused"
+    note "looks" = 14
+    perform prune_refused
+    say json of note "refused"
+end
+'''
+        life = run(source, given=json.dumps(refused) + "\n")
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual([json.loads(line) for line in life.lines],
+                         [{"ns/mixed": {"boundary": 2, "recent": 7}}, {}])
+
+    def test_consent_reason_precedence(self):
+        source = '''written by "tests"
+learn "kube.amae"
+soul check
+    hear world into line
+    let data = meaning of line
+    perform consent_of with data["node"], data["pod"], {} into reason
+    say reason
+end
+'''
+        node = fake_node("a")
+        node["spec"]["unschedulable"] = True
+        node["status"]["conditions"][0]["status"] = "False"
+        node["status"]["conditions"].append({"type": "MemoryPressure", "status": "True"})
+        for expected in ("it is not ready", "it is cordoned", "it is under memory pressure", ""):
+            life = run(source, given=json.dumps({"node": node, "pod": fake_pod("web")}) + "\n")
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(life.lines, [expected])
+            if expected == "it is not ready":
+                node["status"]["conditions"][0]["status"] = "True"
+            elif expected == "it is cordoned":
+                node["spec"]["unschedulable"] = False
+            else:
+                node["status"]["conditions"][1]["status"] = "False"
+
+    def test_node_consent_in_snapshots(self):
+        for condition, reason in [(None, "maintenance until 18:00"),
+                                  ("MemoryPressure", "it is under memory pressure"),
+                                  ("DiskPressure", "it is under disk pressure"),
+                                  ("PIDPressure", "it is under pid pressure"),
+                                  ("leaving", "it is leaving")]:
+            with self.subTest(condition=condition):
+                node = fake_node("a")
+                node["metadata"]["annotations"]["amaenetes.io/refuses"] = "maintenance until 18:00"
+                if condition == "leaving":
+                    node["metadata"]["annotations"]["amaenetes.io/leaving"] = ""
+                elif condition:
+                    node["status"]["conditions"].append({"type": condition, "status": "True"})
+                life, placed = place([node], [fake_pod("web")])
+                self.assertEqual(life.code, 0, life.err)
+                self.assertEqual(placed, {})
+                self.assertIn("ns/web is refused by a: " + reason, life.lines)
+
+    def test_cordoned_snapshot_node_is_filtered_before_matching(self):
+        node = fake_node("a")
+        node["spec"]["unschedulable"] = True
+        life, placed = place([node], [fake_pod("web", likes="a")])
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(placed, {"ns/web": None})
+
+    def test_failing_partner_requires_three_scars_to_refuse(self):
+        pod = fake_pod("web")
+        pod["metadata"]["ownerReferences"] = [{"kind": "ReplicaSet", "name": "web-abc", "controller": True}]
+        pod["metadata"]["labels"]["pod-template-hash"] = "abc"
+        for health, marks, refused in [("failing", 3, True), ("failing", 2, False), ("stable", 3, False)]:
+            with self.subTest(health=health, marks=marks):
+                rel = {"metadata": {"namespace": "ns"},
+                       "spec": {"partner": {"kind": "Deployment", "name": "web"}, "node": "a"},
+                       "status": {"health": health, "scars": marks}}
+                life, placed = place([fake_node("a")], [pod], [rel])
+                self.assertEqual(life.code, 0, life.err)
+                if refused:
+                    self.assertEqual(placed, {})
+                    self.assertIn("ns/web is refused by a: it has been failing with Deployment/web: 3 scars", life.lines)
+                else:
+                    self.assertEqual(placed, {"ns/web": "a"})
+
     def test_seats_likes_and_taints(self):
         nodes = [fake_node("a", seats=2, likes="ns/db"), fake_node("b", seats=1),
                  fake_node("master", taint=True)]
@@ -1104,10 +1193,11 @@ class Scheduler(unittest.TestCase):
             good = "b" if bad == "a" else "a"
             _, placed = place(nodes, [web], [bond(bad, "failing", 4), bond(good, "stable", 0)])
             self.assertEqual(placed, {"ns/web-7c9-x": good})
-        # What the pod itself asks for still comes first.
+        # The pod still proposes to its favorite, but the node may refuse.
         web["metadata"]["annotations"] = {LIKES: "a"}
-        _, placed = place(nodes, [web], [bond("a", "failing", 4)])
-        self.assertEqual(placed, {"ns/web-7c9-x": "a"})
+        life, placed = place(nodes, [web], [bond("a", "failing", 4)])
+        self.assertEqual(placed, {})
+        self.assertIn("ns/web-7c9-x is refused by a: it has been failing with Deployment/web: 4 scars", life.lines)
 
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
@@ -1144,7 +1234,7 @@ class Scheduler(unittest.TestCase):
 class LiveScheduler(unittest.TestCase):
     """The scheduler of a cluster, talking to a kubectl that only imagines one."""
 
-    def live(self, nodes, pods, looks, lease=None, env=None):
+    def live(self, nodes, pods, looks, lease=None, env=None, fresh_nodes=None, recovered_nodes=None):
         with tempfile.TemporaryDirectory() as d:
             if lease is not None:
                 with open(os.path.join(d, "lease.json"), "w") as f:
@@ -1153,6 +1243,12 @@ class LiveScheduler(unittest.TestCase):
                 json.dump({"items": nodes}, f)
             with open(os.path.join(d, "pods.json"), "w") as f:
                 json.dump({"items": pods}, f)
+            for node in fresh_nodes if fresh_nodes is not None else nodes:
+                with open(os.path.join(d, "node-" + node["metadata"]["name"] + ".json"), "w") as f:
+                    json.dump(node, f)
+            for node in recovered_nodes or []:
+                with open(os.path.join(d, "recovered-" + node["metadata"]["name"] + ".json"), "w") as f:
+                    json.dump(node, f)
             fake = os.path.join(d, "kubectl")
             with open(fake, "w") as f:
                 f.write('#!/bin/sh\n'
@@ -1161,6 +1257,9 @@ class LiveScheduler(unittest.TestCase):
                         '[ "$1" = "-n" ] && shift 2\n'
                         'case "$1 $2 $3" in\n'
                         f'  "get nodes "*) cat {d}/nodes.json ;;\n'
+                        f'  "get node "*) echo "$3" >> {d}/gets; cat {d}/node-"$3".json; result=$?; '
+                        f'if [ -f {d}/recovered-"$3".json ]; then '
+                        f'mv {d}/recovered-"$3".json {d}/node-"$3".json; fi; exit "$result" ;;\n'
                         f'  "get pods "*) cat {d}/pods.json ;;\n'
                         '  "get namespaces "*) echo \'{"items": [{"metadata": {"name": "ns"}}]}\' ;;\n'
                         f'  "get leases.coordination.k8s.io "*) cat {d}/lease.json 2>/dev/null; true ;;\n'
@@ -1176,6 +1275,10 @@ class LiveScheduler(unittest.TestCase):
                        env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined",
                             "AMAENETES_LOOKS": str(looks), "AMAENETES_INTERVAL": "0",
                             **(env or {})})
+            self.gets = []
+            if os.path.exists(os.path.join(d, "gets")):
+                with open(os.path.join(d, "gets")) as f:
+                    self.gets = f.read().splitlines()
             self.events = []
             if os.path.exists(os.path.join(d, "events")):
                 with open(os.path.join(d, "events")) as f:
@@ -1195,6 +1298,68 @@ class LiveScheduler(unittest.TestCase):
                         path, body = line.split(" ", 1)
                         asked.append((path, json.loads(body)))
         return life, asked
+
+    def test_fresh_node_refuses_then_another_node_accepts(self):
+        fresh = fake_node("a")
+        fresh["metadata"]["annotations"]["amaenetes.io/refuses"] = "maintenance until 18:00"
+        life, asked = self.live([fake_node("a"), fake_node("b")],
+                                [fake_pod("web", likes="a b")], looks=2,
+                                fresh_nodes=[fresh, fake_node("b")])
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual([body["target"]["name"] for _, body in asked], ["b"])
+        self.assertIn("ns/web is refused by a: maintenance until 18:00", life.lines)
+        refused = [e for e in self.events if e["reason"] == "Refused"]
+        self.assertEqual(len(refused), 1)
+        self.assertEqual(refused[0]["type"], "Warning")
+        self.assertEqual(refused[0]["message"], "node a refused: maintenance until 18:00")
+        self.assertEqual(self.gets, ["a", "b"])
+
+    def test_fresh_cordon_and_read_failure_do_not_bind(self):
+        fresh = fake_node("a")
+        fresh["spec"]["unschedulable"] = True
+        for fresh_nodes, reason in [([fresh], "it is cordoned"), ([], "could not read node:")]:
+            with self.subTest(reason=reason):
+                life, asked = self.live([fake_node("a")], [fake_pod("web")],
+                                        looks=1, fresh_nodes=fresh_nodes)
+                self.assertEqual(life.code, 0, life.err)
+                self.assertEqual(asked, [])
+                self.assertTrue(any("is refused by a: " + reason in line for line in life.lines))
+
+    def test_refusal_expires_after_six_even_silent_looks(self):
+        fresh = fake_node("a")
+        fresh["metadata"]["annotations"]["amaenetes.io/refuses"] = "maintenance"
+        for looks, attempts in [(7, 1), (8, 2)]:
+            with self.subTest(looks=looks):
+                life, asked = self.live([fake_node("a")], [fake_pod("web")], looks=looks,
+                                        fresh_nodes=[fresh])
+                self.assertEqual(life.code, 0, life.err)
+                self.assertEqual(asked, [])
+                self.assertEqual(life.lines.count("ns/web is refused by a: maintenance"), attempts)
+                self.assertEqual(self.gets, ["a"] * attempts)
+
+    def test_node_accepts_after_refusal_memory_expires(self):
+        fresh = fake_node("a")
+        fresh["metadata"]["annotations"]["amaenetes.io/refuses"] = "maintenance"
+        life, asked = self.live([fake_node("a")], [fake_pod("web")], looks=8,
+                                fresh_nodes=[fresh], recovered_nodes=[fake_node("a")])
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(self.gets, ["a", "a"])
+        self.assertEqual([body["target"]["name"] for _, body in asked], ["a"])
+        self.assertIn("ns/web is refused by a: maintenance", life.lines)
+        self.assertIn("ns/web lives on a", life.lines)
+        self.assertEqual([e["reason"] for e in self.events],
+                         ["Refused", "FailedScheduling", "Scheduled"])
+
+    def test_fresh_node_is_read_once_for_many_pods(self):
+        fresh = fake_node("a")
+        fresh["metadata"]["annotations"]["amaenetes.io/refuses"] = "maintenance"
+        life, asked = self.live([fake_node("a")],
+                                [fake_pod("p" + str(i)) for i in range(8)], looks=2,
+                                fresh_nodes=[fresh])
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(asked, [])
+        self.assertEqual(self.gets, ["a"])
+        self.assertEqual(sum(e["reason"] == "Refused" for e in self.events), 8)
 
     def test_binding_needs_no_more_rights_than_binding(self):
         """kubectl create -f validates against the CRD list, which a scheduler

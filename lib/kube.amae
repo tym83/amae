@@ -233,6 +233,54 @@ ritual ready node
     give back 0
 end
 
+# Prepare a binding: the first reason the node cannot accept this partner.
+ritual consent_of node, pod, bonds
+    perform ready with node into up
+    if not up
+        # ready also excludes cordoned nodes; distinguish their reasons.
+        perform condition_of with node, "Ready" into healthy
+        if not healthy
+            give back "it is not ready"
+        end
+    end
+    perform field with node, "spec", {} into spec
+    perform field with spec, "unschedulable", 0 into cordoned
+    if cordoned
+        give back "it is cordoned"
+    end
+    let kinds = ["MemoryPressure", "DiskPressure", "PIDPressure"]
+    let reasons = ["memory", "disk", "pid"]
+    let i = 1
+    while i <= length of kinds
+        perform condition_of with node, kinds[i] into pressed
+        if pressed
+            give back "it is under " + reasons[i] + " pressure"
+        end
+        recall node pod bonds kinds reasons
+        i = i + 1
+    end
+    perform field with node["metadata"], "annotations", {} into annotations
+    if place of "amaenetes.io/leaving" in annotations > 0
+        give back "it is leaving"
+    end
+    perform annotation with node, "amaenetes.io/refuses" into reason
+    if reason != ""
+        give back reason
+    end
+    perform partner_of with pod into partner
+    let partner_name = partner["kind"] + "/" + partner["name"]
+    let key_ = pod["metadata"]["namespace"] + " " + partner_name + " " + node["metadata"]["name"]
+    if place of key_ in bonds > 0
+        let st = bonds[key_]
+        perform field with st, "health", "" into health
+        perform field with st, "scars", 0 into marks
+        if health == "failing" and marks >= 3
+            give back "it has been failing with " + partner_name + ": " + marks + " scars"
+        end
+    end
+    give back ""
+end
+
 ritual labels_of thing
     perform field with thing["metadata"], "labels", {} into labels
     give back labels
