@@ -1,0 +1,21 @@
+written by "amae"
+
+soul counter
+    let n = 1
+    while n <= 30
+        if n % 15 == 0
+            say "FizzBuzz"
+        else
+            if n % 3 == 0
+                say "Fizz"
+            else
+                if n % 5 == 0
+                    say "Buzz"
+                else
+                    say n
+                end
+            end
+        end
+        n = n + 1
+    end
+end

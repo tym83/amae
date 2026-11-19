@@ -1,0 +1,28 @@
+written by "amae"
+
+soul alice
+    meet bob
+    let n = 0
+    while n < 3
+        tell bob "how was your day?"
+        hear bob into answer
+        warm to bob
+        n = n + 1
+    end
+    promise bob
+    promise bob
+    promise bob
+    say "alice trusts bob " + trust bob + " times over"
+    say "alice feels " + bond with bob
+end
+
+soul bob
+    meet alice
+    let n = 0
+    while n < 3
+        hear alice into question
+        tell alice "long, but better now"
+        n = n + 1
+    end
+    say "bob feels " + bond with alice
+end

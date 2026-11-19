@@ -1,0 +1,22 @@
+written by "amae"
+
+soul penelope
+    let year = 1999
+    let name = "Odysseus"
+    let days = 0
+    while days < 30
+        days = days + 1
+    end
+    say "she remembers the year " + year + " and the name " + name
+
+    let weaving = 0
+    while weaving < 60
+        weaving = weaving + 1
+        recall year
+    end
+    say "she recalled the year: " + year + "; the name faded: " + name
+
+    note "who" = "Odysseus"
+    wait
+    say "what she wrote down does not fade: " + note "who"
+end

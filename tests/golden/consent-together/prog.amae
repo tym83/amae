@@ -1,0 +1,40 @@
+# Two moves together, then one of them withdraws halfway through the second.
+
+written by "amae"
+soul ana
+    meet ben
+    consent to ben
+    together with ben
+        tell ben "one, two"
+        hear ben into reply
+        say "ana: " + reply
+    apart
+        say "ana: we went apart"
+    end
+    say "ana: the first dance is done"
+    together with ben
+        tell ben "three"
+        hear ben into reply
+        say "ana never hears: " + reply
+    apart
+        say "ana: ben withdrew, so we both stopped"
+    end
+end
+
+soul ben
+    meet ana
+    consent to ana
+    together with ana
+        hear ana into steps
+        tell ana steps + ", three"
+    apart
+        say "ben: we went apart"
+    end
+    together with ana
+        hear ana into steps
+        withdraw consent from ana
+        say "ben never says this"
+    apart
+        say "ben: I withdrew"
+    end
+end

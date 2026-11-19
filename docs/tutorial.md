@@ -1,4 +1,4 @@
-# Learning Tainted
+# Learning Amae
 
 This tutorial goes from a program that prints one line to an operator that
 looks after a Kubernetes cluster. Every program in it is checked by the test
@@ -8,11 +8,11 @@ suite: what you see under each one is exactly what it prints. The
 Build the compiler once with `make`, then compile a program and run it:
 
 ```
-bin/tc program.tainted
+bin/tc program.amae
 ./program
 ```
 
-Tainted remembers every program it has run (see [chapter 22](#22-the-second-time)),
+Amae remembers every program it has run (see [chapter 22](#22-the-second-time)),
 so the first run of a program can differ from the ones after it. The outputs
 here are of first runs.
 
@@ -43,8 +43,8 @@ here are of first runs.
 
 ## 1. A soul
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     say "hello, world"
@@ -66,8 +66,8 @@ an author it does not know yet it reads more carefully.
 
 ## 2. Two souls
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     meet bob
@@ -101,8 +101,8 @@ ends with exit code 2 and says on standard error who was waiting for whom.
 
 ## 3. Thinking alone
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul counter
     let i = 1
@@ -143,7 +143,7 @@ Fizz
 FizzBuzz
 ```
 
-Inside a soul, Tainted is an ordinary small language: variables (`let i = 1`,
+Inside a soul, Amae is an ordinary small language: variables (`let i = 1`,
 then `i = i + 1`), numbers and strings (lists and maps come in [chapter 13](#13-lists-and-maps)), `if … else … end` and
 `while … end`. `+` joins strings, and a number joined to a string becomes
 text. There are no booleans: a comparison is `1` or `0`, and `and`, `or`,
@@ -151,8 +151,8 @@ text. There are no booleans: a comparison is `1` or `0`, and `and`, `or`,
 
 ## 4. Too many words
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul ben
     meet ana
@@ -193,8 +193,8 @@ the intimacy that lets the next conversation be longer.
 
 ## 5. Trust, promises and bonds
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     meet bob
@@ -247,8 +247,8 @@ consummate love.
 
 ## 6. The heart and the knife
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     meet bob
@@ -296,8 +296,8 @@ The heart given is what lets a relationship survive a wound. It is also what
 
 ## 7. Leaving
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul ana
     meet ben
@@ -336,8 +336,8 @@ reach the other again. Scars are numbered from one: `scars of ben` counts them,
 
 ## 8. Memory fades
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul penelope
     let year = 1999
@@ -378,8 +378,8 @@ notes never fade. Programs that wait a lot keep what matters in notes.
 
 ## 9. Many souls
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 kind worker
     meet anyone as boss
@@ -422,8 +422,8 @@ hears whoever speaks first and says who it was.
 
 ## 10. Rituals
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 ritual gcd a, b
     while b != 0
@@ -465,11 +465,11 @@ whatever the ritual takes, the soul comes back as it left.
 
 ## 11. Silence
 
-```tainted
+```amae
 # A rumour passes from soul to soul. Nobody knows how far it went
 # until everyone falls silent.
 
-written by "tainted"
+written by "amae"
 kind gossip
     meet anyone as teller
     hear soul named teller into rumour
@@ -506,15 +506,15 @@ The rumour travels five souls far, each one bringing the next to life. Nobody
 counts how far it went. `wait for silence` waits until no soul can do anything
 any more, and then everyone who waited for silence goes on together.
 
-Silence is how Tainted knows that a computation spread over many souls is
-finished. Taintednetes, the scheduler written in Tainted, works this way: pods
+Silence is how Amae knows that a computation spread over many souls is
+finished. Amaenetes, the scheduler written in Amae, works this way: pods
 and nodes argue until nobody has anything to say, and that silence is a
 stable matching.
 
 ## 12. The world
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul reader
     let heard = 0
@@ -546,8 +546,8 @@ the number `0`. The `input` above is what this program was given.
 
 ## 13. Lists and maps
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul librarian
     let shelf = ["Ada", "Oberon"]
@@ -601,8 +601,8 @@ their last items first.
 
 ## 14. Asking the world
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul clerk
     ask world "date -u +%Y" into year
@@ -644,8 +644,8 @@ seconds, `wait 5 seconds` lets the other souls live while this one sleeps, and
 
 ## 15. Enduring
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 ritual open_door name
     let doors = {"front": "open"}
@@ -684,10 +684,10 @@ the soul comes back to where it endured, and the rituals it was in are let go.
 
 ## 16. Learning
 
-```tainted
-# words.tainted: a few rituals to learn from.
+```amae
+# words.amae: a few rituals to learn from.
 
-written by "tainted"
+written by "amae"
 ritual shout text
     ask world "tr a-z A-Z" telling text into loud
     give back loud
@@ -704,10 +704,10 @@ ritual initials list
 end
 ```
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
-learn "words.tainted"
+learn "words.amae"
 
 soul poet
     perform shout with "tainted love" into loud
@@ -722,16 +722,16 @@ TAINTED LOVE
 sc
 ```
 
-`learn "words.tainted"` at the top of a program brings in the kinds and
+`learn "words.amae"` at the top of a program brings in the kinds and
 rituals of another file, as if they were written in the program. The file is
 looked for next to the program, then in the library, `lib/`. A file learned
 twice is learned once, and a mistake in it is reported with its own name:
-`tainted: line 3 of words.tainted: expected 'of'`.
+`amae: line 3 of words.amae: expected 'of'`.
 
 ## 17. Feelings that happen
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul ana
     meet ben
@@ -803,10 +803,10 @@ every meeting brings them closer again.
 
 ## 18. Together
 
-```tainted
+```amae
 # Two moves together, then one of them withdraws halfway through the second.
 
-written by "tainted"
+written by "amae"
 soul ana
     meet ben
     consent to ben
@@ -859,10 +859,10 @@ each goes its own way, and at the `end` each waits for the other, so what is
 done together is done by both or by neither. Either may withdraw consent at
 any moment, even halfway: then both stop where they are and go to `apart`.
 
-```tainted
+```amae
 # Some things anyone trusted may read; some only a heart given lets you near.
 
-written by "tainted"
+written by "amae"
 soul ana
     meet ben
     meet cal
@@ -910,10 +910,10 @@ owner gave its heart to, and every crossing is counted on both sides.
 
 ## 19. Ways of loving
 
-```tainted
+```amae
 # The same meeting, lived by souls who love in different ways.
 
-written by "tainted"
+written by "amae"
 soul erin is eros
     meet luca
     say "erin at first sight: passion " + passion luca
@@ -1010,7 +1010,7 @@ end
 ```
 
 ```
-tainted: line 3: alice and bob cannot get along: here alice tells bob, but at line 8 bob tells alice
+amae: line 3: alice and bob cannot get along: here alice tells bob, but at line 8 bob tells alice
 ```
 
 When two souls name each other, the compiler reads what each will do with the
@@ -1028,7 +1028,7 @@ moves and both the one who lost it and the one who gave it keep the scar.
 
 ## 21. A long love
 
-```tainted
+```amae
 # A long love: passion is only the spark; love is built, and grows stronger
 # every year.
 #
@@ -1039,7 +1039,7 @@ moves and both the one who lost it and the one who gave it keep the scar.
 # Mira. In the third year it still hurts, and he apologizes; in the eighth,
 # love is stronger than the hurt. Every year Mira says where they are.
 
-written by "tainted"
+written by "amae"
 
 ritual season of_whom, year
     let who = of_whom
@@ -1148,8 +1148,8 @@ stronger every year.
 
 ## 22. The second time
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul stranger
     first time
@@ -1171,7 +1171,7 @@ And run again:
 Runs before this one: 1
 ```
 
-Tainted counts how many times every program has run; `runs` is that number
+Amae counts how many times every program has run; `runs` is that number
 and `first time` runs only the first time. The count belongs to the exact text
 of the program, so changing a single character makes it a program that has
 never run. The order in which souls take their steps turns by one with every
@@ -1184,11 +1184,11 @@ the same life every run; infrastructure does.
 
 ## 23. An operator
 
-```tainted
+```amae
 # watchman: cordons a node that stops being ready and lets it work again
 # once it is back, but only the nodes it cordoned itself.
 
-written by "tainted"
+written by "amae"
 
 ritual without name, list
     let rest = ""
@@ -1256,16 +1256,16 @@ The watchman above is a complete operator. It remembers in a note which nodes
 it cordoned, so that it never uncordons one an administrator closed, and uses
 a ritual to take a name out of that list. Here it hears the cluster as lines,
 which is how it is tested. To look after a real cluster, it reads the cluster
-itself: `learn "kube.tainted"` brings in rituals that ask kubectl (in the
+itself: `learn "kube.amae"` brings in rituals that ask kubectl (in the
 context named by `KUBE_CONTEXT`) and read what it says, and `listen to world`
 on `kubectl get nodes --watch-only` wakes the watchman whenever a node changes:
 
-```tainted
-# watchman.tainted: the watchman, looking after a cluster itself.
+```amae
+# watchman.amae: the watchman, looking after a cluster itself.
 
-written by "tainted"
+written by "amae"
 
-learn "kube.tainted"
+learn "kube.amae"
 
 ritual without name, list
     let rest = ""
@@ -1318,12 +1318,12 @@ end
 ```
 
 ```
-bin/tc watchman.tainted && KUBE_CONTEXT=<context> ./watchman --patience=0
+bin/tc watchman.amae && KUBE_CONTEXT=<context> ./watchman --patience=0
 ```
 
 `--patience=0` lets it live as long as the cluster does.
 
-`kube/parting.tainted` is a larger one: it lets a node leave the cluster
+`kube/parting.amae` is a larger one: it lets a node leave the cluster
 gently, one pod at a time, waiting for each replacement.
 
 ## Where to go next
@@ -1332,7 +1332,7 @@ gently, one pod at a time, waiting for each replacement.
   memory and time, exactly.
 - `examples/classics`: FizzBuzz, primes, sorting, the towers of Hanoi, the
   dining philosophers and more.
-- `examples/a-life.tainted`: one program in which every rule of the language
+- `examples/a-life.amae`: one program in which every rule of the language
   changes the story.
-- `taintednetes.tainted` and `kube/parting.tainted`: a scheduler and an
-  operator written in Tainted, and the README on running them in a cluster.
+- `amaenetes.amae` and `kube/parting.amae`: a scheduler and an
+  operator written in Amae, and the README on running them in a cluster.

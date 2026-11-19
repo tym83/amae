@@ -1,0 +1,63 @@
+# recognize.amae: do two compilers recognize each other?
+#
+# Two generations of the compiler are never the same file: each remembers
+# the ones before it. They are the same compiler if, given the same programs,
+# they say the same thing about every one of them, memory aside. This program
+# compiles every program it is given with both and compares what they say,
+# leaving out the lineage each of them writes in.
+#
+#   FIRST=build/gen2 SECOND=build/gen3 PROGRAMS="a.amae b.amae" recognize
+
+written by "amae"
+
+ritual without_memory text
+    let all = lines of text
+    let kept = ""
+    let remembering = 0
+    let i = 1
+    while i <= length of all
+        if all[i] == "/* lineage */"
+            remembering = 1
+        end
+        if remembering == 0
+            kept = kept + all[i] + "\n"
+        end
+        if all[i] == "/* end of lineage */"
+            remembering = 0
+        end
+        i = i + 1
+        recall all kept remembering
+    end
+    give back kept
+end
+
+ritual compile_with compiler, program
+    endure
+        ask world "AMAE_GIVE_HEART=1 AMAE_HISTORY=$(mktemp) " + compiler + " < " + program + " 2>&1; true" into said
+    when it hurts as pain
+        give back "the world refused: " + pain
+    end
+    perform without_memory with said into kept
+    give back kept
+end
+
+soul witness
+    let elder = world "FIRST"
+    let second = world "SECOND"
+    note "programs" = words of world "PROGRAMS"
+    note "count" = 0
+    note "i" = 1
+    while note "i" <= note "programs"
+        let program = word (note "i") of world "PROGRAMS"
+        perform compile_with with elder, program into a
+        perform compile_with with second, program into b
+        if a != b
+            cry "they do not recognize each other: " + program + " comes out different"
+            goodbye with 1
+        end
+        note "count" = note "count" + 1
+        note "i" = note "i" + 1
+        recall elder second
+    end
+    say elder + " and " + second + " recognize each other on " + note "count" + " programs"
+end

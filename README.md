@@ -1,6 +1,6 @@
-# Tainted
+# Amae
 
-Tainted is an esoteric programming language in which computation happens
+Amae is an esoteric programming language in which computation happens
 between souls rather than inside them. A program is a set of souls running side
 by side. They reach each other only by meeting, they trust and fear, give their
 hearts away, wound and forgive, and what they say to each other stays with them.
@@ -8,8 +8,11 @@ hearts away, wound and forgive, and what they say to each other stays with them.
 The language is Turing complete, and the proof is not built on memory, which
 fades, but on trust: a counter machine runs on how much one soul trusts another.
 
+The name is the Japanese *amae* (甘え): the quiet certainty that someone close
+will accept you and take care of you, the feeling the whole language rests on.
+
 ```
-written by "tainted"
+written by "amae"
 
 soul alice
     meet bob
@@ -29,21 +32,21 @@ end
 
 ## Documentation
 
-- [Learning Tainted](docs/tutorial.md): a tutorial in fourteen chapters, from
+- [Learning Amae](docs/tutorial.md): a tutorial in fourteen chapters, from
   one soul to a Kubernetes operator; every program in it is tested.
-- [Tainted reference](docs/reference.md): every statement and expression, and
+- [Amae reference](docs/reference.md): every statement and expression, and
   exactly how time, meetings, feelings and memory work.
 
 This README is an overview.
 
 ## Running
 
-Tainted is a compiled language. Its compiler is written in Tainted and makes C,
+Amae is a compiled language. Its compiler is written in Amae and makes C,
 which any C11 compiler builds together with the runtime in `runtime/`.
 
 ```
 make                                      # the compiler, from its seed in boot/tc.c
-bin/tc examples/hello.tainted             # compile a program
+bin/tc examples/hello.amae             # compile a program
 ./hello
 ./courtship --feelings                    # print every relationship at the end
 make bootstrap                            # the compiler compiles itself
@@ -53,8 +56,8 @@ python3 -m unittest discover -s tests     # what the programs mean
 
 A C compiler and make; Python only for the tests and the Kubernetes glue.
 
-Every run is recorded in `~/.tainted/history.json` (or the file named by
-`TAINTED_HISTORY`) before it starts, so the same program never runs for the
+Every run is recorded in `~/.amae/history.json` (or the file named by
+`AMAE_HISTORY`) before it starts, so the same program never runs for the
 first time twice.
 
 ## The language
@@ -179,7 +182,7 @@ out.
 
 ## Turing completeness
 
-`tools/minsky.py` compiles any Minsky counter machine into Tainted. Each counter
+`tools/minsky.py` compiles any Minsky counter machine into Amae. Each counter
 becomes a soul, its value is the machine's trust in it, `warm to` increments,
 `cool to` decrements and `trust c == 0` tests for zero. Minsky showed that two
 counters are enough to simulate any Turing machine. The test suite compiles
@@ -187,39 +190,39 @@ random two-counter machines and checks every result against a reference
 simulator.
 
 ```
-python3 tools/minsky.py examples/multiply.minsky > examples/multiply.tainted
-bin/tc examples/multiply.tainted && ./multiply   # c = 42
+python3 tools/minsky.py examples/multiply.minsky > examples/multiply.amae
+bin/tc examples/multiply.amae && ./multiply   # c = 42
 ```
 
 ## Operators
 
-A Tainted program looks after a Kubernetes cluster through `kubectl`, with
-nothing in between. `lib/kube.tainted` asks the cluster (in the context named by
+A Amae program looks after a Kubernetes cluster through `kubectl`, with
+nothing in between. `lib/kube.amae` asks the cluster (in the context named by
 `KUBE_CONTEXT`) and reads what it says as JSON; `listen to world` on
 `kubectl get … --watch-only` wakes the program whenever something changes. A
 soul that waits for the world is not stuck, the world is only slow, so the
 program lives as long as the cluster talks to it, and `--patience=0` lets it
 live without a limit.
 
-`kube/parting.tainted` is the first operator written in Tainted. A node
-annotated `taintednetes.io/leaving: "true"` leaves the cluster gently: it stops
+`kube/parting.amae` is the first operator written in Amae. A node
+annotated `amaenetes.io/leaving: "true"` leaves the cluster gently: it stops
 taking anyone new and lets its pods go one at a time, the next one only when
 the last is gone and its owner has brought a replacement up. A pod that belongs
 to no controller has nowhere to come back from, so the node does not send it
 away and waits instead. When the node is empty it is marked
-`taintednetes.io/left: "true"`.
+`amaenetes.io/left: "true"`.
 
 It watches nodes and pods and looks at the cluster on every change and every
 few seconds. On standard input, without `KUBE_CONTEXT`, it hears the cluster as
 lines and says what it would do, which is how it is tested.
 
 ```
-bin/tc kube/parting.tainted
+bin/tc kube/parting.amae
 KUBE_CONTEXT=<ctx> ./parting --patience=0
-kubectl --context <ctx> annotate node worker-3 taintednetes.io/leaving=true
+kubectl --context <ctx> annotate node worker-3 amaenetes.io/leaving=true
 ```
 
-Run next to the scheduler, the whole cycle is in Tainted: the operator lets a
+Run next to the scheduler, the whole cycle is in Amae: the operator lets a
 pod go and the scheduler finds its replacement a new home. This is a node of a
 three-node cluster leaving while both run as pods inside it; the bare pod `db`
 has no owner to bring it back, so the node stays and says why:
@@ -235,8 +238,8 @@ has no owner to bring it back, so the node stays and says why:
 08:04:54 cw2gd cannot leave: its last pod has nowhere to come back from
 ```
 
-`kube/counsel.tainted` keeps what a workload and a node have lived through
-together as a `Relationship` object (`tainted.io/v1`, in the workload's
+`kube/counsel.amae` keeps what a workload and a node have lived through
+together as a `Relationship` object (`amae.io/v1`, in the workload's
 namespace, named after the workload and the node), and tells how they are
 doing the way John Gottman tells it of couples. Every look at the cluster is a
 moment of their life together: a ready pod is a turn towards each other, a
@@ -262,12 +265,12 @@ of Gale and Shapley: the pod likes that node better, fits there, and the node
 has a seat for it. The scheduler, trusting nodes by the same relationships,
 finds the workload's next pod a better home.
 
-## The compiler written in Tainted
+## The compiler written in Amae
 
-`compiler.tainted` is the compiler, and it is the only implementation of the
+`compiler.amae` is the compiler, and it is the only implementation of the
 language. It hears a program from standard input and says C: every soul, kind
 and ritual becomes a table of instructions and a step function, every
-expression a C function evaluated left to right, and `runtime/tainted.c` carries
+expression a C function evaluated left to right, and `runtime/amae.c` carries
 out what happens between souls. `bin/tc` puts the two together.
 
 ```
@@ -296,9 +299,9 @@ function it is writing loses letters from it and emits C that does not build.
 The test suite checks this too: remove that `recall` and the compiler, built,
 can no longer compile itself.
 
-## Taintednetes
+## Amaenetes
 
-`taintednetes.tainted` is a scheduler written in Tainted. It hears the cluster
+`amaenetes.amae` is a scheduler written in Amae. It hears the cluster
 from standard input, one line per pod or node:
 
 ```
@@ -324,15 +327,15 @@ Waiting is what a soul does most in a scheduler, and a soul that waits forgets,
 so everything that has to outlive a wait is written down in notes.
 
 ```
-bin/tc taintednetes.tainted && ./taintednetes < examples/cluster.txt
+bin/tc amaenetes.amae && ./amaenetes < examples/cluster.txt
 ```
 
 ### On a real cluster
 
-With `KUBE_CONTEXT` set, `taintednetes.tainted` is the scheduler of a real
+With `KUBE_CONTEXT` set, `amaenetes.amae` is the scheduler of a real
 Kubernetes cluster, with nothing between them but `kubectl`. Every few seconds
 it reads the ready nodes and the pending pods with `schedulerName:
-taintednetes`, works out in Tainted (with `lib/kube.tainted`) who may meet
+amaenetes`, works out in Amae (with `lib/kube.amae`) who may meet
 whom, lets them find each other and binds every pod where it settled, through
 the `pods/binding` subresource. A pod likes only the nodes it fits on, decided
 the way kube-scheduler decides it: resources counted the way the kubelet counts
@@ -351,7 +354,7 @@ scheduler does; the pods of every look are souls of that look.
 Like kube-scheduler, it leaves an Event on every pod it places (`Scheduled`)
 and on every pod it finds no home for (`FailedScheduling`), saying how many
 nodes turned it away and why: `0/3 nodes are available: 2 not enough cpu, 1
-taint role.` With `TAINTEDNETES_LEASE=namespace/name`, several copies can run
+taint role.` With `AMAENETES_LEASE=namespace/name`, several copies can run
 at once: the one holding that Lease binds and renews it every look, the others
 wait and take it over once it has not been renewed for three looks.
 
@@ -364,9 +367,9 @@ pods only wait.
 
 | Annotation | On | Meaning |
 |---|---|---|
-| `taintednetes.io/likes: "node-a node-b"` | pod | nodes it wants first |
-| `taintednetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
-| `taintednetes.io/seats: "N"` | node | at most N pods of this scheduler |
+| `amaenetes.io/likes: "node-a node-b"` | pod | nodes it wants first |
+| `amaenetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
+| `amaenetes.io/seats: "N"` | node | at most N pods of this scheduler |
 
 Then pods prefer the nodes their preferred node affinity leans to, then the
 nodes their workload trusts more: fewer scars and a healthier relationship, as
@@ -379,12 +382,12 @@ out; nodes prefer pods with higher priority, then the ones waiting longest.
 kubectl --context <ctx> create namespace demo
 sed -e s/NODE_A/<node>/ -e s/NODE_B/<node>/ kube/demo.yaml \
   | kubectl --context <ctx> -n demo apply -f -
-bin/tc taintednetes.tainted
-KUBE_CONTEXT=<ctx> TAINTEDNETES_LOOKS=1 ./taintednetes   # one look; without LOOKS it keeps looking
+bin/tc amaenetes.amae
+KUBE_CONTEXT=<ctx> AMAENETES_LOOKS=1 ./amaenetes   # one look; without LOOKS it keeps looking
 ```
 
 On the workshop stand, three workers of 900m CPU each: one advertises two
-`tainted.io/gpu`, each carries a `zone` label. Two pods want the same host port,
+`amae.io/gpu`, each carries a `zone` label. Two pods want the same host port,
 one needs zone `west`, three want a GPU while both GPUs are already taken:
 
 ```
@@ -411,32 +414,32 @@ the `Relationship` CRD) as pods of the cluster they look after, each with a serv
 its job: the scheduler reads pods and nodes, creates bindings and events and
 holds its lease (two copies run, one leads), the operator
 reads them, patches nodes and evicts pods, counsel reads them and keeps
-relationships. All are compiled from Tainted into
-the image `ghcr.io/tym83/tainted`, which CI builds from every commit to main:
+relationships. All are compiled from Amae into
+the image `ghcr.io/tym83/amae`, which CI builds from every commit to main:
 
 ```
-kubectl --context <ctx> create namespace taintednetes
+kubectl --context <ctx> create namespace amaenetes
 kubectl --context <ctx> apply -f kube/deploy.yaml
-kubectl --context <ctx> -n taintednetes logs -f deploy/scheduler
+kubectl --context <ctx> -n amaenetes logs -f deploy/scheduler
 ```
 
 ## Examples
 
 | File | What happens |
 |---|---|
-| `hello.tainted` | a first meeting |
-| `courtship.tainted` | answered words and promises grow into consummate love |
-| `rush.tainted` | three unanswered messages frighten bob |
-| `heart-and-knife.tainted` | trust as a gift survives a wound |
-| `calculation.tainted` | trust as a calculation does not |
-| `breakup.tainted` | leaving, scars, and the one who keeps waiting |
-| `first-time.tainted` | run it twice |
-| `penelope.tainted` | memory fades while she waits |
-| `multiply.tainted` | 6 × 7 computed on trust alone |
+| `hello.amae` | a first meeting |
+| `courtship.amae` | answered words and promises grow into consummate love |
+| `rush.amae` | three unanswered messages frighten bob |
+| `heart-and-knife.amae` | trust as a gift survives a wound |
+| `calculation.amae` | trust as a calculation does not |
+| `breakup.amae` | leaving, scars, and the one who keeps waiting |
+| `first-time.amae` | run it twice |
+| `penelope.amae` | memory fades while she waits |
+| `multiply.amae` | 6 × 7 computed on trust alone |
 
 ### A life
 
-`a-life.tainted` is the one to run first. Two souls meet at first sight, one
+`a-life.amae` is the one to run first. Two souls meet at first sight, one
 says too much and frightens the other, they talk until they trust each other,
 make promises, one gives her heart and is wounded and still listens, waits
 while he is at sea and forgets the year they met, and is left. Every line of
@@ -463,7 +466,7 @@ ana is still waiting for ben, who left
 
 ### A long love
 
-`a-long-love.tainted` shows what time does. Passion and infatuation are the
+`a-long-love.amae` shows what time does. Passion and infatuation are the
 spark: Mira and Teo's two years of dates fill passion up, and from then on
 every stretch of time spent close builds love, a little more each year than
 the year before. The spark cools; the love does not, and it shows more and
@@ -493,17 +496,17 @@ The usual programs, the way souls would write them, in `examples/classics/`.
 
 | File | What it shows |
 |---|---|
-| `hello-world.tainted` | one soul, alone |
-| `fizzbuzz.tainted`, `factorial.tainted`, `fibonacci.tainted`, `primes.tainted` | ordinary arithmetic and loops |
-| `bottles.tainted` | 99 bottles of beer |
-| `cat.tainted`, `reverse.tainted`, `wc.tainted` | reading the world line by line |
-| `sort.tainted` | insertion sort over notes, because a list in memory would fade |
-| `gcd.tainted` | Euclid as a conversation between two souls |
-| `ping-pong.tainted` | answered messages grow into romantic love |
-| `producer-consumer.tainted` | a producer that never waits for an answer frightens its consumer |
-| `sleep-sort.tainted` | every number becomes a soul that waits as long as it is large |
-| `hanoi.tainted` | towers of Hanoi, a ritual that performs itself |
-| `philosophers.tainted` | dining philosophers: forks are souls, and the host listens for silence |
+| `hello-world.amae` | one soul, alone |
+| `fizzbuzz.amae`, `factorial.amae`, `fibonacci.amae`, `primes.amae` | ordinary arithmetic and loops |
+| `bottles.amae` | 99 bottles of beer |
+| `cat.amae`, `reverse.amae`, `wc.amae` | reading the world line by line |
+| `sort.amae` | insertion sort over notes, because a list in memory would fade |
+| `gcd.amae` | Euclid as a conversation between two souls |
+| `ping-pong.amae` | answered messages grow into romantic love |
+| `producer-consumer.amae` | a producer that never waits for an answer frightens its consumer |
+| `sleep-sort.amae` | every number becomes a soul that waits as long as it is large |
+| `hanoi.amae` | towers of Hanoi, a ritual that performs itself |
+| `philosophers.amae` | dining philosophers: forks are souls, and the host listens for silence |
 
 ## License
 

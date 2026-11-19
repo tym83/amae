@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile a Minsky counter machine into a Tainted program.
+"""Compile a Minsky counter machine into a Amae program.
 
 Each counter is a soul, and its value is how much the machine trusts it.
 `warm to` increments, `cool to` decrements, `trust x == 0` tests for zero.

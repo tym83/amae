@@ -1,0 +1,29 @@
+# Insertion sort of the numbers the world says, one per line.
+# A list lives in notes, because notes do not fade.
+
+written by "amae"
+soul sorter
+    let size = 0
+    hear world into line
+    while line != 0
+        size = size + 1
+        note size = number of line
+        hear world into line
+    end
+    let i = 2
+    while i <= size
+        let x = note i
+        let j = i - 1
+        while j >= 1 and note j > x
+            note (j + 1) = note j
+            j = j - 1
+        end
+        note (j + 1) = x
+        i = i + 1
+    end
+    i = 1
+    while i <= size
+        say note i
+        i = i + 1
+    end
+end

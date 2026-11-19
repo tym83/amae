@@ -1,4 +1,4 @@
-# Building Tainted.
+# Building Amae.
 #
 #   make            the compiler, from the seed in boot/tc.c
 #   make test       every golden program, compiled and run twice
@@ -9,7 +9,7 @@
 CC ?= cc
 CFLAGS ?= -std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -O2 -Wall -Wextra -Wno-unused-parameter
 BUILD := build
-RUNTIME := runtime/tainted.c runtime/tainted.h
+RUNTIME := runtime/amae.c runtime/amae.h
 HISTORY := $(abspath $(BUILD))/history.json
 
 .PHONY: all test bootstrap seed ddc clean
@@ -22,42 +22,42 @@ $(BUILD):
 # The seed is an old generation. It is built as it is, then gives its heart to
 # compile the compiler afresh: build/tc-core is always a living generation.
 $(BUILD)/seed: boot/tc.c $(RUNTIME) | $(BUILD)
-	$(CC) $(CFLAGS) -Iruntime boot/tc.c runtime/tainted.c -o $@ -lm
+	$(CC) $(CFLAGS) -Iruntime boot/tc.c runtime/amae.c -o $@ -lm
 
-$(BUILD)/tc-core.c: compiler.tainted $(BUILD)/seed
-	TAINTED_GIVE_HEART=1 TAINTED_HISTORY=$(HISTORY) $(BUILD)/seed < compiler.tainted > $@
+$(BUILD)/tc-core.c: compiler.amae $(BUILD)/seed
+	AMAE_GIVE_HEART=1 AMAE_HISTORY=$(HISTORY) $(BUILD)/seed < compiler.amae > $@
 
 $(BUILD)/tc-core: $(BUILD)/tc-core.c $(RUNTIME)
-	$(CC) $(CFLAGS) -Iruntime $< runtime/tainted.c -o $@ -lm
+	$(CC) $(CFLAGS) -Iruntime $< runtime/amae.c -o $@ -lm
 
 $(BUILD)/gen2.c: $(BUILD)/tc-core
-	TAINTED_GIVE_HEART=1 TAINTED_HISTORY=$(HISTORY) $(BUILD)/tc-core < compiler.tainted > $@
+	AMAE_GIVE_HEART=1 AMAE_HISTORY=$(HISTORY) $(BUILD)/tc-core < compiler.amae > $@
 
 $(BUILD)/gen3.c: $(BUILD)/gen2
-	TAINTED_GIVE_HEART=1 TAINTED_HISTORY=$(HISTORY) $(BUILD)/gen2 < compiler.tainted > $@
+	AMAE_GIVE_HEART=1 AMAE_HISTORY=$(HISTORY) $(BUILD)/gen2 < compiler.amae > $@
 
 $(BUILD)/gen%: $(BUILD)/gen%.c $(RUNTIME)
-	$(CC) $(CFLAGS) -Iruntime $< runtime/tainted.c -o $@ -lm
+	$(CC) $(CFLAGS) -Iruntime $< runtime/amae.c -o $@ -lm
 
-$(BUILD)/recognize: tools/recognize.tainted $(BUILD)/tc-core
-	TAINTED_CORE=$(BUILD)/tc-core bin/tc tools/recognize.tainted -o $@
+$(BUILD)/recognize: tools/recognize.amae $(BUILD)/tc-core
+	AMAE_CORE=$(BUILD)/tc-core bin/tc tools/recognize.amae -o $@
 
 # There is no fixed point: every generation remembers the ones before it.
 # Two generations are the same compiler if they recognize each other: on
 # every recorded program, and on the compiler itself, they say the same
 # thing, memory aside.
 bootstrap: $(BUILD)/gen2 $(BUILD)/gen3 $(BUILD)/recognize
-	FIRST=$(BUILD)/gen2 SECOND=$(BUILD)/gen3 PROGRAMS="compiler.tainted $$(ls tests/golden/*/prog.tainted | tr '\n' ' ')" $(BUILD)/recognize
+	FIRST=$(BUILD)/gen2 SECOND=$(BUILD)/gen3 PROGRAMS="compiler.amae $$(ls tests/golden/*/prog.amae | tr '\n' ' ')" $(BUILD)/recognize
 	$(BUILD)/gen3 --lineage | tail -2
 
-$(BUILD)/ddc: tools/ddc.tainted $(BUILD)/tc-core
-	TAINTED_CORE=$(BUILD)/tc-core bin/tc tools/ddc.tainted -o $@
+$(BUILD)/ddc: tools/ddc.amae $(BUILD)/tc-core
+	AMAE_CORE=$(BUILD)/tc-core bin/tc tools/ddc.amae -o $@
 
 # Wheeler's diverse double-compiling: the seed and the living generation each
 # build the compiler, and their children must say the same of it.
 ddc: $(BUILD)/ddc $(BUILD)/seed $(BUILD)/tc-core
 	mkdir -p $(BUILD)/ddc-work
-	ELDER=$(BUILD)/seed YOUNGER=$(BUILD)/tc-core TAINTED_HOME=$(CURDIR) WORK=$(abspath $(BUILD))/ddc-work $(BUILD)/ddc
+	ELDER=$(BUILD)/seed YOUNGER=$(BUILD)/tc-core AMAE_HOME=$(CURDIR) WORK=$(abspath $(BUILD))/ddc-work $(BUILD)/ddc
 
 seed: bootstrap
 	cp $(BUILD)/gen3.c boot/tc.c

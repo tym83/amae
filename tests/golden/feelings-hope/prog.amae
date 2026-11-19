@@ -1,0 +1,13 @@
+# Hope: a keeps waiting for b, who is busy with nobody.
+
+written by "amae"
+soul a
+    meet b
+    hope for b
+    hear soul named "b" into x
+end
+
+soul b
+    meet a
+    hear soul named "a" into y
+end

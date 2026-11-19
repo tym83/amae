@@ -1,0 +1,11 @@
+written by "amae"
+
+soul counter
+    let n = 1
+    let f = 1
+    while n <= 20
+        f = f * n
+        say n + "! = " + f
+        n = n + 1
+    end
+end

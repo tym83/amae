@@ -1,0 +1,34 @@
+# Some things anyone trusted may read; some only a heart given lets you near.
+
+written by "amae"
+soul ana
+    meet ben
+    meet cal
+    note "song" = "Tainted Love"
+    note "fear" = "the sea"
+    guard "fear"
+    warm to ben
+    warm to cal
+    give heart to ben
+    tell ben "go on"
+    tell cal "go on"
+end
+
+soul ben
+    meet ana
+    hear ana into go
+    say "ben reads ana's song: " + note "song" of ana
+    say "ben crosses ana's boundary: " + note "fear" of ana
+    say "crossings with ana: " + crossings with ana
+end
+
+soul cal
+    meet ana
+    hear ana into go
+    say "cal reads ana's song: " + note "song" of ana
+    endure
+        say note "fear" of ana
+    when it hurts as pain
+        say "cal: " + pain
+    end
+end

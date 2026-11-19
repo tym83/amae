@@ -1,14 +1,14 @@
-# Taintednetes inside the cluster it schedules: the scheduler, the parting
-# operator and counsel, compiled from Tainted into ghcr.io/tym83/tainted,
+# Amaenetes inside the cluster it schedules: the scheduler, the parting
+# operator and counsel, compiled from Amae into ghcr.io/tym83/amae,
 # run as pods.
 #
-#   kubectl --context <ctx> create namespace taintednetes
+#   kubectl --context <ctx> create namespace amaenetes
 #   kubectl --context <ctx> apply -f kube/deploy.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: taintednetes-kubeconfig
-  namespace: taintednetes
+  name: amaenetes-kubeconfig
+  namespace: amaenetes
 data:
   config: |
     apiVersion: v1
@@ -31,18 +31,18 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: scheduler
-  namespace: taintednetes
+  namespace: amaenetes
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: parting
-  namespace: taintednetes
+  namespace: amaenetes
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: taintednetes-scheduler
+  name: amaenetes-scheduler
 rules:
   - apiGroups: [""]
     resources: [pods, nodes, namespaces]
@@ -54,7 +54,7 @@ rules:
     resources: [events]
     verbs: [create]
   # Trust in nodes, from the relationships counsel keeps.
-  - apiGroups: [tainted.io]
+  - apiGroups: [amae.io]
     resources: [relationships]
     verbs: [get, list]
   # Preemption: letting pods of lower priority go, and promising the node.
@@ -68,39 +68,39 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: taintednetes-scheduler
-roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-scheduler}
+  name: amaenetes-scheduler
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: amaenetes-scheduler}
 subjects:
-  - {kind: ServiceAccount, name: scheduler, namespace: taintednetes}
+  - {kind: ServiceAccount, name: scheduler, namespace: amaenetes}
 ---
 # The lease through which the copies of the scheduler agree who binds.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: taintednetes-scheduler-lease
-  namespace: taintednetes
+  name: amaenetes-scheduler-lease
+  namespace: amaenetes
 rules:
   - apiGroups: [coordination.k8s.io]
     resources: [leases]
     verbs: [create]
   - apiGroups: [coordination.k8s.io]
     resources: [leases]
-    resourceNames: [taintednetes]
+    resourceNames: [amaenetes]
     verbs: [get, update]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: taintednetes-scheduler-lease
-  namespace: taintednetes
-roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: taintednetes-scheduler-lease}
+  name: amaenetes-scheduler-lease
+  namespace: amaenetes
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: amaenetes-scheduler-lease}
 subjects:
-  - {kind: ServiceAccount, name: scheduler, namespace: taintednetes}
+  - {kind: ServiceAccount, name: scheduler, namespace: amaenetes}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: taintednetes-parting
+  name: amaenetes-parting
 rules:
   - apiGroups: [""]
     resources: [nodes]
@@ -115,24 +115,24 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: taintednetes-parting
-roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-parting}
+  name: amaenetes-parting
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: amaenetes-parting}
 subjects:
-  - {kind: ServiceAccount, name: parting, namespace: taintednetes}
+  - {kind: ServiceAccount, name: parting, namespace: amaenetes}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: scheduler
-  namespace: taintednetes
+  namespace: amaenetes
 spec:
   # Two copies: the one holding the lease binds, the other waits to take over.
   replicas: 2
   selector:
-    matchLabels: {app: taintednetes-scheduler}
+    matchLabels: {app: amaenetes-scheduler}
   template:
     metadata:
-      labels: {app: taintednetes-scheduler}
+      labels: {app: amaenetes-scheduler}
     spec:
       serviceAccountName: scheduler
       affinity:
@@ -142,69 +142,69 @@ spec:
               podAffinityTerm:
                 topologyKey: kubernetes.io/hostname
                 labelSelector:
-                  matchLabels: {app: taintednetes-scheduler}
+                  matchLabels: {app: amaenetes-scheduler}
       containers:
         - name: scheduler
-          image: ghcr.io/tym83/tainted:latest
+          image: ghcr.io/tym83/amae:latest
           imagePullPolicy: Always
           # A scheduler lives as long as its cluster: no patience limit.
-          command: [/opt/tainted/bin/taintednetes, --patience=0]
+          command: [/opt/amae/bin/amaenetes, --patience=0]
           env:
-            - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: KUBECONFIG, value: /etc/amaenetes/config}
             - {name: KUBE_CONTEXT, value: in-cluster}
-            - {name: TAINTEDNETES_INTERVAL, value: "5"}
-            - {name: TAINTEDNETES_LEASE, value: taintednetes/taintednetes}
+            - {name: AMAENETES_INTERVAL, value: "5"}
+            - {name: AMAENETES_LEASE, value: amaenetes/amaenetes}
             - name: HOSTNAME
               valueFrom: {fieldRef: {fieldPath: metadata.name}}
             - {name: HOME, value: /tmp}
           volumeMounts:
-            - {name: kubeconfig, mountPath: /etc/taintednetes}
+            - {name: kubeconfig, mountPath: /etc/amaenetes}
           resources:
             requests: {cpu: 50m, memory: 64Mi}
       volumes:
         - name: kubeconfig
-          configMap: {name: taintednetes-kubeconfig}
+          configMap: {name: amaenetes-kubeconfig}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: parting
-  namespace: taintednetes
+  namespace: amaenetes
 spec:
   replicas: 1
   strategy: {type: Recreate}
   selector:
-    matchLabels: {app: taintednetes-parting}
+    matchLabels: {app: amaenetes-parting}
   template:
     metadata:
-      labels: {app: taintednetes-parting}
+      labels: {app: amaenetes-parting}
     spec:
       serviceAccountName: parting
       containers:
         - name: parting
-          image: ghcr.io/tym83/tainted:latest
+          image: ghcr.io/tym83/amae:latest
           imagePullPolicy: Always
-          command: [/opt/tainted/bin/parting, --patience=0]
+          command: [/opt/amae/bin/parting, --patience=0]
           env:
-            - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: KUBECONFIG, value: /etc/amaenetes/config}
             - {name: KUBE_CONTEXT, value: in-cluster}
             - {name: PARTING_INTERVAL, value: "5"}
             - {name: HOME, value: /tmp}
           volumeMounts:
-            - {name: kubeconfig, mountPath: /etc/taintednetes}
+            - {name: kubeconfig, mountPath: /etc/amaenetes}
           resources:
             requests: {cpu: 50m, memory: 64Mi}
       volumes:
         - name: kubeconfig
-          configMap: {name: taintednetes-kubeconfig}
+          configMap: {name: amaenetes-kubeconfig}
 ---
 # What a workload and a node have lived through together, kept by counsel.
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: relationships.tainted.io
+  name: relationships.amae.io
 spec:
-  group: tainted.io
+  group: amae.io
   scope: Namespaced
   names: {plural: relationships, singular: relationship, kind: Relationship, shortNames: [rel]}
   versions:
@@ -259,17 +259,17 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: counsel
-  namespace: taintednetes
+  namespace: amaenetes
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: taintednetes-counsel
+  name: amaenetes-counsel
 rules:
   - apiGroups: [""]
     resources: [pods, nodes]
     verbs: [get, list]
-  - apiGroups: [tainted.io]
+  - apiGroups: [amae.io]
     resources: [relationships]
     verbs: [get, list, create, update]
   # Divorce: a pod parts from its node by eviction, and is told why.
@@ -280,41 +280,41 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: taintednetes-counsel
-roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-counsel}
+  name: amaenetes-counsel
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: amaenetes-counsel}
 subjects:
-  - {kind: ServiceAccount, name: counsel, namespace: taintednetes}
+  - {kind: ServiceAccount, name: counsel, namespace: amaenetes}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: counsel
-  namespace: taintednetes
+  namespace: amaenetes
 spec:
   replicas: 1
   strategy: {type: Recreate}
   selector:
-    matchLabels: {app: taintednetes-counsel}
+    matchLabels: {app: amaenetes-counsel}
   template:
     metadata:
-      labels: {app: taintednetes-counsel}
+      labels: {app: amaenetes-counsel}
     spec:
       serviceAccountName: counsel
       containers:
         - name: counsel
-          image: ghcr.io/tym83/tainted:latest
+          image: ghcr.io/tym83/amae:latest
           imagePullPolicy: Always
-          command: [/opt/tainted/bin/counsel, --patience=0]
+          command: [/opt/amae/bin/counsel, --patience=0]
           env:
-            - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: KUBECONFIG, value: /etc/amaenetes/config}
             - {name: KUBE_CONTEXT, value: in-cluster}
             - {name: COUNSEL_INTERVAL, value: "10"}
             - {name: COUNSEL_DIVORCE, value: "1"}
             - {name: HOME, value: /tmp}
           volumeMounts:
-            - {name: kubeconfig, mountPath: /etc/taintednetes}
+            - {name: kubeconfig, mountPath: /etc/amaenetes}
           resources:
             requests: {cpu: 50m, memory: 64Mi}
       volumes:
         - name: kubeconfig
-          configMap: {name: taintednetes-kubeconfig}
+          configMap: {name: amaenetes-kubeconfig}

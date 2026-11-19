@@ -1,0 +1,17 @@
+# Two souls meet for the first time and say a few words.
+
+written by "amae"
+soul alice
+    meet bob
+    tell bob "hello"
+    hear bob into reply
+    say "alice heard: " + reply
+    say "alice and bob: " + bond with bob
+end
+
+soul bob
+    meet alice
+    hear alice into greeting
+    tell alice "hello to you"
+    say "bob heard: " + greeting
+end

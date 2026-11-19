@@ -222,8 +222,8 @@
 #define J74_24e 155
 #define J74_23e 161
 #define J74_27e 175
-#define J74_26e 178
-#define J74_25e 197
+#define J74_26e 179
+#define J74_25e 198
 #define J75_1e 2
 #define J76_3e 7
 #define J76_2e 9
@@ -235,27 +235,28 @@
 #define J76_8e 44
 #define J76_9e 49
 #define J77_2e 10
-#define J77_3e 12
-#define J77_1e 17
-#define J77_4e 23
-#define J77_5e 29
-#define J77_7e 35
-#define J77_6e 40
-#define J77_8e 46
-#define J77_9e 50
-#define J77_10e 53
-#define J77_9x 53
-#define J77_8x 53
-#define J77_11e 55
-#define J77_13e 93
-#define J77_12e 93
-#define J77_16e 104
-#define J77_15e 108
-#define J77_14e 108
-#define J77_17e 115
-#define J77_18e 118
-#define J77_19e 120
-#define J77_20e 122
+#define J77_4e 14
+#define J77_3e 15
+#define J77_1e 18
+#define J77_5e 24
+#define J77_6e 30
+#define J77_8e 36
+#define J77_7e 41
+#define J77_9e 47
+#define J77_10e 51
+#define J77_11e 54
+#define J77_10x 54
+#define J77_9x 54
+#define J77_12e 56
+#define J77_14e 94
+#define J77_13e 94
+#define J77_17e 105
+#define J77_16e 109
+#define J77_15e 109
+#define J77_18e 116
+#define J77_19e 119
+#define J77_20e 121
+#define J77_21e 123
 #define J78_1e 2
 #define J78_2e 5
 #define J78_3e 8
@@ -289,13 +290,12 @@
 #define J82_10e 45
 #define J83_2e 5
 #define J83_1e 7
-#define J84_2e 3
-#define J84_1e 4
+#define J84_1e 2
+#define J84_2e 7
 #define J84_3e 9
-#define J84_4e 11
-#define J84_7e 18
-#define J84_6e 21
-#define J84_5e 23
+#define J84_6e 16
+#define J84_5e 19
+#define J84_4e 21
 #define J85_1e 2
 #define J85_2e 7
 #define J86_4e 7
@@ -332,8 +332,8 @@
 #define J91_7e 43
 #define J91_8e 56
 #define J91_9e 64
-/* Compiled from Tainted by compiler.tainted. */
-#include "tainted.h"
+/* Compiled from Amae by compiler.amae. */
+#include "amae.h"
 #define RT_remember 10
 #define RT_memory_path 7
 #define RT_recollect 8
@@ -453,8 +453,8 @@ static Value E4(World *w, Soul *s) {
 static const char *const N0[] = {"text", 0};
 static const int P0[] = {0, -1};
 static const Ins I0[] = {
-    {.op=OP_NOTE, .line=21, .a=E2, .b=E1, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=22, .a=E4, .b=E3, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=23, .a=E2, .b=E1, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=24, .a=E4, .b=E3, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S0(World *w, Soul *s) {
@@ -494,8 +494,8 @@ static Value E8(World *w, Soul *s) {
 static const char *const N1[] = {"text", 0};
 static const int P1[] = {0, -1};
 static const Ins I1[] = {
-    {.op=OP_NOTE, .line=26, .a=E6, .b=E5, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=27, .a=E8, .b=E7, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=28, .a=E6, .b=E5, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=29, .a=E8, .b=E7, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S1(World *w, Soul *s) {
@@ -535,8 +535,8 @@ static Value E12(World *w, Soul *s) {
 static const char *const N2[] = {"text", 0};
 static const int P2[] = {0, -1};
 static const Ins I2[] = {
-    {.op=OP_NOTE, .line=31, .a=E10, .b=E9, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=32, .a=E12, .b=E11, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=33, .a=E10, .b=E9, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=34, .a=E12, .b=E11, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S2(World *w, Soul *s) {
@@ -576,8 +576,8 @@ static Value E16(World *w, Soul *s) {
 static const char *const N3[] = {"text", 0};
 static const int P3[] = {0, -1};
 static const Ins I3[] = {
-    {.op=OP_NOTE, .line=36, .a=E14, .b=E13, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=37, .a=E16, .b=E15, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=38, .a=E14, .b=E13, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=39, .a=E16, .b=E15, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S3(World *w, Soul *s) {
@@ -617,8 +617,8 @@ static Value E20(World *w, Soul *s) {
 static const char *const N4[] = {"text", 0};
 static const int P4[] = {0, -1};
 static const Ins I4[] = {
-    {.op=OP_NOTE, .line=41, .a=E18, .b=E17, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=42, .a=E20, .b=E19, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=43, .a=E18, .b=E17, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=44, .a=E20, .b=E19, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S4(World *w, Soul *s) {
@@ -669,10 +669,10 @@ static Value E24(World *w, Soul *s) {
 static const char *const N5[] = {"j", "place_name", 0};
 static const int P5[] = {0, -1};
 static const Ins I5[] = {
-    {.op=OP_LET, .line=47, .a=E21, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=48, .a=E22, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=49, .a=E23, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=51, .a=E24, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=49, .a=E21, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=50, .a=E22, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=51, .a=E23, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=53, .a=E24, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S5(World *w, Soul *s) {
@@ -725,10 +725,10 @@ static Value E29(World *w, Soul *s) {
 static const char *const N6[] = {"message", 0};
 static const int P6[] = {0, -1};
 static const Ins I6[] = {
-    {.op=OP_CRY, .line=57, .a=E25, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=58, .a=E26, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=59, .var=-1, .var2=-1, .unit=RT_remember, .name="remember", .nargs=2, .args=A6_2},
-    {.op=OP_GOODBYE, .line=61, .a=E29, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_CRY, .line=59, .a=E25, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=60, .a=E26, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=61, .var=-1, .var2=-1, .unit=RT_remember, .name="remember", .nargs=2, .args=A6_2},
+    {.op=OP_GOODBYE, .line=63, .a=E29, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S6(World *w, Soul *s) {
@@ -743,7 +743,7 @@ static int S6(World *w, Soul *s) {
 }
 static Value E30(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("TAINTED_MEMORY");
+    Value t1 = t_cstr("AMAE_MEMORY");
     Value t2 = t_env(w, t1);
     return t2;
 }
@@ -758,7 +758,7 @@ static Value E32(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("HOME");
     Value t2 = t_env(w, t1);
-    Value t3 = t_cstr("/.tainted/compiler.json");
+    Value t3 = t_cstr("/.amae/compiler.json");
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
@@ -770,10 +770,10 @@ static Value E33(World *w, Soul *s) {
 static const char *const N7[] = {"path", 0};
 static const int P7[] = {-1};
 static const Ins I7[] = {
-    {.op=OP_LET, .line=68, .a=E30, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=69, .a=E31, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=70, .a=E32, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=72, .a=E33, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=70, .a=E30, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=71, .a=E31, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=72, .a=E32, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=74, .a=E33, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S7(World *w, Soul *s) {
@@ -827,14 +827,14 @@ static Value E38(World *w, Soul *s) {
 static const char *const N8[] = {"path", "known", "text", "pain", 0};
 static const int P8[] = {-1};
 static const Ins I8[] = {
-    {.op=OP_PERFORM, .line=76, .var=0, .var2=-1, .unit=RT_memory_path, .name="memory_path"},
-    {.op=OP_LET, .line=77, .a=E34, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_ENDURE, .line=78, .var=J8_1s, .var2=-1, .unit=-1, .jump=J8_1h, .until=J8_1u},
-    {.op=OP_READ, .line=79, .a=E35, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=80, .a=E36, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_ENDURED, .line=81, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=82, .a=E37, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=84, .a=E38, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=78, .var=0, .var2=-1, .unit=RT_memory_path, .name="memory_path"},
+    {.op=OP_LET, .line=79, .a=E34, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_ENDURE, .line=80, .var=J8_1s, .var2=-1, .unit=-1, .jump=J8_1h, .until=J8_1u},
+    {.op=OP_READ, .line=81, .a=E35, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=82, .a=E36, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_ENDURED, .line=83, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=84, .a=E37, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=86, .a=E38, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S8(World *w, Soul *s) {
@@ -873,7 +873,7 @@ static Value E41(World *w, Soul *s) {
 }
 static Value E42(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: the compiler could not remember: ");
+    Value t1 = t_cstr("amae: the compiler could not remember: ");
     Value t2 = t_var(w, s, 3);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
@@ -881,12 +881,12 @@ static Value E42(World *w, Soul *s) {
 static const char *const N9[] = {"known", "path", "nothing", "pain", 0};
 static const int P9[] = {0, -1};
 static const Ins I9[] = {
-    {.op=OP_PERFORM, .line=88, .var=1, .var2=-1, .unit=RT_memory_path, .name="memory_path"},
-    {.op=OP_ENDURE, .line=89, .var=J9_1s, .var2=-1, .unit=-1, .jump=J9_1h, .until=J9_1u},
-    {.op=OP_ASK, .line=90, .a=E39, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_WRITE, .line=91, .a=E40, .b=E41, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_ENDURED, .line=92, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_CRY, .line=93, .a=E42, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=90, .var=1, .var2=-1, .unit=RT_memory_path, .name="memory_path"},
+    {.op=OP_ENDURE, .line=91, .var=J9_1s, .var2=-1, .unit=-1, .jump=J9_1h, .until=J9_1u},
+    {.op=OP_ASK, .line=92, .a=E39, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_WRITE, .line=93, .a=E40, .b=E41, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_ENDURED, .line=94, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_CRY, .line=95, .a=E42, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S9(World *w, Soul *s) {
@@ -920,9 +920,9 @@ static const Expr A10_2[] = {E45};
 static const char *const N10[] = {"what", "message", "known", 0};
 static const int P10[] = {0, 1, -1};
 static const Ins I10[] = {
-    {.op=OP_PERFORM, .line=98, .var=2, .var2=-1, .unit=RT_recollect, .name="recollect"},
-    {.op=OP_PUT, .line=99, .a=E43, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=100, .var=-1, .var2=-1, .unit=RT_keep_memory, .name="keep_memory", .nargs=1, .args=A10_2},
+    {.op=OP_PERFORM, .line=100, .var=2, .var2=-1, .unit=RT_recollect, .name="recollect"},
+    {.op=OP_PUT, .line=101, .a=E43, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=102, .var=-1, .var2=-1, .unit=RT_keep_memory, .name="keep_memory", .nargs=1, .args=A10_2},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S10(World *w, Soul *s) {
@@ -943,7 +943,7 @@ static Value E46(World *w, Soul *s) {
 static const Expr A11_0[] = {E46};
 static Value E47(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: ");
+    Value t1 = t_cstr("amae: ");
     Value t2 = t_var(w, s, 1);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     Value t4 = t_cstr(": ");
@@ -956,8 +956,8 @@ static const Expr A11_1[] = {E47};
 static const char *const N11[] = {"message", "at", 0};
 static const int P11[] = {0, -1};
 static const Ins I11[] = {
-    {.op=OP_PERFORM, .line=104, .var=1, .var2=-1, .unit=RT_where, .name="where", .nargs=1, .args=A11_0},
-    {.op=OP_PERFORM, .line=105, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A11_1},
+    {.op=OP_PERFORM, .line=106, .var=1, .var2=-1, .unit=RT_where, .name="where", .nargs=1, .args=A11_0},
+    {.op=OP_PERFORM, .line=107, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A11_1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S11(World *w, Soul *s) {
@@ -970,7 +970,7 @@ static int S11(World *w, Soul *s) {
 }
 static Value E48(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: ");
+    Value t1 = t_cstr("amae: ");
     Value t2 = t_var(w, s, 0);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
@@ -979,7 +979,7 @@ static const Expr A12_0[] = {E48};
 static const char *const N12[] = {"message", 0};
 static const int P12[] = {0, -1};
 static const Ins I12[] = {
-    {.op=OP_PERFORM, .line=109, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A12_0},
+    {.op=OP_PERFORM, .line=111, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A12_0},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S12(World *w, Soul *s) {
@@ -1113,25 +1113,25 @@ static Value E64(World *w, Soul *s) {
 static const char *const N13[] = {"raw", "made", "i", "n", "c", "d", 0};
 static const int P13[] = {0, -1};
 static const Ins I13[] = {
-    {.op=OP_LET, .line=116, .a=E49, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=117, .a=E50, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=118, .a=E51, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=119, .a=E52, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=120, .a=E53, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=121, .a=E54, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=122, .a=E55, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=123, .a=E56, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=124, .a=E57, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=123, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=126, .a=E58, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=127, .a=E59, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=126, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=129, .a=E60, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=132, .a=E61, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=134, .a=E62, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=135, .a=E63, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=119, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=137, .a=E64, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=118, .a=E49, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=119, .a=E50, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=120, .a=E51, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=121, .a=E52, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=122, .a=E53, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=123, .a=E54, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=124, .a=E55, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=125, .a=E56, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=126, .a=E57, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=125, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=128, .a=E58, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=129, .a=E59, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=128, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=131, .a=E60, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=134, .a=E61, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=136, .a=E62, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=137, .a=E63, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=121, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=139, .a=E64, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S13(World *w, Soul *s) {
@@ -1252,19 +1252,19 @@ static Value E76(World *w, Soul *s) {
 static const char *const N14[] = {"text", "made", "i", "n", "c", 0};
 static const int P14[] = {0, -1};
 static const Ins I14[] = {
-    {.op=OP_LET, .line=142, .a=E65, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=143, .a=E66, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=144, .a=E67, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=145, .a=E68, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=146, .a=E69, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=147, .a=E70, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=148, .a=E71, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=150, .a=E72, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=151, .a=E73, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=153, .a=E74, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=154, .a=E75, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=145, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=156, .a=E76, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=144, .a=E65, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=145, .a=E66, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=146, .a=E67, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=147, .a=E68, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=148, .a=E69, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=149, .a=E70, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=150, .a=E71, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=152, .a=E72, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=153, .a=E73, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=155, .a=E74, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=156, .a=E75, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=147, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=158, .a=E76, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S14(World *w, Soul *s) {
@@ -1303,7 +1303,7 @@ static Value E77(World *w, Soul *s) {
 static const char *const N15[] = {"c", 0};
 static const int P15[] = {0, -1};
 static const Ins I15[] = {
-    {.op=OP_GIVEBACK, .line=160, .a=E77, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=162, .a=E77, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S15(World *w, Soul *s) {
@@ -1351,7 +1351,7 @@ static Value E78(World *w, Soul *s) {
 static const char *const N16[] = {"c", 0};
 static const int P16[] = {0, -1};
 static const Ins I16[] = {
-    {.op=OP_GIVEBACK, .line=164, .a=E78, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=166, .a=E78, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S16(World *w, Soul *s) {
@@ -1419,10 +1419,10 @@ static Value E85(World *w, Soul *s) {
 static const char *const N17[] = {"what", "value", "j", 0};
 static const int P17[] = {0, 1, -1};
 static const Ins I17[] = {
-    {.op=OP_NOTE, .line=170, .a=E80, .b=E79, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=171, .a=E81, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=172, .a=E83, .b=E82, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=173, .a=E85, .b=E84, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=172, .a=E80, .b=E79, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=173, .a=E81, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=174, .a=E83, .b=E82, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=175, .a=E85, .b=E84, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S17(World *w, Soul *s) {
@@ -1467,9 +1467,9 @@ static Value E88(World *w, Soul *s) {
 static const char *const N18[] = {0};
 static const int P18[] = {-1};
 static const Ins I18[] = {
-    {.op=OP_JZ, .line=177, .a=E86, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=178, .a=E87, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=180, .a=E88, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=179, .a=E86, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=180, .a=E87, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=182, .a=E88, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S18(World *w, Soul *s) {
@@ -1483,7 +1483,7 @@ static int S18(World *w, Soul *s) {
 }
 static Value E89(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: ");
+    Value t1 = t_cstr("amae: ");
     Value t2 = t_var(w, s, 0);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     Value t4 = t_cstr(": cannot read '");
@@ -1504,8 +1504,8 @@ static const Expr A19_1[] = {E89};
 static const char *const N19[] = {"at", 0};
 static const int P19[] = {-1};
 static const Ins I19[] = {
-    {.op=OP_PERFORM, .line=184, .var=0, .var2=-1, .unit=RT_lex_where, .name="lex_where"},
-    {.op=OP_PERFORM, .line=185, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A19_1},
+    {.op=OP_PERFORM, .line=186, .var=0, .var2=-1, .unit=RT_lex_where, .name="lex_where"},
+    {.op=OP_PERFORM, .line=187, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A19_1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S19(World *w, Soul *s) {
@@ -1733,7 +1733,7 @@ static Value E112(World *w, Soul *s) {
 }
 static Value E113(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: ");
+    Value t1 = t_cstr("amae: ");
     Value t2 = t_var(w, s, 6);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     Value t4 = t_cstr(": ");
@@ -1769,34 +1769,34 @@ static Value E117(World *w, Soul *s) {
 static const char *const N20[] = {"p", "q", "more", "digits", "fraction", "value", "at", 0};
 static const int P20[] = {-1};
 static const Ins I20[] = {
-    {.op=OP_LET, .line=189, .a=E90, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=190, .a=E91, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=191, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_2},
-    {.op=OP_JZ, .line=192, .a=E93, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=193, .a=E94, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=194, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_5},
-    {.op=OP_JMP, .line=192, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=196, .a=E96, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=197, .var=4, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_8},
-    {.op=OP_JZ, .line=198, .a=E98, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=199, .a=E99, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=200, .a=E100, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=201, .a=E101, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=202, .a=E102, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=203, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_14},
-    {.op=OP_JMP, .line=201, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=205, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A20_16},
-    {.op=OP_NOTE, .line=206, .a=E107, .b=E106, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=207, .a=E108, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=209, .a=E109, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=210, .a=E110, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=211, .a=E111, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=210, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=213, .a=E112, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=214, .var=6, .var2=-1, .unit=RT_lex_where, .name="lex_where"},
-    {.op=OP_PERFORM, .line=215, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A20_25},
-    {.op=OP_PERFORM, .line=217, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A20_26},
-    {.op=OP_NOTE, .line=218, .a=E117, .b=E116, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=191, .a=E90, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=192, .a=E91, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=193, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_2},
+    {.op=OP_JZ, .line=194, .a=E93, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=195, .a=E94, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=196, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_5},
+    {.op=OP_JMP, .line=194, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=198, .a=E96, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=199, .var=4, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_8},
+    {.op=OP_JZ, .line=200, .a=E98, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=201, .a=E99, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=202, .a=E100, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=203, .a=E101, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=204, .a=E102, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=205, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A20_14},
+    {.op=OP_JMP, .line=203, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=207, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A20_16},
+    {.op=OP_NOTE, .line=208, .a=E107, .b=E106, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=209, .a=E108, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=211, .a=E109, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=212, .a=E110, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=213, .a=E111, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=212, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=215, .a=E112, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=216, .var=6, .var2=-1, .unit=RT_lex_where, .name="lex_where"},
+    {.op=OP_PERFORM, .line=217, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A20_25},
+    {.op=OP_PERFORM, .line=219, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A20_26},
+    {.op=OP_NOTE, .line=220, .a=E117, .b=E116, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S20(World *w, Soul *s) {
@@ -1961,26 +1961,26 @@ static Value E134(World *w, Soul *s) {
 static const char *const N21[] = {"q", "n", "closed", "c", "value", 0};
 static const int P21[] = {-1};
 static const Ins I21[] = {
-    {.op=OP_LET, .line=222, .a=E118, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=223, .a=E119, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=224, .a=E120, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=225, .a=E121, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=226, .a=E122, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=227, .a=E123, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=228, .a=E124, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=229, .var=-1, .var2=-1, .unit=RT_lex_fail, .name="lex_fail"},
-    {.op=OP_LET, .line=231, .a=E125, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=224, .a=E118, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=225, .a=E119, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=226, .a=E120, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=227, .a=E121, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=228, .a=E122, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=229, .a=E123, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=230, .a=E124, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=231, .var=-1, .var2=-1, .unit=RT_lex_fail, .name="lex_fail"},
+    {.op=OP_LET, .line=233, .a=E125, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=229, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=235, .a=E126, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=236, .a=E127, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=235, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=238, .a=E128, .var=0, .var2=-1, .unit=-1},
     {.op=OP_JMP, .line=227, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=233, .a=E126, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=234, .a=E127, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=233, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=236, .a=E128, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=225, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=240, .a=E129, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=241, .var=-1, .var2=-1, .unit=RT_lex_fail, .name="lex_fail"},
-    {.op=OP_PERFORM, .line=243, .var=4, .var2=-1, .unit=RT_unescape, .name="unescape", .nargs=1, .args=A21_17},
-    {.op=OP_PERFORM, .line=244, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A21_18},
-    {.op=OP_NOTE, .line=245, .a=E134, .b=E133, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=242, .a=E129, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=243, .var=-1, .var2=-1, .unit=RT_lex_fail, .name="lex_fail"},
+    {.op=OP_PERFORM, .line=245, .var=4, .var2=-1, .unit=RT_unescape, .name="unescape", .nargs=1, .args=A21_17},
+    {.op=OP_PERFORM, .line=246, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A21_18},
+    {.op=OP_NOTE, .line=247, .a=E134, .b=E133, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S21(World *w, Soul *s) {
@@ -2120,19 +2120,19 @@ static Value E148(World *w, Soul *s) {
 static const char *const N22[] = {"p", "q", "c", "a", "b", 0};
 static const int P22[] = {-1};
 static const Ins I22[] = {
-    {.op=OP_LET, .line=249, .a=E135, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=250, .a=E136, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=251, .a=E137, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=252, .var=3, .var2=-1, .unit=RT_letter, .name="letter", .nargs=1, .args=A22_3},
-    {.op=OP_PERFORM, .line=253, .var=4, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A22_4},
-    {.op=OP_JZ, .line=254, .a=E140, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=255, .a=E141, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=256, .a=E142, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=257, .var=3, .var2=-1, .unit=RT_letter, .name="letter", .nargs=1, .args=A22_8},
-    {.op=OP_PERFORM, .line=258, .var=4, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A22_9},
-    {.op=OP_JMP, .line=254, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=260, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A22_11},
-    {.op=OP_NOTE, .line=261, .a=E148, .b=E147, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=251, .a=E135, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=252, .a=E136, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=253, .a=E137, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=254, .var=3, .var2=-1, .unit=RT_letter, .name="letter", .nargs=1, .args=A22_3},
+    {.op=OP_PERFORM, .line=255, .var=4, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A22_4},
+    {.op=OP_JZ, .line=256, .a=E140, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=257, .a=E141, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=258, .a=E142, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=259, .var=3, .var2=-1, .unit=RT_letter, .name="letter", .nargs=1, .args=A22_8},
+    {.op=OP_PERFORM, .line=260, .var=4, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A22_9},
+    {.op=OP_JMP, .line=256, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=262, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A22_11},
+    {.op=OP_NOTE, .line=263, .a=E148, .b=E147, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S22(World *w, Soul *s) {
@@ -2376,35 +2376,35 @@ static Value E179(World *w, Soul *s) {
 static const char *const N23[] = {"p", "c", "isdigit", "isletter", "two", 0};
 static const int P23[] = {-1};
 static const Ins I23[] = {
-    {.op=OP_LET, .line=265, .a=E149, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=266, .a=E150, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=267, .a=E151, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=268, .a=E153, .b=E152, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=269, .a=E154, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=271, .a=E155, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=272, .a=E157, .b=E156, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=273, .a=E158, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=275, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A23_8},
-    {.op=OP_JZ, .line=276, .a=E160, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=277, .var=-1, .var2=-1, .unit=RT_lex_number, .name="lex_number"},
-    {.op=OP_GIVEBACK, .line=278, .a=E161, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=280, .a=E162, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=281, .var=-1, .var2=-1, .unit=RT_lex_string, .name="lex_string"},
-    {.op=OP_GIVEBACK, .line=282, .a=E163, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=284, .var=3, .var2=-1, .unit=RT_letter, .name="letter", .nargs=1, .args=A23_15},
-    {.op=OP_JZ, .line=285, .a=E165, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=286, .var=-1, .var2=-1, .unit=RT_lex_name, .name="lex_name"},
-    {.op=OP_GIVEBACK, .line=287, .a=E166, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=289, .a=E167, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=290, .a=E168, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=291, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A23_21},
-    {.op=OP_NOTE, .line=292, .a=E172, .b=E171, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=293, .a=E173, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=295, .a=E174, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=296, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A23_25},
-    {.op=OP_NOTE, .line=297, .a=E178, .b=E177, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=298, .a=E179, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=300, .var=-1, .var2=-1, .unit=RT_lex_fail, .name="lex_fail"},
+    {.op=OP_LET, .line=267, .a=E149, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=268, .a=E150, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=269, .a=E151, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=270, .a=E153, .b=E152, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=271, .a=E154, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=273, .a=E155, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=274, .a=E157, .b=E156, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=275, .a=E158, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=277, .var=2, .var2=-1, .unit=RT_digit, .name="digit", .nargs=1, .args=A23_8},
+    {.op=OP_JZ, .line=278, .a=E160, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=279, .var=-1, .var2=-1, .unit=RT_lex_number, .name="lex_number"},
+    {.op=OP_GIVEBACK, .line=280, .a=E161, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=282, .a=E162, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=283, .var=-1, .var2=-1, .unit=RT_lex_string, .name="lex_string"},
+    {.op=OP_GIVEBACK, .line=284, .a=E163, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=286, .var=3, .var2=-1, .unit=RT_letter, .name="letter", .nargs=1, .args=A23_15},
+    {.op=OP_JZ, .line=287, .a=E165, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=288, .var=-1, .var2=-1, .unit=RT_lex_name, .name="lex_name"},
+    {.op=OP_GIVEBACK, .line=289, .a=E166, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=291, .a=E167, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=292, .a=E168, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=293, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A23_21},
+    {.op=OP_NOTE, .line=294, .a=E172, .b=E171, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=295, .a=E173, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=297, .a=E174, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=298, .var=-1, .var2=-1, .unit=RT_token, .name="token", .nargs=2, .args=A23_25},
+    {.op=OP_NOTE, .line=299, .a=E178, .b=E177, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=300, .a=E179, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=302, .var=-1, .var2=-1, .unit=RT_lex_fail, .name="lex_fail"},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S23(World *w, Soul *s) {
@@ -2568,19 +2568,19 @@ static Value E199(World *w, Soul *s) {
 static const char *const N24[] = {"line", "n", 0};
 static const int P24[] = {0, 1, -1};
 static const Ins I24[] = {
-    {.op=OP_NOTE, .line=304, .a=E181, .b=E180, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=305, .a=E183, .b=E182, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=306, .a=E185, .b=E184, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=307, .a=E187, .b=E186, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=308, .a=E189, .b=E188, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=309, .a=E190, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=310, .var=-1, .var2=-1, .unit=RT_lex_one, .name="lex_one"},
-    {.op=OP_JMP, .line=309, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=312, .a=E191, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=313, .a=E193, .b=E192, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=314, .a=E195, .b=E194, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=315, .a=E197, .b=E196, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=316, .a=E199, .b=E198, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=306, .a=E181, .b=E180, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=307, .a=E183, .b=E182, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=308, .a=E185, .b=E184, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=309, .a=E187, .b=E186, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=310, .a=E189, .b=E188, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=311, .a=E190, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=312, .var=-1, .var2=-1, .unit=RT_lex_one, .name="lex_one"},
+    {.op=OP_JMP, .line=311, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=314, .a=E191, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=315, .a=E193, .b=E192, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=316, .a=E195, .b=E194, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=317, .a=E197, .b=E196, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=318, .a=E199, .b=E198, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S24(World *w, Soul *s) {
@@ -2638,9 +2638,9 @@ static Value E205(World *w, Soul *s) {
 static const char *const N25[] = {"j", 0};
 static const int P25[] = {0, -1};
 static const Ins I25[] = {
-    {.op=OP_NOTE, .line=323, .a=E201, .b=E200, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=324, .a=E203, .b=E202, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=325, .a=E205, .b=E204, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=325, .a=E201, .b=E200, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=326, .a=E203, .b=E202, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=327, .a=E205, .b=E204, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S25(World *w, Soul *s) {
@@ -2683,9 +2683,9 @@ static Value E208(World *w, Soul *s) {
 static const char *const N26[] = {0};
 static const int P26[] = {-1};
 static const Ins I26[] = {
-    {.op=OP_JZ, .line=329, .a=E206, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=330, .a=E207, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=332, .a=E208, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=331, .a=E206, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=332, .a=E207, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=334, .a=E208, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S26(World *w, Soul *s) {
@@ -2728,9 +2728,9 @@ static Value E211(World *w, Soul *s) {
 static const char *const N27[] = {0};
 static const int P27[] = {-1};
 static const Ins I27[] = {
-    {.op=OP_JZ, .line=336, .a=E209, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=337, .a=E210, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=339, .a=E211, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=338, .a=E209, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=339, .a=E210, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=341, .a=E211, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S27(World *w, Soul *s) {
@@ -2783,11 +2783,11 @@ static Value E217(World *w, Soul *s) {
 static const char *const N28[] = {"k", 0};
 static const int P28[] = {-1};
 static const Ins I28[] = {
-    {.op=OP_JZ, .line=343, .a=E212, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=344, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A28_1},
-    {.op=OP_LET, .line=346, .a=E214, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=347, .a=E216, .b=E215, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=348, .a=E217, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=345, .a=E212, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=346, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A28_1},
+    {.op=OP_LET, .line=348, .a=E214, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=349, .a=E216, .b=E215, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=350, .a=E217, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S28(World *w, Soul *s) {
@@ -2817,7 +2817,7 @@ static Value E218(World *w, Soul *s) {
 static const char *const N29[] = {"k", 0};
 static const int P29[] = {0, -1};
 static const Ins I29[] = {
-    {.op=OP_GIVEBACK, .line=352, .a=E218, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=354, .a=E218, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S29(World *w, Soul *s) {
@@ -2843,7 +2843,7 @@ static Value E219(World *w, Soul *s) {
 static const char *const N30[] = {"k", 0};
 static const int P30[] = {0, -1};
 static const Ins I30[] = {
-    {.op=OP_GIVEBACK, .line=356, .a=E219, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=358, .a=E219, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S30(World *w, Soul *s) {
@@ -2866,7 +2866,7 @@ static Value E220(World *w, Soul *s) {
 static const char *const N31[] = {"v", 0};
 static const int P31[] = {0, -1};
 static const Ins I31[] = {
-    {.op=OP_GIVEBACK, .line=360, .a=E220, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=362, .a=E220, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S31(World *w, Soul *s) {
@@ -2916,13 +2916,13 @@ static Value E226(World *w, Soul *s) {
 static const char *const N32[] = {"w", "pk", "pv", 0};
 static const int P32[] = {0, -1};
 static const Ins I32[] = {
-    {.op=OP_PERFORM, .line=364, .var=1, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_JZ, .line=365, .a=E221, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=366, .var=2, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
-    {.op=OP_JZ, .line=367, .a=E222, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=368, .a=E224, .b=E223, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=369, .a=E225, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=372, .a=E226, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=366, .var=1, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_JZ, .line=367, .a=E221, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=368, .var=2, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
+    {.op=OP_JZ, .line=369, .a=E222, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=370, .a=E224, .b=E223, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=371, .a=E225, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=374, .a=E226, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S32(World *w, Soul *s) {
@@ -2978,13 +2978,13 @@ static Value E232(World *w, Soul *s) {
 static const char *const N33[] = {"o", "pk", "pv", 0};
 static const int P33[] = {0, -1};
 static const Ins I33[] = {
-    {.op=OP_PERFORM, .line=376, .var=1, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_JZ, .line=377, .a=E227, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=378, .var=2, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
-    {.op=OP_JZ, .line=379, .a=E228, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=380, .a=E230, .b=E229, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=381, .a=E231, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=384, .a=E232, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=378, .var=1, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_JZ, .line=379, .a=E227, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=380, .var=2, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
+    {.op=OP_JZ, .line=381, .a=E228, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=382, .a=E230, .b=E229, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=383, .a=E231, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=386, .a=E232, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S33(World *w, Soul *s) {
@@ -3025,9 +3025,9 @@ static const Expr A34_2[] = {E235};
 static const char *const N34[] = {"w", "yes", 0};
 static const int P34[] = {0, -1};
 static const Ins I34[] = {
-    {.op=OP_PERFORM, .line=388, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A34_0},
-    {.op=OP_JZ, .line=389, .a=E234, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=390, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A34_2},
+    {.op=OP_PERFORM, .line=390, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A34_0},
+    {.op=OP_JZ, .line=391, .a=E234, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=392, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A34_2},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S34(World *w, Soul *s) {
@@ -3087,13 +3087,13 @@ static Value E241(World *w, Soul *s) {
 static const char *const N35[] = {"k", "kd", "v", "taken", 0};
 static const int P35[] = {-1};
 static const Ins I35[] = {
-    {.op=OP_PERFORM, .line=395, .var=0, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_PERFORM, .line=396, .var=1, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A35_1},
-    {.op=OP_PERFORM, .line=397, .var=2, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A35_2},
-    {.op=OP_PERFORM, .line=398, .var=3, .var2=-1, .unit=RT_reserved, .name="reserved", .nargs=1, .args=A35_3},
-    {.op=OP_JZ, .line=399, .a=E239, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=400, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A35_5},
-    {.op=OP_GIVEBACK, .line=402, .a=E241, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=397, .var=0, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_PERFORM, .line=398, .var=1, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A35_1},
+    {.op=OP_PERFORM, .line=399, .var=2, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A35_2},
+    {.op=OP_PERFORM, .line=400, .var=3, .var2=-1, .unit=RT_reserved, .name="reserved", .nargs=1, .args=A35_3},
+    {.op=OP_JZ, .line=401, .a=E239, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=402, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A35_5},
+    {.op=OP_GIVEBACK, .line=404, .a=E241, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S35(World *w, Soul *s) {
@@ -3146,12 +3146,12 @@ static Value E246(World *w, Soul *s) {
 static const char *const N36[] = {"k", "kd", "v", 0};
 static const int P36[] = {-1};
 static const Ins I36[] = {
-    {.op=OP_PERFORM, .line=407, .var=0, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_PERFORM, .line=408, .var=1, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A36_1},
-    {.op=OP_PERFORM, .line=409, .var=2, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A36_2},
-    {.op=OP_JZ, .line=410, .a=E244, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=411, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A36_4},
-    {.op=OP_GIVEBACK, .line=413, .a=E246, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=409, .var=0, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_PERFORM, .line=410, .var=1, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A36_1},
+    {.op=OP_PERFORM, .line=411, .var=2, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A36_2},
+    {.op=OP_JZ, .line=412, .a=E244, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=413, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A36_4},
+    {.op=OP_GIVEBACK, .line=415, .a=E246, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S36(World *w, Soul *s) {
@@ -3195,9 +3195,9 @@ static const Expr A37_2[] = {E249};
 static const char *const N37[] = {"v", 0};
 static const int P37[] = {-1};
 static const Ins I37[] = {
-    {.op=OP_JZ, .line=417, .a=E247, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=418, .var=0, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A37_1},
-    {.op=OP_PERFORM, .line=419, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A37_2},
+    {.op=OP_JZ, .line=419, .a=E247, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=420, .var=0, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A37_1},
+    {.op=OP_PERFORM, .line=421, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A37_2},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S37(World *w, Soul *s) {
@@ -3257,10 +3257,10 @@ static Value E254(World *w, Soul *s) {
 static const char *const N38[] = {"name", "slot", 0};
 static const int P38[] = {0, -1};
 static const Ins I38[] = {
-    {.op=OP_JZ, .line=427, .a=E250, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=428, .a=E252, .b=E251, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=430, .var=1, .var2=-1, .unit=RT_slot_for, .name="slot_for", .nargs=1, .args=A38_2},
-    {.op=OP_GIVEBACK, .line=431, .a=E254, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=429, .a=E250, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=430, .a=E252, .b=E251, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=432, .var=1, .var2=-1, .unit=RT_slot_for, .name="slot_for", .nargs=1, .args=A38_2},
+    {.op=OP_GIVEBACK, .line=433, .a=E254, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S38(World *w, Soul *s) {
@@ -3313,9 +3313,9 @@ static Value E258(World *w, Soul *s) {
 static const char *const N39[] = {"name", "slot", 0};
 static const int P39[] = {0, -1};
 static const Ins I39[] = {
-    {.op=OP_NOTE, .line=437, .a=E256, .b=E255, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=438, .var=1, .var2=-1, .unit=RT_slot_for, .name="slot_for", .nargs=1, .args=A39_1},
-    {.op=OP_GIVEBACK, .line=439, .a=E258, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=439, .a=E256, .b=E255, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=440, .var=1, .var2=-1, .unit=RT_slot_for, .name="slot_for", .nargs=1, .args=A39_1},
+    {.op=OP_GIVEBACK, .line=441, .a=E258, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S39(World *w, Soul *s) {
@@ -3407,13 +3407,13 @@ static Value E267(World *w, Soul *s) {
 static const char *const N40[] = {"name", "list", "at", 0};
 static const int P40[] = {0, -1};
 static const Ins I40[] = {
-    {.op=OP_LET, .line=443, .a=E259, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=444, .a=E260, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=445, .a=E261, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=446, .a=E262, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=448, .a=E264, .b=E263, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=449, .a=E266, .b=E265, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=450, .a=E267, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=445, .a=E259, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=446, .a=E260, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=447, .a=E261, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=448, .a=E262, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=450, .a=E264, .b=E263, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=451, .a=E266, .b=E265, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=452, .a=E267, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S40(World *w, Soul *s) {
@@ -3472,10 +3472,10 @@ static Value E272(World *w, Soul *s) {
 static const char *const N41[] = {"code", "t", 0};
 static const int P41[] = {0, -1};
 static const Ins I41[] = {
-    {.op=OP_NOTE, .line=456, .a=E269, .b=E268, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=457, .a=E270, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=458, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A41_2},
-    {.op=OP_GIVEBACK, .line=459, .a=E272, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=458, .a=E269, .b=E268, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=459, .a=E270, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=460, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A41_2},
+    {.op=OP_GIVEBACK, .line=461, .a=E272, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S41(World *w, Soul *s) {
@@ -3548,16 +3548,16 @@ static Value E282(World *w, Soul *s) {
 static const char *const N42[] = {"computed", "t", "name", 0};
 static const int P42[] = {-1};
 static const Ins I42[] = {
-    {.op=OP_PERFORM, .line=463, .var=0, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A42_0},
-    {.op=OP_JZ, .line=464, .a=E274, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=465, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A42_2},
-    {.op=OP_PERFORM, .line=466, .var=1, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_NOTE, .line=467, .a=E277, .b=E276, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=468, .a=E278, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=470, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_NOTE, .line=471, .a=E280, .b=E279, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=472, .var=1, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A42_8},
-    {.op=OP_GIVEBACK, .line=473, .a=E282, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=465, .var=0, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A42_0},
+    {.op=OP_JZ, .line=466, .a=E274, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=467, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A42_2},
+    {.op=OP_PERFORM, .line=468, .var=1, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_NOTE, .line=469, .a=E277, .b=E276, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=470, .a=E278, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=472, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_NOTE, .line=473, .a=E280, .b=E279, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=474, .var=1, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A42_8},
+    {.op=OP_GIVEBACK, .line=475, .a=E282, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S42(World *w, Soul *s) {
@@ -3647,11 +3647,11 @@ static Value E289(World *w, Soul *s) {
 static const char *const N43[] = {"sort", "u", 0};
 static const int P43[] = {0, -1};
 static const Ins I43[] = {
-    {.op=OP_LET, .line=481, .a=E283, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=482, .a=E284, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=483, .a=E286, .b=E285, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=484, .a=E287, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=486, .a=E289, .b=E288, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=483, .a=E283, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=484, .a=E284, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=485, .a=E286, .b=E285, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=486, .a=E287, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=488, .a=E289, .b=E288, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S43(World *w, Soul *s) {
@@ -4746,174 +4746,174 @@ static Value E429(World *w, Soul *s) {
 static const char *const N44[] = {"k", "kd", "v", "t", "empty", "more", "x", "closed", "key", "colon", "q", "which", "who", "idx", "theirs", "text", "feelings", "joins", "kinds", "at", "call", "a", "b", "taken", "slot", 0};
 static const int P44[] = {-1};
 static const Ins I44[] = {
-    {.op=OP_PERFORM, .line=490, .var=0, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_PERFORM, .line=491, .var=1, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A44_1},
-    {.op=OP_PERFORM, .line=492, .var=2, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A44_2},
-    {.op=OP_JZ, .line=493, .a=E292, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=494, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_4},
-    {.op=OP_GIVEBACK, .line=495, .a=E294, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=497, .a=E295, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=498, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_7},
-    {.op=OP_GIVEBACK, .line=499, .a=E297, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=501, .a=E298, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=502, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_10},
-    {.op=OP_PERFORM, .line=503, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_11},
-    {.op=OP_JZ, .line=504, .a=E301, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=505, .a=E302, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=506, .a=E303, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=507, .var=6, .var2=-1, .unit=RT_e_or, .name="e_or"},
-    {.op=OP_PERFORM, .line=508, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A44_16},
-    {.op=OP_PERFORM, .line=509, .var=5, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_17},
-    {.op=OP_JMP, .line=506, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=511, .var=7, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_19},
-    {.op=OP_JZ, .line=512, .a=E307, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=513, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_21},
-    {.op=OP_GIVEBACK, .line=516, .a=E309, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=518, .a=E310, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=519, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_24},
-    {.op=OP_PERFORM, .line=520, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_25},
-    {.op=OP_JZ, .line=521, .a=E313, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=522, .a=E314, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=523, .a=E315, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=524, .var=8, .var2=-1, .unit=RT_e_or, .name="e_or"},
-    {.op=OP_PERFORM, .line=525, .var=9, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_30},
-    {.op=OP_JZ, .line=526, .a=E317, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=527, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_32},
-    {.op=OP_PERFORM, .line=529, .var=6, .var2=-1, .unit=RT_e_or, .name="e_or"},
-    {.op=OP_PERFORM, .line=530, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A44_34},
-    {.op=OP_PERFORM, .line=531, .var=5, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_35},
-    {.op=OP_JMP, .line=523, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=533, .var=7, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_37},
-    {.op=OP_JZ, .line=534, .a=E322, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=535, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_39},
-    {.op=OP_GIVEBACK, .line=538, .a=E324, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=540, .a=E325, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=541, .var=10, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A44_42},
-    {.op=OP_PERFORM, .line=542, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_43},
-    {.op=OP_GIVEBACK, .line=543, .a=E328, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=545, .a=E329, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=546, .var=3, .var2=-1, .unit=RT_e_or, .name="e_or"},
-    {.op=OP_PERFORM, .line=547, .var=7, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_47},
-    {.op=OP_JZ, .line=548, .a=E331, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=549, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_49},
-    {.op=OP_GIVEBACK, .line=551, .a=E333, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=553, .a=E334, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=554, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_52},
-    {.op=OP_JZ, .line=556, .a=E336, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=557, .a=E337, .var=11, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=558, .a=E338, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=559, .a=E339, .var=11, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=561, .a=E340, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=562, .a=E341, .var=11, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=564, .a=E342, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=565, .a=E343, .var=11, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=567, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=568, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_62},
-    {.op=OP_GIVEBACK, .line=569, .a=E345, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=571, .a=E346, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=572, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_65},
-    {.op=OP_PERFORM, .line=573, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=574, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_67},
-    {.op=OP_GIVEBACK, .line=575, .a=E349, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=577, .a=E350, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=578, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_70},
-    {.op=OP_PERFORM, .line=579, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=580, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_72},
-    {.op=OP_GIVEBACK, .line=581, .a=E353, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=583, .a=E354, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=584, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_75},
-    {.op=OP_PERFORM, .line=585, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=586, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_77},
-    {.op=OP_GIVEBACK, .line=587, .a=E357, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=589, .a=E358, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=590, .var=13, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=591, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_81},
-    {.op=OP_PERFORM, .line=592, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=593, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_83},
-    {.op=OP_GIVEBACK, .line=594, .a=E361, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=596, .a=E362, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=597, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_86},
-    {.op=OP_GIVEBACK, .line=598, .a=E364, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=600, .a=E365, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=601, .var=8, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=602, .var=14, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A44_90},
-    {.op=OP_JZ, .line=603, .a=E367, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=604, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=605, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_93},
-    {.op=OP_GIVEBACK, .line=606, .a=E369, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=608, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_95},
-    {.op=OP_GIVEBACK, .line=609, .a=E371, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=611, .a=E372, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=612, .var=13, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=613, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_99},
-    {.op=OP_PERFORM, .line=614, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=615, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_101},
-    {.op=OP_GIVEBACK, .line=616, .a=E375, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=618, .a=E376, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=619, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_104},
-    {.op=OP_PERFORM, .line=620, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=621, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_106},
-    {.op=OP_GIVEBACK, .line=622, .a=E379, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=624, .a=E380, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=625, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_109},
-    {.op=OP_PERFORM, .line=626, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=627, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_111},
-    {.op=OP_PERFORM, .line=628, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=629, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_113},
-    {.op=OP_GIVEBACK, .line=630, .a=E384, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=632, .a=E385, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=633, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_116},
-    {.op=OP_GIVEBACK, .line=634, .a=E387, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=636, .a=E388, .var=16, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=637, .a=E389, .var=17, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=638, .a=E390, .var=18, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=639, .a=E391, .var=19, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=640, .a=E392, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=641, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_123},
-    {.op=OP_PERFORM, .line=642, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=643, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_125},
-    {.op=OP_GIVEBACK, .line=644, .a=E395, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=646, .a=E396, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=647, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_128},
-    {.op=OP_GIVEBACK, .line=648, .a=E398, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=650, .a=E399, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=651, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_131},
-    {.op=OP_GIVEBACK, .line=652, .a=E401, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=654, .a=E402, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=655, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_134},
-    {.op=OP_PERFORM, .line=656, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=657, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_136},
-    {.op=OP_GIVEBACK, .line=658, .a=E405, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=660, .a=E406, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=661, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_LET, .line=662, .a=E407, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=663, .a=E408, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=664, .a=E409, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=666, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_143},
-    {.op=OP_GIVEBACK, .line=667, .a=E411, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=669, .a=E412, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=670, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_146},
-    {.op=OP_PERFORM, .line=671, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=672, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_148},
-    {.op=OP_GIVEBACK, .line=673, .a=E415, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=675, .a=E416, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=676, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_151},
-    {.op=OP_PERFORM, .line=677, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=678, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_153},
-    {.op=OP_GIVEBACK, .line=679, .a=E419, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=681, .a=E420, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=682, .var=21, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=683, .var=22, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=684, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_158},
-    {.op=OP_PERFORM, .line=685, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=686, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_160},
-    {.op=OP_GIVEBACK, .line=687, .a=E423, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=689, .var=23, .var2=-1, .unit=RT_reserved, .name="reserved", .nargs=1, .args=A44_162},
-    {.op=OP_JZ, .line=690, .a=E425, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=691, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_164},
-    {.op=OP_PERFORM, .line=693, .var=24, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A44_165},
-    {.op=OP_PERFORM, .line=694, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_166},
-    {.op=OP_GIVEBACK, .line=695, .a=E429, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=492, .var=0, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_PERFORM, .line=493, .var=1, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A44_1},
+    {.op=OP_PERFORM, .line=494, .var=2, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A44_2},
+    {.op=OP_JZ, .line=495, .a=E292, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=496, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_4},
+    {.op=OP_GIVEBACK, .line=497, .a=E294, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=499, .a=E295, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=500, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_7},
+    {.op=OP_GIVEBACK, .line=501, .a=E297, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=503, .a=E298, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=504, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_10},
+    {.op=OP_PERFORM, .line=505, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_11},
+    {.op=OP_JZ, .line=506, .a=E301, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=507, .a=E302, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=508, .a=E303, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=509, .var=6, .var2=-1, .unit=RT_e_or, .name="e_or"},
+    {.op=OP_PERFORM, .line=510, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A44_16},
+    {.op=OP_PERFORM, .line=511, .var=5, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_17},
+    {.op=OP_JMP, .line=508, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=513, .var=7, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_19},
+    {.op=OP_JZ, .line=514, .a=E307, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=515, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_21},
+    {.op=OP_GIVEBACK, .line=518, .a=E309, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=520, .a=E310, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=521, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_24},
+    {.op=OP_PERFORM, .line=522, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_25},
+    {.op=OP_JZ, .line=523, .a=E313, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=524, .a=E314, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=525, .a=E315, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=526, .var=8, .var2=-1, .unit=RT_e_or, .name="e_or"},
+    {.op=OP_PERFORM, .line=527, .var=9, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_30},
+    {.op=OP_JZ, .line=528, .a=E317, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=529, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_32},
+    {.op=OP_PERFORM, .line=531, .var=6, .var2=-1, .unit=RT_e_or, .name="e_or"},
+    {.op=OP_PERFORM, .line=532, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A44_34},
+    {.op=OP_PERFORM, .line=533, .var=5, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_35},
+    {.op=OP_JMP, .line=525, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=535, .var=7, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_37},
+    {.op=OP_JZ, .line=536, .a=E322, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=537, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_39},
+    {.op=OP_GIVEBACK, .line=540, .a=E324, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=542, .a=E325, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=543, .var=10, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A44_42},
+    {.op=OP_PERFORM, .line=544, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_43},
+    {.op=OP_GIVEBACK, .line=545, .a=E328, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=547, .a=E329, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=548, .var=3, .var2=-1, .unit=RT_e_or, .name="e_or"},
+    {.op=OP_PERFORM, .line=549, .var=7, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A44_47},
+    {.op=OP_JZ, .line=550, .a=E331, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=551, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_49},
+    {.op=OP_GIVEBACK, .line=553, .a=E333, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=555, .a=E334, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=556, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_52},
+    {.op=OP_JZ, .line=558, .a=E336, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=559, .a=E337, .var=11, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=560, .a=E338, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=561, .a=E339, .var=11, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=563, .a=E340, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=564, .a=E341, .var=11, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=566, .a=E342, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=567, .a=E343, .var=11, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=569, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=570, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_62},
+    {.op=OP_GIVEBACK, .line=571, .a=E345, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=573, .a=E346, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=574, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_65},
+    {.op=OP_PERFORM, .line=575, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=576, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_67},
+    {.op=OP_GIVEBACK, .line=577, .a=E349, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=579, .a=E350, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=580, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_70},
+    {.op=OP_PERFORM, .line=581, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=582, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_72},
+    {.op=OP_GIVEBACK, .line=583, .a=E353, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=585, .a=E354, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=586, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_75},
+    {.op=OP_PERFORM, .line=587, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=588, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_77},
+    {.op=OP_GIVEBACK, .line=589, .a=E357, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=591, .a=E358, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=592, .var=13, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=593, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_81},
+    {.op=OP_PERFORM, .line=594, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=595, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_83},
+    {.op=OP_GIVEBACK, .line=596, .a=E361, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=598, .a=E362, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=599, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_86},
+    {.op=OP_GIVEBACK, .line=600, .a=E364, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=602, .a=E365, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=603, .var=8, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=604, .var=14, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A44_90},
+    {.op=OP_JZ, .line=605, .a=E367, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=606, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=607, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_93},
+    {.op=OP_GIVEBACK, .line=608, .a=E369, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=610, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_95},
+    {.op=OP_GIVEBACK, .line=611, .a=E371, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=613, .a=E372, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=614, .var=13, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=615, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_99},
+    {.op=OP_PERFORM, .line=616, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=617, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_101},
+    {.op=OP_GIVEBACK, .line=618, .a=E375, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=620, .a=E376, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=621, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_104},
+    {.op=OP_PERFORM, .line=622, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=623, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_106},
+    {.op=OP_GIVEBACK, .line=624, .a=E379, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=626, .a=E380, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=627, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_109},
+    {.op=OP_PERFORM, .line=628, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=629, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_111},
+    {.op=OP_PERFORM, .line=630, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=631, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_113},
+    {.op=OP_GIVEBACK, .line=632, .a=E384, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=634, .a=E385, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=635, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_116},
+    {.op=OP_GIVEBACK, .line=636, .a=E387, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=638, .a=E388, .var=16, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=639, .a=E389, .var=17, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=640, .a=E390, .var=18, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=641, .a=E391, .var=19, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=642, .a=E392, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=643, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_123},
+    {.op=OP_PERFORM, .line=644, .var=12, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=645, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_125},
+    {.op=OP_GIVEBACK, .line=646, .a=E395, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=648, .a=E396, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=649, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_128},
+    {.op=OP_GIVEBACK, .line=650, .a=E398, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=652, .a=E399, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=653, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_131},
+    {.op=OP_GIVEBACK, .line=654, .a=E401, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=656, .a=E402, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=657, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_134},
+    {.op=OP_PERFORM, .line=658, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=659, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_136},
+    {.op=OP_GIVEBACK, .line=660, .a=E405, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=662, .a=E406, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=663, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_LET, .line=664, .a=E407, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=665, .a=E408, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=666, .a=E409, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=668, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_143},
+    {.op=OP_GIVEBACK, .line=669, .a=E411, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=671, .a=E412, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=672, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_146},
+    {.op=OP_PERFORM, .line=673, .var=6, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=674, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_148},
+    {.op=OP_GIVEBACK, .line=675, .a=E415, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=677, .a=E416, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=678, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_151},
+    {.op=OP_PERFORM, .line=679, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=680, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_153},
+    {.op=OP_GIVEBACK, .line=681, .a=E419, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=683, .a=E420, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=684, .var=21, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=685, .var=22, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=686, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A44_158},
+    {.op=OP_PERFORM, .line=687, .var=15, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=688, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_160},
+    {.op=OP_GIVEBACK, .line=689, .a=E423, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=691, .var=23, .var2=-1, .unit=RT_reserved, .name="reserved", .nargs=1, .args=A44_162},
+    {.op=OP_JZ, .line=692, .a=E425, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=693, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A44_164},
+    {.op=OP_PERFORM, .line=695, .var=24, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A44_165},
+    {.op=OP_PERFORM, .line=696, .var=3, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A44_166},
+    {.op=OP_GIVEBACK, .line=697, .a=E429, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S44(World *w, Soul *s) {
@@ -5173,22 +5173,22 @@ static Value E441(World *w, Soul *s) {
 static const char *const N45[] = {"negative", "x", "t", "indexed", "i", "closed", 0};
 static const int P45[] = {-1};
 static const Ins I45[] = {
-    {.op=OP_PERFORM, .line=699, .var=0, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_0},
-    {.op=OP_JZ, .line=700, .a=E431, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=701, .var=1, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=702, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A45_3},
-    {.op=OP_GIVEBACK, .line=703, .a=E433, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=705, .var=2, .var2=-1, .unit=RT_e_primary, .name="e_primary"},
-    {.op=OP_PERFORM, .line=706, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_6},
-    {.op=OP_JZ, .line=707, .a=E435, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=708, .var=4, .var2=-1, .unit=RT_e_or, .name="e_or"},
-    {.op=OP_PERFORM, .line=709, .var=5, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_9},
-    {.op=OP_JZ, .line=710, .a=E437, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=711, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A45_11},
-    {.op=OP_PERFORM, .line=713, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A45_12},
-    {.op=OP_PERFORM, .line=714, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_13},
-    {.op=OP_JMP, .line=707, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=716, .a=E441, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=701, .var=0, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_0},
+    {.op=OP_JZ, .line=702, .a=E431, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=703, .var=1, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=704, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A45_3},
+    {.op=OP_GIVEBACK, .line=705, .a=E433, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=707, .var=2, .var2=-1, .unit=RT_e_primary, .name="e_primary"},
+    {.op=OP_PERFORM, .line=708, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_6},
+    {.op=OP_JZ, .line=709, .a=E435, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=710, .var=4, .var2=-1, .unit=RT_e_or, .name="e_or"},
+    {.op=OP_PERFORM, .line=711, .var=5, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_9},
+    {.op=OP_JZ, .line=712, .a=E437, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=713, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A45_11},
+    {.op=OP_PERFORM, .line=715, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A45_12},
+    {.op=OP_PERFORM, .line=716, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A45_13},
+    {.op=OP_JMP, .line=709, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=718, .a=E441, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S45(World *w, Soul *s) {
@@ -5314,27 +5314,27 @@ static Value E457(World *w, Soul *s) {
 static const char *const N46[] = {"a", "going", "op", "yes", "b", 0};
 static const int P46[] = {-1};
 static const Ins I46[] = {
-    {.op=OP_PERFORM, .line=720, .var=0, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_LET, .line=721, .a=E442, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=722, .a=E443, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=723, .a=E444, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=724, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A46_4},
-    {.op=OP_JZ, .line=725, .a=E446, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=726, .a=E447, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=725, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=728, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A46_8},
-    {.op=OP_JZ, .line=729, .a=E449, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=730, .a=E450, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=729, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=732, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A46_12},
-    {.op=OP_JZ, .line=733, .a=E452, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=734, .a=E453, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=738, .a=E454, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=739, .a=E455, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=740, .var=4, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=741, .var=0, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A46_18},
-    {.op=OP_JMP, .line=722, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=744, .a=E457, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=722, .var=0, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_LET, .line=723, .a=E442, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=724, .a=E443, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=725, .a=E444, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=726, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A46_4},
+    {.op=OP_JZ, .line=727, .a=E446, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=728, .a=E447, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=727, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=730, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A46_8},
+    {.op=OP_JZ, .line=731, .a=E449, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=732, .a=E450, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=731, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=734, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A46_12},
+    {.op=OP_JZ, .line=735, .a=E452, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=736, .a=E453, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=740, .a=E454, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=741, .a=E455, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=742, .var=4, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=743, .var=0, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A46_18},
+    {.op=OP_JMP, .line=724, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=746, .a=E457, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S46(World *w, Soul *s) {
@@ -5449,23 +5449,23 @@ static Value E470(World *w, Soul *s) {
 static const char *const N47[] = {"a", "going", "op", "yes", "b", 0};
 static const int P47[] = {-1};
 static const Ins I47[] = {
-    {.op=OP_PERFORM, .line=748, .var=0, .var2=-1, .unit=RT_e_mul, .name="e_mul"},
-    {.op=OP_LET, .line=749, .a=E458, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=750, .a=E459, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=751, .a=E460, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=752, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A47_4},
-    {.op=OP_JZ, .line=753, .a=E462, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=754, .a=E463, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=753, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=756, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A47_8},
-    {.op=OP_JZ, .line=757, .a=E465, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=758, .a=E466, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=761, .a=E467, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=762, .a=E468, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=763, .var=4, .var2=-1, .unit=RT_e_mul, .name="e_mul"},
-    {.op=OP_PERFORM, .line=764, .var=0, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A47_14},
-    {.op=OP_JMP, .line=750, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=767, .a=E470, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=750, .var=0, .var2=-1, .unit=RT_e_mul, .name="e_mul"},
+    {.op=OP_LET, .line=751, .a=E458, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=752, .a=E459, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=753, .a=E460, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=754, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A47_4},
+    {.op=OP_JZ, .line=755, .a=E462, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=756, .a=E463, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=755, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=758, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A47_8},
+    {.op=OP_JZ, .line=759, .a=E465, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=760, .a=E466, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=763, .a=E467, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=764, .a=E468, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=765, .var=4, .var2=-1, .unit=RT_e_mul, .name="e_mul"},
+    {.op=OP_PERFORM, .line=766, .var=0, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A47_14},
+    {.op=OP_JMP, .line=752, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=769, .a=E470, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S47(World *w, Soul *s) {
@@ -5567,20 +5567,20 @@ static Value E480(World *w, Soul *s) {
 static const char *const N48[] = {"a", "ops", "names", "i", "yes", "b", "t", 0};
 static const int P48[] = {-1};
 static const Ins I48[] = {
-    {.op=OP_PERFORM, .line=771, .var=0, .var2=-1, .unit=RT_e_add, .name="e_add"},
-    {.op=OP_LET, .line=772, .a=E471, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=773, .a=E472, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=774, .a=E473, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=775, .a=E474, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=776, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A48_5},
-    {.op=OP_JZ, .line=777, .a=E476, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=778, .var=5, .var2=-1, .unit=RT_e_add, .name="e_add"},
-    {.op=OP_PERFORM, .line=779, .var=6, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A48_8},
-    {.op=OP_GIVEBACK, .line=780, .a=E478, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=782, .a=E479, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=783, .var=-1, .var2=-1, .unit=-1, .nvars=3, .vars=V48_11},
-    {.op=OP_JMP, .line=775, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=785, .a=E480, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=773, .var=0, .var2=-1, .unit=RT_e_add, .name="e_add"},
+    {.op=OP_LET, .line=774, .a=E471, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=775, .a=E472, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=776, .a=E473, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=777, .a=E474, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=778, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A48_5},
+    {.op=OP_JZ, .line=779, .a=E476, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=780, .var=5, .var2=-1, .unit=RT_e_add, .name="e_add"},
+    {.op=OP_PERFORM, .line=781, .var=6, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A48_8},
+    {.op=OP_GIVEBACK, .line=782, .a=E478, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=784, .a=E479, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=785, .var=-1, .var2=-1, .unit=-1, .nvars=3, .vars=V48_11},
+    {.op=OP_JMP, .line=777, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=787, .a=E480, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S48(World *w, Soul *s) {
@@ -5637,13 +5637,13 @@ static Value E485(World *w, Soul *s) {
 static const char *const N49[] = {"negated", "x", "t", 0};
 static const int P49[] = {-1};
 static const Ins I49[] = {
-    {.op=OP_PERFORM, .line=789, .var=0, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A49_0},
-    {.op=OP_JZ, .line=790, .a=E482, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=791, .var=1, .var2=-1, .unit=RT_e_not, .name="e_not"},
-    {.op=OP_PERFORM, .line=792, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A49_3},
-    {.op=OP_GIVEBACK, .line=793, .a=E484, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=795, .var=2, .var2=-1, .unit=RT_e_cmp, .name="e_cmp"},
-    {.op=OP_GIVEBACK, .line=796, .a=E485, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=791, .var=0, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A49_0},
+    {.op=OP_JZ, .line=792, .a=E482, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=793, .var=1, .var2=-1, .unit=RT_e_not, .name="e_not"},
+    {.op=OP_PERFORM, .line=794, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A49_3},
+    {.op=OP_GIVEBACK, .line=795, .a=E484, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=797, .var=2, .var2=-1, .unit=RT_e_cmp, .name="e_cmp"},
+    {.op=OP_GIVEBACK, .line=798, .a=E485, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S49(World *w, Soul *s) {
@@ -5729,19 +5729,19 @@ static Value E495(World *w, Soul *s) {
 static const char *const N50[] = {"a", "going", "both", "b", 0};
 static const int P50[] = {-1};
 static const Ins I50[] = {
-    {.op=OP_PERFORM, .line=802, .var=0, .var2=-1, .unit=RT_e_not, .name="e_not"},
-    {.op=OP_LET, .line=803, .a=E486, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=804, .a=E487, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=805, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A50_3},
-    {.op=OP_JZ, .line=806, .a=E489, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=807, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A50_5},
-    {.op=OP_PERFORM, .line=808, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A50_6},
-    {.op=OP_PERFORM, .line=809, .var=3, .var2=-1, .unit=RT_e_not, .name="e_not"},
-    {.op=OP_PERFORM, .line=810, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A50_8},
-    {.op=OP_PERFORM, .line=811, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A50_9},
-    {.op=OP_LET, .line=812, .a=E494, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=804, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=815, .a=E495, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=804, .var=0, .var2=-1, .unit=RT_e_not, .name="e_not"},
+    {.op=OP_LET, .line=805, .a=E486, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=806, .a=E487, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=807, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A50_3},
+    {.op=OP_JZ, .line=808, .a=E489, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=809, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A50_5},
+    {.op=OP_PERFORM, .line=810, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A50_6},
+    {.op=OP_PERFORM, .line=811, .var=3, .var2=-1, .unit=RT_e_not, .name="e_not"},
+    {.op=OP_PERFORM, .line=812, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A50_8},
+    {.op=OP_PERFORM, .line=813, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A50_9},
+    {.op=OP_LET, .line=814, .a=E494, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=806, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=817, .a=E495, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S50(World *w, Soul *s) {
@@ -5833,19 +5833,19 @@ static Value E505(World *w, Soul *s) {
 static const char *const N51[] = {"a", "going", "either", "b", 0};
 static const int P51[] = {-1};
 static const Ins I51[] = {
-    {.op=OP_PERFORM, .line=819, .var=0, .var2=-1, .unit=RT_e_and, .name="e_and"},
-    {.op=OP_LET, .line=820, .a=E496, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=821, .a=E497, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=822, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A51_3},
-    {.op=OP_JZ, .line=823, .a=E499, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=824, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A51_5},
-    {.op=OP_PERFORM, .line=825, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A51_6},
-    {.op=OP_PERFORM, .line=826, .var=3, .var2=-1, .unit=RT_e_and, .name="e_and"},
-    {.op=OP_PERFORM, .line=827, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A51_8},
-    {.op=OP_PERFORM, .line=828, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A51_9},
-    {.op=OP_LET, .line=829, .a=E504, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=821, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=832, .a=E505, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=821, .var=0, .var2=-1, .unit=RT_e_and, .name="e_and"},
+    {.op=OP_LET, .line=822, .a=E496, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=823, .a=E497, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=824, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A51_3},
+    {.op=OP_JZ, .line=825, .a=E499, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=826, .var=2, .var2=-1, .unit=RT_tmp, .name="tmp", .nargs=1, .args=A51_5},
+    {.op=OP_PERFORM, .line=827, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A51_6},
+    {.op=OP_PERFORM, .line=828, .var=3, .var2=-1, .unit=RT_e_and, .name="e_and"},
+    {.op=OP_PERFORM, .line=829, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A51_8},
+    {.op=OP_PERFORM, .line=830, .var=-1, .var2=-1, .unit=RT_out_fn, .name="out_fn", .nargs=1, .args=A51_9},
+    {.op=OP_LET, .line=831, .a=E504, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=823, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=834, .a=E505, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S51(World *w, Soul *s) {
@@ -5890,8 +5890,8 @@ static Value E509(World *w, Soul *s) {
 static const char *const N52[] = {0};
 static const int P52[] = {-1};
 static const Ins I52[] = {
-    {.op=OP_NOTE, .line=838, .a=E507, .b=E506, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=839, .a=E509, .b=E508, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=840, .a=E507, .b=E506, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=841, .a=E509, .b=E508, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S52(World *w, Soul *s) {
@@ -5993,19 +5993,19 @@ static Value E521(World *w, Soul *s) {
 static const char *const N53[] = {"result", "name", "i", 0};
 static const int P53[] = {0, -1};
 static const Ins I53[] = {
-    {.op=OP_NOTE, .line=843, .a=E511, .b=E510, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=844, .a=E512, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=845, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_2},
-    {.op=OP_PERFORM, .line=846, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_3},
-    {.op=OP_LET, .line=847, .a=E515, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=848, .a=E516, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=849, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_6},
-    {.op=OP_LET, .line=850, .a=E518, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=851, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V53_8},
-    {.op=OP_JMP, .line=848, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=853, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_10},
-    {.op=OP_PERFORM, .line=854, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_11},
-    {.op=OP_GIVEBACK, .line=855, .a=E521, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=845, .a=E511, .b=E510, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=846, .a=E512, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=847, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_2},
+    {.op=OP_PERFORM, .line=848, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_3},
+    {.op=OP_LET, .line=849, .a=E515, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=850, .a=E516, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=851, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_6},
+    {.op=OP_LET, .line=852, .a=E518, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=853, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V53_8},
+    {.op=OP_JMP, .line=850, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=855, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_10},
+    {.op=OP_PERFORM, .line=856, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A53_11},
+    {.op=OP_GIVEBACK, .line=857, .a=E521, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S53(World *w, Soul *s) {
@@ -6041,10 +6041,10 @@ static Value E523(World *w, Soul *s) {
 static const char *const N54[] = {"t", "name", 0};
 static const int P54[] = {-1};
 static const Ins I54[] = {
-    {.op=OP_PERFORM, .line=859, .var=-1, .var2=-1, .unit=RT_begin_fn, .name="begin_fn"},
-    {.op=OP_PERFORM, .line=860, .var=0, .var2=-1, .unit=RT_e_or, .name="e_or"},
-    {.op=OP_PERFORM, .line=861, .var=1, .var2=-1, .unit=RT_end_fn, .name="end_fn", .nargs=1, .args=A54_2},
-    {.op=OP_GIVEBACK, .line=862, .a=E523, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=861, .var=-1, .var2=-1, .unit=RT_begin_fn, .name="begin_fn"},
+    {.op=OP_PERFORM, .line=862, .var=0, .var2=-1, .unit=RT_e_or, .name="e_or"},
+    {.op=OP_PERFORM, .line=863, .var=1, .var2=-1, .unit=RT_end_fn, .name="end_fn", .nargs=1, .args=A54_2},
+    {.op=OP_GIVEBACK, .line=864, .a=E523, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S54(World *w, Soul *s) {
@@ -6071,10 +6071,10 @@ static Value E525(World *w, Soul *s) {
 static const char *const N55[] = {"t", "name", 0};
 static const int P55[] = {-1};
 static const Ins I55[] = {
-    {.op=OP_PERFORM, .line=866, .var=-1, .var2=-1, .unit=RT_begin_fn, .name="begin_fn"},
-    {.op=OP_PERFORM, .line=867, .var=0, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
-    {.op=OP_PERFORM, .line=868, .var=1, .var2=-1, .unit=RT_end_fn, .name="end_fn", .nargs=1, .args=A55_2},
-    {.op=OP_GIVEBACK, .line=869, .a=E525, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=868, .var=-1, .var2=-1, .unit=RT_begin_fn, .name="begin_fn"},
+    {.op=OP_PERFORM, .line=869, .var=0, .var2=-1, .unit=RT_e_unary, .name="e_unary"},
+    {.op=OP_PERFORM, .line=870, .var=1, .var2=-1, .unit=RT_end_fn, .name="end_fn", .nargs=1, .args=A55_2},
+    {.op=OP_GIVEBACK, .line=871, .a=E525, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S55(World *w, Soul *s) {
@@ -6101,10 +6101,10 @@ static Value E527(World *w, Soul *s) {
 static const char *const N56[] = {"t", "name", 0};
 static const int P56[] = {-1};
 static const Ins I56[] = {
-    {.op=OP_PERFORM, .line=873, .var=-1, .var2=-1, .unit=RT_begin_fn, .name="begin_fn"},
-    {.op=OP_PERFORM, .line=874, .var=0, .var2=-1, .unit=RT_e_target, .name="e_target"},
-    {.op=OP_PERFORM, .line=875, .var=1, .var2=-1, .unit=RT_end_fn, .name="end_fn", .nargs=1, .args=A56_2},
-    {.op=OP_GIVEBACK, .line=876, .a=E527, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=875, .var=-1, .var2=-1, .unit=RT_begin_fn, .name="begin_fn"},
+    {.op=OP_PERFORM, .line=876, .var=0, .var2=-1, .unit=RT_e_target, .name="e_target"},
+    {.op=OP_PERFORM, .line=877, .var=1, .var2=-1, .unit=RT_end_fn, .name="end_fn", .nargs=1, .args=A56_2},
+    {.op=OP_GIVEBACK, .line=878, .a=E527, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S56(World *w, Soul *s) {
@@ -6220,22 +6220,22 @@ static Value E542(World *w, Soul *s) {
 static const char *const N57[] = {"code", "n", "indexed", "e", "closed", 0};
 static const int P57[] = {-1};
 static const Ins I57[] = {
-    {.op=OP_LET, .line=882, .a=E528, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=883, .a=E529, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=884, .var=2, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A57_2},
-    {.op=OP_JZ, .line=885, .a=E531, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=886, .var=3, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=887, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A57_5},
-    {.op=OP_JZ, .line=888, .a=E533, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=889, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A57_7},
-    {.op=OP_LET, .line=891, .a=E535, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=892, .a=E536, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=893, .var=2, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A57_10},
-    {.op=OP_JMP, .line=885, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=895, .a=E539, .b=E538, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=896, .a=E540, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=897, .a=E541, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=899, .a=E542, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=884, .a=E528, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=885, .a=E529, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=886, .var=2, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A57_2},
+    {.op=OP_JZ, .line=887, .a=E531, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=888, .var=3, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=889, .var=4, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A57_5},
+    {.op=OP_JZ, .line=890, .a=E533, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=891, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A57_7},
+    {.op=OP_LET, .line=893, .a=E535, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=894, .a=E536, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=895, .var=2, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A57_10},
+    {.op=OP_JMP, .line=887, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=897, .a=E539, .b=E538, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=898, .a=E540, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=899, .a=E541, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=901, .a=E542, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S57(World *w, Soul *s) {
@@ -6310,10 +6310,10 @@ static Value E547(World *w, Soul *s) {
 static const char *const N58[] = {"op", "extra", "code", "pc", 0};
 static const int P58[] = {0, 1, 2, -1};
 static const Ins I58[] = {
-    {.op=OP_LET, .line=905, .a=E543, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=906, .var=-1, .var2=-1, .unit=RT_out_ins, .name="out_ins", .nargs=1, .args=A58_1},
-    {.op=OP_PERFORM, .line=907, .var=-1, .var2=-1, .unit=RT_out_case, .name="out_case", .nargs=1, .args=A58_2},
-    {.op=OP_NOTE, .line=908, .a=E547, .b=E546, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=907, .a=E543, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=908, .var=-1, .var2=-1, .unit=RT_out_ins, .name="out_ins", .nargs=1, .args=A58_1},
+    {.op=OP_PERFORM, .line=909, .var=-1, .var2=-1, .unit=RT_out_case, .name="out_case", .nargs=1, .args=A58_2},
+    {.op=OP_NOTE, .line=910, .a=E547, .b=E546, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S58(World *w, Soul *s) {
@@ -6344,7 +6344,7 @@ static Value E548(World *w, Soul *s) {
 static const char *const N59[] = {0};
 static const int P59[] = {-1};
 static const Ins I59[] = {
-    {.op=OP_GIVEBACK, .line=912, .a=E548, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=914, .a=E548, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S59(World *w, Soul *s) {
@@ -6382,8 +6382,8 @@ static const Expr A60_1[] = {E549, E550, E551};
 static const char *const N60[] = {"op", "call", "at", 0};
 static const int P60[] = {0, 1, -1};
 static const Ins I60[] = {
-    {.op=OP_PERFORM, .line=916, .var=2, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=917, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A60_1},
+    {.op=OP_PERFORM, .line=918, .var=2, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=919, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A60_1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S60(World *w, Soul *s) {
@@ -6426,8 +6426,8 @@ static const Expr A61_1[] = {E552, E553, E554};
 static const char *const N61[] = {"op", "call", "e", 0};
 static const int P61[] = {0, 1, -1};
 static const Ins I61[] = {
-    {.op=OP_PERFORM, .line=921, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=922, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A61_1},
+    {.op=OP_PERFORM, .line=923, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=924, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A61_1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S61(World *w, Soul *s) {
@@ -6466,9 +6466,9 @@ static const Expr A62_2[] = {E555, E556, E557};
 static const char *const N62[] = {"op", "t", "at", 0};
 static const int P62[] = {0, -1};
 static const Ins I62[] = {
-    {.op=OP_PERFORM, .line=926, .var=1, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=927, .var=2, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=928, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A62_2},
+    {.op=OP_PERFORM, .line=928, .var=1, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=929, .var=2, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=930, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A62_2},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S62(World *w, Soul *s) {
@@ -6509,8 +6509,8 @@ static Value E560(World *w, Soul *s) {
 static const char *const N63[] = {0};
 static const int P63[] = {-1};
 static const Ins I63[] = {
-    {.op=OP_NOTE, .line=932, .a=E559, .b=E558, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=933, .a=E560, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=934, .a=E559, .b=E558, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=935, .a=E560, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S63(World *w, Soul *s) {
@@ -6536,7 +6536,7 @@ static const Expr A64_0[] = {E561};
 static const char *const N64[] = {"name", "value", 0};
 static const int P64[] = {0, 1, -1};
 static const Ins I64[] = {
-    {.op=OP_PERFORM, .line=937, .var=-1, .var2=-1, .unit=RT_out_head, .name="out_head", .nargs=1, .args=A64_0},
+    {.op=OP_PERFORM, .line=939, .var=-1, .var2=-1, .unit=RT_out_head, .name="out_head", .nargs=1, .args=A64_0},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S64(World *w, Soul *s) {
@@ -6578,8 +6578,8 @@ static const Expr A65_1[] = {E562, E563, E564};
 static const char *const N65[] = {"target", "e", 0};
 static const int P65[] = {0, -1};
 static const Ins I65[] = {
-    {.op=OP_PERFORM, .line=941, .var=1, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=942, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A65_1},
+    {.op=OP_PERFORM, .line=943, .var=1, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=944, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A65_1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S65(World *w, Soul *s) {
@@ -6614,7 +6614,7 @@ static const Expr A66_0[] = {E565, E566, E567};
 static const char *const N66[] = {"target", 0};
 static const int P66[] = {0, -1};
 static const Ins I66[] = {
-    {.op=OP_PERFORM, .line=946, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A66_0},
+    {.op=OP_PERFORM, .line=948, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A66_0},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S66(World *w, Soul *s) {
@@ -6652,8 +6652,8 @@ static Value E570(World *w, Soul *s) {
 static const char *const N67[] = {"list", "name", 0};
 static const int P67[] = {0, 1, -1};
 static const Ins I67[] = {
-    {.op=OP_JZ, .line=950, .a=E568, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=951, .a=E570, .b=E569, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=952, .a=E568, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=953, .a=E570, .b=E569, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S67(World *w, Soul *s) {
@@ -6734,14 +6734,14 @@ static Value E578(World *w, Soul *s) {
 static const char *const N68[] = {"ends", "j", 0};
 static const int P68[] = {0, -1};
 static const Ins I68[] = {
-    {.op=OP_JZ, .line=958, .a=E571, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=959, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A68_1},
-    {.op=OP_LET, .line=961, .a=E573, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=962, .a=E574, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=963, .a=E575, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=965, .a=E576, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=966, .a=E577, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=968, .a=E578, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=960, .a=E571, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=961, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A68_1},
+    {.op=OP_LET, .line=963, .a=E573, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=964, .a=E574, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=965, .a=E575, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=967, .a=E576, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=968, .a=E577, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=970, .a=E578, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S68(World *w, Soul *s) {
@@ -6779,11 +6779,11 @@ static const Expr A69_3[] = {E581};
 static const char *const N69[] = {"ends", "stop", 0};
 static const int P69[] = {0, -1};
 static const Ins I69[] = {
-    {.op=OP_PERFORM, .line=972, .var=1, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A69_0},
-    {.op=OP_JZ, .line=973, .a=E580, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=974, .var=-1, .var2=-1, .unit=RT_statement, .name="statement"},
-    {.op=OP_PERFORM, .line=975, .var=1, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A69_3},
-    {.op=OP_JMP, .line=973, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=974, .var=1, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A69_0},
+    {.op=OP_JZ, .line=975, .a=E580, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=976, .var=-1, .var2=-1, .unit=RT_statement, .name="statement"},
+    {.op=OP_PERFORM, .line=977, .var=1, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A69_3},
+    {.op=OP_JMP, .line=975, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S69(World *w, Soul *s) {
@@ -6832,9 +6832,9 @@ static Value E586(World *w, Soul *s) {
 static const char *const N70[] = {"ends", 0};
 static const int P70[] = {0, -1};
 static const Ins I70[] = {
-    {.op=OP_NOTE, .line=981, .a=E583, .b=E582, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=982, .var=-1, .var2=-1, .unit=RT_block, .name="block", .nargs=1, .args=A70_1},
-    {.op=OP_NOTE, .line=983, .a=E586, .b=E585, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=983, .a=E583, .b=E582, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=984, .var=-1, .var2=-1, .unit=RT_block, .name="block", .nargs=1, .args=A70_1},
+    {.op=OP_NOTE, .line=985, .a=E586, .b=E585, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S70(World *w, Soul *s) {
@@ -7049,31 +7049,31 @@ static Value E617(World *w, Soul *s) {
 static const char *const N71[] = {"head", "line", "top", "id", "other", 0};
 static const int P71[] = {0, 1, 2, -1};
 static const Ins I71[] = {
-    {.op=OP_LET, .line=987, .a=E587, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=988, .var=3, .var2=-1, .unit=RT_label, .name="label"},
-    {.op=OP_PERFORM, .line=989, .var=-1, .var2=-1, .unit=RT_jz_to, .name="jz_to", .nargs=1, .args=A71_2},
-    {.op=OP_PERFORM, .line=990, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_PERFORM, .line=991, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A71_4},
-    {.op=OP_PERFORM, .line=992, .var=4, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A71_5},
-    {.op=OP_JZ, .line=993, .a=E591, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=994, .a=E592, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=995, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A71_8},
-    {.op=OP_PERFORM, .line=996, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A71_9},
-    {.op=OP_NOTE, .line=998, .a=E596, .b=E595, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=999, .var=-1, .var2=-1, .unit=RT_jmp_to, .name="jmp_to", .nargs=1, .args=A71_11},
-    {.op=OP_PERFORM, .line=1000, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_12},
-    {.op=OP_NOTE, .line=1001, .a=E601, .b=E600, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1002, .a=E602, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1004, .a=E603, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1005, .a=E605, .b=E604, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1006, .var=-1, .var2=-1, .unit=RT_jmp_to, .name="jmp_to", .nargs=1, .args=A71_17},
-    {.op=OP_PERFORM, .line=1007, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_18},
-    {.op=OP_NOTE, .line=1008, .a=E610, .b=E609, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1009, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A71_20},
-    {.op=OP_PERFORM, .line=1010, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_21},
-    {.op=OP_JMP, .line=1004, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1012, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_23},
-    {.op=OP_NOTE, .line=1014, .a=E617, .b=E616, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=989, .a=E587, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=990, .var=3, .var2=-1, .unit=RT_label, .name="label"},
+    {.op=OP_PERFORM, .line=991, .var=-1, .var2=-1, .unit=RT_jz_to, .name="jz_to", .nargs=1, .args=A71_2},
+    {.op=OP_PERFORM, .line=992, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_PERFORM, .line=993, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A71_4},
+    {.op=OP_PERFORM, .line=994, .var=4, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A71_5},
+    {.op=OP_JZ, .line=995, .a=E591, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=996, .a=E592, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=997, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A71_8},
+    {.op=OP_PERFORM, .line=998, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A71_9},
+    {.op=OP_NOTE, .line=1000, .a=E596, .b=E595, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1001, .var=-1, .var2=-1, .unit=RT_jmp_to, .name="jmp_to", .nargs=1, .args=A71_11},
+    {.op=OP_PERFORM, .line=1002, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_12},
+    {.op=OP_NOTE, .line=1003, .a=E601, .b=E600, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1004, .a=E602, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1006, .a=E603, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1007, .a=E605, .b=E604, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1008, .var=-1, .var2=-1, .unit=RT_jmp_to, .name="jmp_to", .nargs=1, .args=A71_17},
+    {.op=OP_PERFORM, .line=1009, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_18},
+    {.op=OP_NOTE, .line=1010, .a=E610, .b=E609, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1011, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A71_20},
+    {.op=OP_PERFORM, .line=1012, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_21},
+    {.op=OP_JMP, .line=1006, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1014, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A71_23},
+    {.op=OP_NOTE, .line=1016, .a=E617, .b=E616, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S71(World *w, Soul *s) {
@@ -7403,48 +7403,48 @@ static Value E657(World *w, Soul *s) {
 static const char *const N72[] = {"j", "kd", "head", "isreserved", "name", "next", "slot", "path", "n", "eq", "e", "skipped", "deed", 0};
 static const int P72[] = {-1};
 static const Ins I72[] = {
-    {.op=OP_LET, .line=1020, .a=E618, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1021, .a=E620, .b=E619, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1022, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A72_2},
-    {.op=OP_NOTE, .line=1023, .a=E623, .b=E622, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1024, .var=1, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_PERFORM, .line=1025, .var=2, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
-    {.op=OP_JZ, .line=1026, .a=E624, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1027, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_7},
-    {.op=OP_PERFORM, .line=1029, .var=3, .var2=-1, .unit=RT_reserved, .name="reserved", .nargs=1, .args=A72_8},
-    {.op=OP_JZ, .line=1030, .a=E627, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1031, .var=4, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1032, .var=5, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
-    {.op=OP_JZ, .line=1033, .a=E628, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1034, .var=6, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A72_13},
-    {.op=OP_PERFORM, .line=1035, .var=7, .var2=-1, .unit=RT_path_code, .name="path_code"},
-    {.op=OP_LET, .line=1036, .a=E630, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1037, .var=9, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A72_16},
-    {.op=OP_JZ, .line=1038, .a=E632, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1039, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_18},
-    {.op=OP_PERFORM, .line=1041, .var=10, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1042, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A72_20},
-    {.op=OP_PERFORM, .line=1043, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1044, .a=E637, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1046, .var=9, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A72_23},
-    {.op=OP_JZ, .line=1047, .a=E639, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1048, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_25},
-    {.op=OP_PERFORM, .line=1050, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A72_26},
-    {.op=OP_PERFORM, .line=1051, .var=10, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1052, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A72_28},
-    {.op=OP_PERFORM, .line=1053, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1054, .a=E645, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1056, .var=11, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_NOTE, .line=1057, .a=E647, .b=E646, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1058, .a=E648, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1059, .var=12, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
-    {.op=OP_JZ, .line=1060, .a=E649, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1061, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_36},
-    {.op=OP_PERFORM, .line=1063, .var=11, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_NOTE, .line=1064, .a=E652, .b=E651, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1065, .a=E653, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1067, .var=-1, .var2=-1, .unit=RT_statement_of, .name="statement_of", .nargs=2, .args=A72_40},
-    {.op=OP_NOTE, .line=1068, .a=E657, .b=E656, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1022, .a=E618, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1023, .a=E620, .b=E619, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1024, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A72_2},
+    {.op=OP_NOTE, .line=1025, .a=E623, .b=E622, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1026, .var=1, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_PERFORM, .line=1027, .var=2, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
+    {.op=OP_JZ, .line=1028, .a=E624, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1029, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_7},
+    {.op=OP_PERFORM, .line=1031, .var=3, .var2=-1, .unit=RT_reserved, .name="reserved", .nargs=1, .args=A72_8},
+    {.op=OP_JZ, .line=1032, .a=E627, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1033, .var=4, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1034, .var=5, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
+    {.op=OP_JZ, .line=1035, .a=E628, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1036, .var=6, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A72_13},
+    {.op=OP_PERFORM, .line=1037, .var=7, .var2=-1, .unit=RT_path_code, .name="path_code"},
+    {.op=OP_LET, .line=1038, .a=E630, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1039, .var=9, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A72_16},
+    {.op=OP_JZ, .line=1040, .a=E632, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1041, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_18},
+    {.op=OP_PERFORM, .line=1043, .var=10, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1044, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A72_20},
+    {.op=OP_PERFORM, .line=1045, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1046, .a=E637, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1048, .var=9, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A72_23},
+    {.op=OP_JZ, .line=1049, .a=E639, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1050, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_25},
+    {.op=OP_PERFORM, .line=1052, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A72_26},
+    {.op=OP_PERFORM, .line=1053, .var=10, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1054, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A72_28},
+    {.op=OP_PERFORM, .line=1055, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1056, .a=E645, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1058, .var=11, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_NOTE, .line=1059, .a=E647, .b=E646, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1060, .a=E648, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1061, .var=12, .var2=-1, .unit=RT_peek_value, .name="peek_value"},
+    {.op=OP_JZ, .line=1062, .a=E649, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1063, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A72_36},
+    {.op=OP_PERFORM, .line=1065, .var=11, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_NOTE, .line=1066, .a=E652, .b=E651, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1067, .a=E653, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1069, .var=-1, .var2=-1, .unit=RT_statement_of, .name="statement_of", .nargs=2, .args=A72_40},
+    {.op=OP_NOTE, .line=1070, .a=E657, .b=E656, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S72(World *w, Soul *s) {
@@ -9207,261 +9207,261 @@ static const Expr A73_254[] = {E898, E899};
 static const char *const N73[] = {"head", "j", "name", "eq", "slot", "e", "stranger", "at", "t", "op", "gently", "key", "sort", "mode", "outside", "speaker", "asks", "who", "returning", "args", "count", "given", "more", "receiver", "keeps", "kept", "arrays", "array", "waits", "pk", "list", "ending", "moment", "u", "id", 0};
 static const int P73[] = {0, 1, -1};
 static const Ins I73[] = {
-    {.op=OP_JZ, .line=1072, .a=E658, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1073, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1074, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_2},
-    {.op=OP_JZ, .line=1075, .a=E660, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1076, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_4},
-    {.op=OP_PERFORM, .line=1078, .var=4, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_5},
-    {.op=OP_PERFORM, .line=1079, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1080, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_7},
-    {.op=OP_PERFORM, .line=1081, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1082, .a=E666, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1084, .a=E667, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1085, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_11},
-    {.op=OP_PERFORM, .line=1086, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1087, .a=E670, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1089, .a=E671, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1090, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_15},
-    {.op=OP_PERFORM, .line=1091, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1092, .a=E674, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1094, .a=E675, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1095, .var=6, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_19},
-    {.op=OP_PERFORM, .line=1096, .var=7, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_JZ, .line=1097, .a=E677, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1098, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_22},
-    {.op=OP_PERFORM, .line=1099, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1100, .var=4, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_24},
-    {.op=OP_PERFORM, .line=1101, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_25},
-    {.op=OP_PERFORM, .line=1102, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_26},
-    {.op=OP_JMP, .line=1097, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1104, .var=8, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1105, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_29},
-    {.op=OP_PERFORM, .line=1106, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_30},
-    {.op=OP_PERFORM, .line=1108, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1109, .a=E688, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1111, .a=E689, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1112, .a=E690, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1113, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_35},
-    {.op=OP_PERFORM, .line=1115, .var=8, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1116, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_37},
-    {.op=OP_PERFORM, .line=1117, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1118, .var=7, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_LET, .line=1119, .a=E693, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1120, .a=E694, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1121, .a=E695, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1123, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_43},
-    {.op=OP_PERFORM, .line=1124, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_44},
-    {.op=OP_PERFORM, .line=1125, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1126, .a=E700, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1128, .a=E701, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1129, .var=11, .var2=-1, .unit=RT_unary_fn, .name="unary_fn"},
-    {.op=OP_PERFORM, .line=1130, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_49},
-    {.op=OP_JZ, .line=1131, .a=E703, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1132, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_51},
-    {.op=OP_PERFORM, .line=1134, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1135, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_53},
-    {.op=OP_PERFORM, .line=1136, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1137, .a=E708, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1139, .a=E709, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1140, .var=12, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1141, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_58},
-    {.op=OP_PERFORM, .line=1142, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1143, .var=-1, .var2=-1, .unit=RT_uses, .name="uses", .nargs=2, .args=A73_60},
-    {.op=OP_PERFORM, .line=1144, .var=7, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1145, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_62},
-    {.op=OP_PERFORM, .line=1146, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1147, .a=E716, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1149, .a=E717, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1150, .a=E718, .var=13, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1151, .a=E719, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1152, .var=6, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_68},
-    {.op=OP_JZ, .line=1153, .a=E721, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1154, .a=E722, .var=13, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1155, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_71},
-    {.op=OP_JMP, .line=1153, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1157, .var=14, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_73},
-    {.op=OP_JZ, .line=1158, .a=E725, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1159, .a=E726, .var=13, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1158, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1161, .var=8, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1162, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_78},
-    {.op=OP_PERFORM, .line=1165, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_79},
-    {.op=OP_PERFORM, .line=1166, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1167, .var=4, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_81},
-    {.op=OP_LET, .line=1168, .a=E730, .var=15, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1169, .var=16, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_83},
-    {.op=OP_JZ, .line=1170, .a=E732, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1171, .var=17, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1172, .var=15, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_86},
-    {.op=OP_JZ, .line=1173, .a=E734, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1174, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_88},
-    {.op=OP_PERFORM, .line=1177, .var=7, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1178, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_90},
-    {.op=OP_PERFORM, .line=1179, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1180, .a=E739, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1182, .a=E740, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1183, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_94},
-    {.op=OP_LET, .line=1184, .a=E742, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1185, .a=E743, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1186, .a=E744, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1188, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_98},
-    {.op=OP_PERFORM, .line=1189, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1190, .a=E746, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1192, .a=E747, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1193, .var=18, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_102},
-    {.op=OP_JZ, .line=1194, .a=E749, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1195, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_104},
-    {.op=OP_JMP, .line=1194, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1197, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_106},
-    {.op=OP_PERFORM, .line=1198, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_107},
-    {.op=OP_PERFORM, .line=1199, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_108},
-    {.op=OP_JZ, .line=1200, .a=E755, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1201, .a=E756, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1202, .a=E758, .b=E757, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1203, .a=E760, .b=E759, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1207, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1208, .a=E761, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1210, .a=E762, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1211, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_116},
-    {.op=OP_PERFORM, .line=1212, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_LET, .line=1213, .a=E764, .var=19, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1214, .a=E765, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1215, .var=21, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_120},
-    {.op=OP_JZ, .line=1216, .a=E767, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1217, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_LET, .line=1218, .a=E768, .var=19, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1219, .a=E769, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1220, .var=22, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_125},
-    {.op=OP_JZ, .line=1221, .a=E771, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1222, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_LET, .line=1223, .a=E772, .var=19, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1224, .a=E773, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1225, .var=22, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_130},
-    {.op=OP_JMP, .line=1221, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1228, .a=E775, .var=23, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1229, .var=24, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_133},
-    {.op=OP_JZ, .line=1230, .a=E777, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1231, .var=25, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1232, .var=23, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_136},
-    {.op=OP_PERFORM, .line=1234, .var=-1, .var2=-1, .unit=RT_uses, .name="uses", .nargs=2, .args=A73_137},
-    {.op=OP_LET, .line=1235, .a=E781, .var=26, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1236, .a=E782, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1237, .a=E783, .var=27, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1238, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A73_141},
-    {.op=OP_LET, .line=1239, .a=E785, .var=26, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1241, .var=7, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1242, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_144},
-    {.op=OP_PERFORM, .line=1243, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1244, .a=E789, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1246, .a=E790, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1247, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_148},
-    {.op=OP_PERFORM, .line=1248, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1249, .a=E792, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1251, .a=E793, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1252, .a=E794, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1253, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_153},
-    {.op=OP_PERFORM, .line=1255, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_154},
-    {.op=OP_PERFORM, .line=1256, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_155},
-    {.op=OP_PERFORM, .line=1257, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1258, .a=E798, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1260, .a=E799, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1261, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_159},
-    {.op=OP_PERFORM, .line=1262, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1263, .a=E801, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1265, .a=E802, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1266, .a=E803, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1267, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_164},
-    {.op=OP_PERFORM, .line=1269, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_165},
-    {.op=OP_PERFORM, .line=1270, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_166},
-    {.op=OP_PERFORM, .line=1271, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1272, .a=E807, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1274, .a=E808, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1275, .var=28, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_170},
-    {.op=OP_PERFORM, .line=1276, .var=29, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_JZ, .line=1277, .a=E810, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1278, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_173},
-    {.op=OP_PERFORM, .line=1279, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_174},
-    {.op=OP_JMP, .line=1277, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1281, .a=E815, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1282, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1283, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_178},
-    {.op=OP_PERFORM, .line=1284, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_179},
-    {.op=OP_JMP, .line=1281, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1286, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_181},
-    {.op=OP_PERFORM, .line=1289, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1290, .a=E823, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1292, .a=E824, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1293, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1294, .var=4, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A73_186},
-    {.op=OP_LET, .line=1295, .a=E826, .var=30, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1296, .a=E827, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1297, .var=29, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_JZ, .line=1298, .a=E828, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1299, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1300, .var=4, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A73_192},
-    {.op=OP_LET, .line=1301, .a=E830, .var=30, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1302, .a=E831, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1303, .var=29, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_JMP, .line=1298, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1305, .a=E832, .var=27, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1306, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A73_198},
-    {.op=OP_PERFORM, .line=1307, .var=7, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1308, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_200},
-    {.op=OP_PERFORM, .line=1309, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1310, .a=E837, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1312, .a=E838, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1313, .a=E839, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1314, .a=E841, .b=E840, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1315, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_206},
-    {.op=OP_PERFORM, .line=1317, .var=31, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_207},
-    {.op=OP_JZ, .line=1318, .a=E844, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1319, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_209},
-    {.op=OP_JMP, .line=1318, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1321, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_211},
-    {.op=OP_PERFORM, .line=1323, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1324, .a=E850, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1326, .a=E851, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1327, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_215},
-    {.op=OP_PERFORM, .line=1328, .var=32, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1329, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_LET, .line=1330, .a=E853, .var=33, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1331, .a=E854, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1332, .a=E855, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1333, .var=7, .var2=-1, .unit=RT_where, .name="where", .nargs=1, .args=A73_221},
-    {.op=OP_NOTE, .line=1334, .a=E858, .b=E857, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1331, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1337, .a=E860, .b=E859, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1338, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A73_225},
-    {.op=OP_GIVEBACK, .line=1340, .a=E863, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1342, .a=E864, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1343, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_228},
-    {.op=OP_PERFORM, .line=1344, .var=32, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1345, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_LET, .line=1346, .a=E866, .var=33, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1347, .a=E868, .b=E867, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1348, .a=E870, .b=E869, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1349, .var=7, .var2=-1, .unit=RT_where, .name="where", .nargs=1, .args=A73_234},
-    {.op=OP_NOTE, .line=1350, .a=E873, .b=E872, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1351, .var=-1, .var2=-1, .unit=RT_jmp_to, .name="jmp_to", .nargs=1, .args=A73_236},
-    {.op=OP_GIVEBACK, .line=1352, .a=E875, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1354, .a=E876, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1355, .var=-1, .var2=-1, .unit=RT_conditional, .name="conditional", .nargs=3, .args=A73_239},
-    {.op=OP_GIVEBACK, .line=1356, .a=E880, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1358, .a=E881, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1359, .var=-1, .var2=-1, .unit=RT_conditional, .name="conditional", .nargs=3, .args=A73_242},
-    {.op=OP_GIVEBACK, .line=1360, .a=E885, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1362, .a=E886, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1363, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_245},
-    {.op=OP_PERFORM, .line=1364, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_LET, .line=1365, .a=E888, .var=34, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1366, .var=34, .var2=-1, .unit=RT_label, .name="label"},
-    {.op=OP_PERFORM, .line=1367, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_249},
-    {.op=OP_PERFORM, .line=1368, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A73_250},
-    {.op=OP_PERFORM, .line=1369, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A73_251},
-    {.op=OP_NOTE, .line=1370, .a=E896, .b=E895, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1371, .a=E897, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1373, .var=-1, .var2=-1, .unit=RT_statement_of_world, .name="statement_of_world", .nargs=2, .args=A73_254},
+    {.op=OP_JZ, .line=1074, .a=E658, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1075, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1076, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_2},
+    {.op=OP_JZ, .line=1077, .a=E660, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1078, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_4},
+    {.op=OP_PERFORM, .line=1080, .var=4, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_5},
+    {.op=OP_PERFORM, .line=1081, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1082, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_7},
+    {.op=OP_PERFORM, .line=1083, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1084, .a=E666, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1086, .a=E667, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1087, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_11},
+    {.op=OP_PERFORM, .line=1088, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1089, .a=E670, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1091, .a=E671, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1092, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_15},
+    {.op=OP_PERFORM, .line=1093, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1094, .a=E674, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1096, .a=E675, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1097, .var=6, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_19},
+    {.op=OP_PERFORM, .line=1098, .var=7, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_JZ, .line=1099, .a=E677, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1100, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_22},
+    {.op=OP_PERFORM, .line=1101, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1102, .var=4, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_24},
+    {.op=OP_PERFORM, .line=1103, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_25},
+    {.op=OP_PERFORM, .line=1104, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_26},
+    {.op=OP_JMP, .line=1099, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1106, .var=8, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1107, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_29},
+    {.op=OP_PERFORM, .line=1108, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_30},
+    {.op=OP_PERFORM, .line=1110, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1111, .a=E688, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1113, .a=E689, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1114, .a=E690, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1115, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_35},
+    {.op=OP_PERFORM, .line=1117, .var=8, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1118, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_37},
+    {.op=OP_PERFORM, .line=1119, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1120, .var=7, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_LET, .line=1121, .a=E693, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1122, .a=E694, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1123, .a=E695, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1125, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_43},
+    {.op=OP_PERFORM, .line=1126, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_44},
+    {.op=OP_PERFORM, .line=1127, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1128, .a=E700, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1130, .a=E701, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1131, .var=11, .var2=-1, .unit=RT_unary_fn, .name="unary_fn"},
+    {.op=OP_PERFORM, .line=1132, .var=3, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_49},
+    {.op=OP_JZ, .line=1133, .a=E703, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1134, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_51},
+    {.op=OP_PERFORM, .line=1136, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1137, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_53},
+    {.op=OP_PERFORM, .line=1138, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1139, .a=E708, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1141, .a=E709, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1142, .var=12, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1143, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_58},
+    {.op=OP_PERFORM, .line=1144, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1145, .var=-1, .var2=-1, .unit=RT_uses, .name="uses", .nargs=2, .args=A73_60},
+    {.op=OP_PERFORM, .line=1146, .var=7, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1147, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_62},
+    {.op=OP_PERFORM, .line=1148, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1149, .a=E716, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1151, .a=E717, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1152, .a=E718, .var=13, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1153, .a=E719, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1154, .var=6, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_68},
+    {.op=OP_JZ, .line=1155, .a=E721, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1156, .a=E722, .var=13, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1157, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_71},
+    {.op=OP_JMP, .line=1155, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1159, .var=14, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_73},
+    {.op=OP_JZ, .line=1160, .a=E725, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1161, .a=E726, .var=13, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1160, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1163, .var=8, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1164, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_78},
+    {.op=OP_PERFORM, .line=1167, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_79},
+    {.op=OP_PERFORM, .line=1168, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1169, .var=4, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_81},
+    {.op=OP_LET, .line=1170, .a=E730, .var=15, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1171, .var=16, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_83},
+    {.op=OP_JZ, .line=1172, .a=E732, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1173, .var=17, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1174, .var=15, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_86},
+    {.op=OP_JZ, .line=1175, .a=E734, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1176, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_88},
+    {.op=OP_PERFORM, .line=1179, .var=7, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1180, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_90},
+    {.op=OP_PERFORM, .line=1181, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1182, .a=E739, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1184, .a=E740, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1185, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_94},
+    {.op=OP_LET, .line=1186, .a=E742, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1187, .a=E743, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1188, .a=E744, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1190, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_98},
+    {.op=OP_PERFORM, .line=1191, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1192, .a=E746, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1194, .a=E747, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1195, .var=18, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_102},
+    {.op=OP_JZ, .line=1196, .a=E749, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1197, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_104},
+    {.op=OP_JMP, .line=1196, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1199, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_106},
+    {.op=OP_PERFORM, .line=1200, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_107},
+    {.op=OP_PERFORM, .line=1201, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_108},
+    {.op=OP_JZ, .line=1202, .a=E755, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1203, .a=E756, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1204, .a=E758, .b=E757, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1205, .a=E760, .b=E759, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1209, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1210, .a=E761, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1212, .a=E762, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1213, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_116},
+    {.op=OP_PERFORM, .line=1214, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_LET, .line=1215, .a=E764, .var=19, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1216, .a=E765, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1217, .var=21, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_120},
+    {.op=OP_JZ, .line=1218, .a=E767, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1219, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_LET, .line=1220, .a=E768, .var=19, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1221, .a=E769, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1222, .var=22, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_125},
+    {.op=OP_JZ, .line=1223, .a=E771, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1224, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_LET, .line=1225, .a=E772, .var=19, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1226, .a=E773, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1227, .var=22, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A73_130},
+    {.op=OP_JMP, .line=1223, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1230, .a=E775, .var=23, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1231, .var=24, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_133},
+    {.op=OP_JZ, .line=1232, .a=E777, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1233, .var=25, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1234, .var=23, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A73_136},
+    {.op=OP_PERFORM, .line=1236, .var=-1, .var2=-1, .unit=RT_uses, .name="uses", .nargs=2, .args=A73_137},
+    {.op=OP_LET, .line=1237, .a=E781, .var=26, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1238, .a=E782, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1239, .a=E783, .var=27, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1240, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A73_141},
+    {.op=OP_LET, .line=1241, .a=E785, .var=26, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1243, .var=7, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1244, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_144},
+    {.op=OP_PERFORM, .line=1245, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1246, .a=E789, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1248, .a=E790, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1249, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_148},
+    {.op=OP_PERFORM, .line=1250, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1251, .a=E792, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1253, .a=E793, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1254, .a=E794, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1255, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_153},
+    {.op=OP_PERFORM, .line=1257, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_154},
+    {.op=OP_PERFORM, .line=1258, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_155},
+    {.op=OP_PERFORM, .line=1259, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1260, .a=E798, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1262, .a=E799, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1263, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_159},
+    {.op=OP_PERFORM, .line=1264, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1265, .a=E801, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1267, .a=E802, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1268, .a=E803, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1269, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A73_164},
+    {.op=OP_PERFORM, .line=1271, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A73_165},
+    {.op=OP_PERFORM, .line=1272, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_166},
+    {.op=OP_PERFORM, .line=1273, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1274, .a=E807, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1276, .a=E808, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1277, .var=28, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_170},
+    {.op=OP_PERFORM, .line=1278, .var=29, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_JZ, .line=1279, .a=E810, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1280, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_173},
+    {.op=OP_PERFORM, .line=1281, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_174},
+    {.op=OP_JMP, .line=1279, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1283, .a=E815, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1284, .var=5, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1285, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_178},
+    {.op=OP_PERFORM, .line=1286, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_179},
+    {.op=OP_JMP, .line=1283, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1288, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_181},
+    {.op=OP_PERFORM, .line=1291, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1292, .a=E823, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1294, .a=E824, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1295, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1296, .var=4, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A73_186},
+    {.op=OP_LET, .line=1297, .a=E826, .var=30, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1298, .a=E827, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1299, .var=29, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_JZ, .line=1300, .a=E828, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1301, .var=2, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1302, .var=4, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A73_192},
+    {.op=OP_LET, .line=1303, .a=E830, .var=30, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1304, .a=E831, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1305, .var=29, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_JMP, .line=1300, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1307, .a=E832, .var=27, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1308, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A73_198},
+    {.op=OP_PERFORM, .line=1309, .var=7, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1310, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_200},
+    {.op=OP_PERFORM, .line=1311, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1312, .a=E837, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1314, .a=E838, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1315, .a=E839, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1316, .a=E841, .b=E840, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1317, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_206},
+    {.op=OP_PERFORM, .line=1319, .var=31, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A73_207},
+    {.op=OP_JZ, .line=1320, .a=E844, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1321, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A73_209},
+    {.op=OP_JMP, .line=1320, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1323, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_211},
+    {.op=OP_PERFORM, .line=1325, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1326, .a=E850, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1328, .a=E851, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1329, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A73_215},
+    {.op=OP_PERFORM, .line=1330, .var=32, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1331, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_LET, .line=1332, .a=E853, .var=33, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1333, .a=E854, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1334, .a=E855, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1335, .var=7, .var2=-1, .unit=RT_where, .name="where", .nargs=1, .args=A73_221},
+    {.op=OP_NOTE, .line=1336, .a=E858, .b=E857, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1333, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1339, .a=E860, .b=E859, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1340, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A73_225},
+    {.op=OP_GIVEBACK, .line=1342, .a=E863, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1344, .a=E864, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1345, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_228},
+    {.op=OP_PERFORM, .line=1346, .var=32, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1347, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_LET, .line=1348, .a=E866, .var=33, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1349, .a=E868, .b=E867, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1350, .a=E870, .b=E869, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1351, .var=7, .var2=-1, .unit=RT_where, .name="where", .nargs=1, .args=A73_234},
+    {.op=OP_NOTE, .line=1352, .a=E873, .b=E872, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1353, .var=-1, .var2=-1, .unit=RT_jmp_to, .name="jmp_to", .nargs=1, .args=A73_236},
+    {.op=OP_GIVEBACK, .line=1354, .a=E875, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1356, .a=E876, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1357, .var=-1, .var2=-1, .unit=RT_conditional, .name="conditional", .nargs=3, .args=A73_239},
+    {.op=OP_GIVEBACK, .line=1358, .a=E880, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1360, .a=E881, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1361, .var=-1, .var2=-1, .unit=RT_conditional, .name="conditional", .nargs=3, .args=A73_242},
+    {.op=OP_GIVEBACK, .line=1362, .a=E885, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1364, .a=E886, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1365, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A73_245},
+    {.op=OP_PERFORM, .line=1366, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_LET, .line=1367, .a=E888, .var=34, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1368, .var=34, .var2=-1, .unit=RT_label, .name="label"},
+    {.op=OP_PERFORM, .line=1369, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A73_249},
+    {.op=OP_PERFORM, .line=1370, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A73_250},
+    {.op=OP_PERFORM, .line=1371, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A73_251},
+    {.op=OP_NOTE, .line=1372, .a=E896, .b=E895, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1373, .a=E897, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1375, .var=-1, .var2=-1, .unit=RT_statement_of_world, .name="statement_of_world", .nargs=2, .args=A73_254},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S73(World *w, Soul *s) {
@@ -10842,6 +10842,7 @@ static Value E1057(World *w, Soul *s) {
     return t1;
 }
 static const Expr A74_174[] = {E1057};
+static const int V74_177[] = {23, 17, 26, 27};
 static Value E1058(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("depth");
@@ -10861,7 +10862,7 @@ static Value E1060(World *w, Soul *s) {
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static const Expr A74_179[] = {E1060};
+static const Expr A74_180[] = {E1060};
 static Value E1061(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("hl");
@@ -10881,31 +10882,31 @@ static Value E1063(World *w, Soul *s) {
     Value t1 = t_cstr("when");
     return t1;
 }
-static const Expr A74_181[] = {E1063};
+static const Expr A74_182[] = {E1063};
 static Value E1064(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("it");
     return t1;
 }
-static const Expr A74_182[] = {E1064};
+static const Expr A74_183[] = {E1064};
 static Value E1065(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("hurts");
     return t1;
 }
-static const Expr A74_183[] = {E1065};
+static const Expr A74_184[] = {E1065};
 static Value E1066(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("as");
     return t1;
 }
-static const Expr A74_184[] = {E1066};
+static const Expr A74_185[] = {E1066};
 static Value E1067(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 29);
     return t1;
 }
-static const Expr A74_187[] = {E1067};
+static const Expr A74_188[] = {E1067};
 static Value E1068(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 23);
@@ -10918,7 +10919,7 @@ static Value E1069(World *w, Soul *s) {
     Value t1 = t_var(w, s, 6);
     return t1;
 }
-static const Expr A74_188[] = {E1068, E1069};
+static const Expr A74_189[] = {E1068, E1069};
 static Value E1070(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 23);
@@ -10932,7 +10933,7 @@ static Value E1071(World *w, Soul *s) {
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static const Expr A74_189[] = {E1070, E1071};
+static const Expr A74_190[] = {E1070, E1071};
 static Value E1072(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("OP_ENDURED");
@@ -10953,7 +10954,7 @@ static Value E1074(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static const Expr A74_190[] = {E1072, E1073, E1074};
+static const Expr A74_191[] = {E1072, E1073, E1074};
 static Value E1075(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 23);
@@ -10967,7 +10968,7 @@ static Value E1076(World *w, Soul *s) {
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static const Expr A74_191[] = {E1075, E1076};
+static const Expr A74_192[] = {E1075, E1076};
 static Value E1077(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
@@ -10986,7 +10987,7 @@ static Value E1079(World *w, Soul *s) {
     Value t1 = t_cstr("end");
     return t1;
 }
-static const Expr A74_193[] = {E1079};
+static const Expr A74_194[] = {E1079};
 static Value E1080(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 23);
@@ -11000,7 +11001,7 @@ static Value E1081(World *w, Soul *s) {
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static const Expr A74_194[] = {E1080, E1081};
+static const Expr A74_195[] = {E1080, E1081};
 static Value E1082(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
@@ -11028,208 +11029,209 @@ static Value E1085(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static const Expr A74_197[] = {E1085};
+static const Expr A74_198[] = {E1085};
 static const char *const N74[] = {"head", "j", "e", "call", "op", "name", "slot", "path", "n", "command", "given", "tells", "says", "input", "f", "adding", "t", "at", "mode", "stranger", "writer", "asks", "who", "id", "parted", "naming", "line", "found", "ended", "pain", 0};
 static const int P74[] = {0, 1, -1};
 static const Ins I74[] = {
-    {.op=OP_JZ, .line=1378, .a=E900, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1379, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_LET, .line=1380, .a=E901, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1381, .a=E902, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1382, .a=E903, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1383, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_5},
-    {.op=OP_JMP, .line=1382, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1385, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_7},
-    {.op=OP_LET, .line=1386, .a=E906, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1387, .a=E907, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1389, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1390, .var=6, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A74_11},
-    {.op=OP_PERFORM, .line=1391, .var=7, .var2=-1, .unit=RT_path_code, .name="path_code"},
-    {.op=OP_LET, .line=1392, .a=E909, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1393, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_14},
-    {.op=OP_PERFORM, .line=1394, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1395, .a=E913, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1397, .a=E914, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1398, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_18},
-    {.op=OP_PERFORM, .line=1399, .var=9, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_LET, .line=1400, .a=E916, .var=10, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1401, .a=E917, .var=11, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1402, .var=12, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_22},
-    {.op=OP_JZ, .line=1403, .a=E919, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1404, .var=13, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_LET, .line=1405, .a=E920, .var=10, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1406, .a=E921, .var=11, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1408, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_27},
-    {.op=OP_PERFORM, .line=1409, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1410, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_29},
-    {.op=OP_PERFORM, .line=1411, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_30},
-    {.op=OP_PERFORM, .line=1412, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1413, .a=E927, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1415, .a=E928, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1416, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_34},
-    {.op=OP_PERFORM, .line=1417, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_35},
-    {.op=OP_PERFORM, .line=1418, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A74_36},
-    {.op=OP_PERFORM, .line=1419, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1420, .a=E933, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1422, .a=E934, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1423, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_40},
-    {.op=OP_PERFORM, .line=1424, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1425, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_42},
-    {.op=OP_PERFORM, .line=1426, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1427, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_44},
-    {.op=OP_PERFORM, .line=1428, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_45},
-    {.op=OP_PERFORM, .line=1429, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1430, .a=E941, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1432, .a=E942, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1433, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1434, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_50},
-    {.op=OP_PERFORM, .line=1435, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_51},
-    {.op=OP_PERFORM, .line=1436, .var=14, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_LET, .line=1437, .a=E945, .var=15, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1438, .a=E946, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1439, .a=E947, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1440, .a=E948, .var=15, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1441, .a=E949, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1443, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_58},
-    {.op=OP_PERFORM, .line=1444, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1445, .a=E953, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1447, .a=E954, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1448, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1449, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1450, .var=17, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1451, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_65},
-    {.op=OP_PERFORM, .line=1452, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1453, .a=E958, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1455, .a=E959, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1456, .a=E960, .var=18, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1457, .a=E961, .var=16, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1458, .var=19, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_71},
-    {.op=OP_JZ, .line=1459, .a=E963, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1460, .a=E964, .var=18, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1459, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1462, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_75},
-    {.op=OP_PERFORM, .line=1463, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1465, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_77},
-    {.op=OP_PERFORM, .line=1466, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1467, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_79},
-    {.op=OP_LET, .line=1468, .a=E968, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1469, .a=E969, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1470, .var=21, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_82},
-    {.op=OP_JZ, .line=1471, .a=E971, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1472, .var=22, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1473, .var=20, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_85},
-    {.op=OP_PERFORM, .line=1476, .var=17, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1477, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_87},
-    {.op=OP_PERFORM, .line=1478, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1479, .a=E976, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1481, .a=E977, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1482, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_91},
-    {.op=OP_PERFORM, .line=1483, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_92},
-    {.op=OP_PERFORM, .line=1484, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1485, .a=E980, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1487, .a=E981, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1488, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_96},
-    {.op=OP_PERFORM, .line=1489, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_97},
-    {.op=OP_PERFORM, .line=1490, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_98},
-    {.op=OP_PERFORM, .line=1491, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1492, .a=E985, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1494, .a=E986, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1495, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A74_102},
-    {.op=OP_PERFORM, .line=1496, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1497, .a=E989, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1499, .a=E990, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1500, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_106},
-    {.op=OP_PERFORM, .line=1501, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1502, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A74_108},
-    {.op=OP_PERFORM, .line=1503, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_LET, .line=1504, .a=E993, .var=23, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1505, .var=23, .var2=-1, .unit=RT_label, .name="label"},
-    {.op=OP_PERFORM, .line=1506, .var=17, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1507, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_113},
-    {.op=OP_PERFORM, .line=1508, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A74_114},
-    {.op=OP_PERFORM, .line=1509, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_115},
-    {.op=OP_PERFORM, .line=1510, .var=17, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1511, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_117},
-    {.op=OP_PERFORM, .line=1512, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_118},
-    {.op=OP_PERFORM, .line=1513, .var=24, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A74_119},
-    {.op=OP_JZ, .line=1514, .a=E1006, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1515, .a=E1008, .b=E1007, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1516, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A74_122},
-    {.op=OP_PERFORM, .line=1518, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_123},
-    {.op=OP_NOTE, .line=1519, .a=E1013, .b=E1012, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1520, .a=E1014, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1522, .a=E1015, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1523, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_127},
-    {.op=OP_PERFORM, .line=1524, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1525, .a=E1017, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1527, .a=E1018, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1528, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_131},
-    {.op=OP_PERFORM, .line=1529, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_132},
-    {.op=OP_PERFORM, .line=1530, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1531, .a=E1021, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1533, .a=E1022, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1534, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_136},
-    {.op=OP_PERFORM, .line=1535, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_137},
-    {.op=OP_PERFORM, .line=1536, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_138},
-    {.op=OP_PERFORM, .line=1537, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1538, .a=E1026, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1540, .a=E1027, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1541, .a=E1029, .b=E1028, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1542, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_143},
-    {.op=OP_PERFORM, .line=1543, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_144},
-    {.op=OP_PERFORM, .line=1544, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_145},
-    {.op=OP_PERFORM, .line=1545, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_146},
-    {.op=OP_PERFORM, .line=1546, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1547, .a=E1034, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1549, .a=E1035, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1550, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_150},
-    {.op=OP_PERFORM, .line=1551, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
-    {.op=OP_PERFORM, .line=1552, .var=25, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_152},
-    {.op=OP_JZ, .line=1553, .a=E1038, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1554, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A74_154},
-    {.op=OP_PERFORM, .line=1556, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_155},
-    {.op=OP_PERFORM, .line=1557, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
-    {.op=OP_PERFORM, .line=1558, .var=17, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1559, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_158},
-    {.op=OP_PERFORM, .line=1560, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_GIVEBACK, .line=1561, .a=E1044, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1563, .a=E1045, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1564, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_LET, .line=1565, .a=E1046, .var=26, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1566, .a=E1047, .var=23, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1567, .var=23, .var2=-1, .unit=RT_label, .name="label"},
-    {.op=OP_PERFORM, .line=1568, .var=17, .var2=-1, .unit=RT_here, .name="here"},
-    {.op=OP_PERFORM, .line=1569, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_167},
-    {.op=OP_NOTE, .line=1570, .a=E1052, .b=E1051, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1571, .var=27, .var2=-1, .unit=RT_at_when, .name="at_when"},
-    {.op=OP_JZ, .line=1572, .a=E1053, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1573, .var=28, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A74_171},
-    {.op=OP_JZ, .line=1574, .a=E1055, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1575, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A74_173},
-    {.op=OP_PERFORM, .line=1576, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A74_174},
-    {.op=OP_PERFORM, .line=1578, .var=-1, .var2=-1, .unit=RT_statement, .name="statement"},
-    {.op=OP_PERFORM, .line=1579, .var=27, .var2=-1, .unit=RT_at_when, .name="at_when"},
-    {.op=OP_JMP, .line=1572, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1581, .a=E1059, .b=E1058, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1582, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A74_179},
-    {.op=OP_NOTE, .line=1583, .a=E1062, .b=E1061, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1584, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_181},
-    {.op=OP_PERFORM, .line=1585, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_182},
-    {.op=OP_PERFORM, .line=1586, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_183},
-    {.op=OP_PERFORM, .line=1587, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_184},
-    {.op=OP_PERFORM, .line=1588, .var=29, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1589, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_PERFORM, .line=1590, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_187},
-    {.op=OP_PERFORM, .line=1591, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_188},
-    {.op=OP_PERFORM, .line=1592, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_189},
-    {.op=OP_PERFORM, .line=1593, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_190},
-    {.op=OP_PERFORM, .line=1594, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_191},
-    {.op=OP_NOTE, .line=1595, .a=E1078, .b=E1077, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1596, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A74_193},
-    {.op=OP_PERFORM, .line=1597, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_194},
-    {.op=OP_NOTE, .line=1598, .a=E1083, .b=E1082, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1599, .a=E1084, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1601, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A74_197},
+    {.op=OP_JZ, .line=1380, .a=E900, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1381, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_LET, .line=1382, .a=E901, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1383, .a=E902, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1384, .a=E903, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1385, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_5},
+    {.op=OP_JMP, .line=1384, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1387, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_7},
+    {.op=OP_LET, .line=1388, .a=E906, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1389, .a=E907, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1391, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1392, .var=6, .var2=-1, .unit=RT_read_slot, .name="read_slot", .nargs=1, .args=A74_11},
+    {.op=OP_PERFORM, .line=1393, .var=7, .var2=-1, .unit=RT_path_code, .name="path_code"},
+    {.op=OP_LET, .line=1394, .a=E909, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1395, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_14},
+    {.op=OP_PERFORM, .line=1396, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1397, .a=E913, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1399, .a=E914, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1400, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_18},
+    {.op=OP_PERFORM, .line=1401, .var=9, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_LET, .line=1402, .a=E916, .var=10, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1403, .a=E917, .var=11, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1404, .var=12, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_22},
+    {.op=OP_JZ, .line=1405, .a=E919, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1406, .var=13, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_LET, .line=1407, .a=E920, .var=10, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1408, .a=E921, .var=11, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1410, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_27},
+    {.op=OP_PERFORM, .line=1411, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1412, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_29},
+    {.op=OP_PERFORM, .line=1413, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_30},
+    {.op=OP_PERFORM, .line=1414, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1415, .a=E927, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1417, .a=E928, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1418, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_34},
+    {.op=OP_PERFORM, .line=1419, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_35},
+    {.op=OP_PERFORM, .line=1420, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A74_36},
+    {.op=OP_PERFORM, .line=1421, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1422, .a=E933, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1424, .a=E934, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1425, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_40},
+    {.op=OP_PERFORM, .line=1426, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1427, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_42},
+    {.op=OP_PERFORM, .line=1428, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1429, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_44},
+    {.op=OP_PERFORM, .line=1430, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_45},
+    {.op=OP_PERFORM, .line=1431, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1432, .a=E941, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1434, .a=E942, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1435, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1436, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_50},
+    {.op=OP_PERFORM, .line=1437, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_51},
+    {.op=OP_PERFORM, .line=1438, .var=14, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_LET, .line=1439, .a=E945, .var=15, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1440, .a=E946, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1441, .a=E947, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1442, .a=E948, .var=15, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1443, .a=E949, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1445, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_58},
+    {.op=OP_PERFORM, .line=1446, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1447, .a=E953, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1449, .a=E954, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1450, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1451, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1452, .var=17, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1453, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_65},
+    {.op=OP_PERFORM, .line=1454, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1455, .a=E958, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1457, .a=E959, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1458, .a=E960, .var=18, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1459, .a=E961, .var=16, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1460, .var=19, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_71},
+    {.op=OP_JZ, .line=1461, .a=E963, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1462, .a=E964, .var=18, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1461, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1464, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_75},
+    {.op=OP_PERFORM, .line=1465, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1467, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_77},
+    {.op=OP_PERFORM, .line=1468, .var=5, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1469, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_79},
+    {.op=OP_LET, .line=1470, .a=E968, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1471, .a=E969, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1472, .var=21, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_82},
+    {.op=OP_JZ, .line=1473, .a=E971, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1474, .var=22, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1475, .var=20, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_85},
+    {.op=OP_PERFORM, .line=1478, .var=17, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1479, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_87},
+    {.op=OP_PERFORM, .line=1480, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1481, .a=E976, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1483, .a=E977, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1484, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_91},
+    {.op=OP_PERFORM, .line=1485, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_92},
+    {.op=OP_PERFORM, .line=1486, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1487, .a=E980, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1489, .a=E981, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1490, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_96},
+    {.op=OP_PERFORM, .line=1491, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_97},
+    {.op=OP_PERFORM, .line=1492, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_98},
+    {.op=OP_PERFORM, .line=1493, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1494, .a=E985, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1496, .a=E986, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1497, .var=-1, .var2=-1, .unit=RT_with_value, .name="with_value", .nargs=2, .args=A74_102},
+    {.op=OP_PERFORM, .line=1498, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1499, .a=E989, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1501, .a=E990, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1502, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_106},
+    {.op=OP_PERFORM, .line=1503, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1504, .var=-1, .var2=-1, .unit=RT_happen, .name="happen", .nargs=1, .args=A74_108},
+    {.op=OP_PERFORM, .line=1505, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_LET, .line=1506, .a=E993, .var=23, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1507, .var=23, .var2=-1, .unit=RT_label, .name="label"},
+    {.op=OP_PERFORM, .line=1508, .var=17, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1509, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_113},
+    {.op=OP_PERFORM, .line=1510, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A74_114},
+    {.op=OP_PERFORM, .line=1511, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_115},
+    {.op=OP_PERFORM, .line=1512, .var=17, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1513, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_117},
+    {.op=OP_PERFORM, .line=1514, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_118},
+    {.op=OP_PERFORM, .line=1515, .var=24, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A74_119},
+    {.op=OP_JZ, .line=1516, .a=E1006, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1517, .a=E1008, .b=E1007, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1518, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A74_122},
+    {.op=OP_PERFORM, .line=1520, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_123},
+    {.op=OP_NOTE, .line=1521, .a=E1013, .b=E1012, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1522, .a=E1014, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1524, .a=E1015, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1525, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_127},
+    {.op=OP_PERFORM, .line=1526, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1527, .a=E1017, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1529, .a=E1018, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1530, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_131},
+    {.op=OP_PERFORM, .line=1531, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_132},
+    {.op=OP_PERFORM, .line=1532, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1533, .a=E1021, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1535, .a=E1022, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1536, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_136},
+    {.op=OP_PERFORM, .line=1537, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_137},
+    {.op=OP_PERFORM, .line=1538, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_138},
+    {.op=OP_PERFORM, .line=1539, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1540, .a=E1026, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1542, .a=E1027, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1543, .a=E1029, .b=E1028, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1544, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_143},
+    {.op=OP_PERFORM, .line=1545, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_144},
+    {.op=OP_PERFORM, .line=1546, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_145},
+    {.op=OP_PERFORM, .line=1547, .var=-1, .var2=-1, .unit=RT_feeling, .name="feeling", .nargs=1, .args=A74_146},
+    {.op=OP_PERFORM, .line=1548, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1549, .a=E1034, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1551, .a=E1035, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1552, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_150},
+    {.op=OP_PERFORM, .line=1553, .var=16, .var2=-1, .unit=RT_target_fn, .name="target_fn"},
+    {.op=OP_PERFORM, .line=1554, .var=25, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A74_152},
+    {.op=OP_JZ, .line=1555, .a=E1038, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1556, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A74_154},
+    {.op=OP_PERFORM, .line=1558, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_155},
+    {.op=OP_PERFORM, .line=1559, .var=2, .var2=-1, .unit=RT_expr_fn, .name="expr_fn"},
+    {.op=OP_PERFORM, .line=1560, .var=17, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1561, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_158},
+    {.op=OP_PERFORM, .line=1562, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_GIVEBACK, .line=1563, .a=E1044, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1565, .a=E1045, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1566, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_LET, .line=1567, .a=E1046, .var=26, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1568, .a=E1047, .var=23, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1569, .var=23, .var2=-1, .unit=RT_label, .name="label"},
+    {.op=OP_PERFORM, .line=1570, .var=17, .var2=-1, .unit=RT_here, .name="here"},
+    {.op=OP_PERFORM, .line=1571, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_167},
+    {.op=OP_NOTE, .line=1572, .a=E1052, .b=E1051, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1573, .var=27, .var2=-1, .unit=RT_at_when, .name="at_when"},
+    {.op=OP_JZ, .line=1574, .a=E1053, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1575, .var=28, .var2=-1, .unit=RT_at, .name="at", .nargs=1, .args=A74_171},
+    {.op=OP_JZ, .line=1576, .a=E1055, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1577, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A74_173},
+    {.op=OP_PERFORM, .line=1578, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A74_174},
+    {.op=OP_PERFORM, .line=1580, .var=-1, .var2=-1, .unit=RT_statement, .name="statement"},
+    {.op=OP_PERFORM, .line=1581, .var=27, .var2=-1, .unit=RT_at_when, .name="at_when"},
+    {.op=OP_RECALL, .line=1582, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V74_177},
+    {.op=OP_JMP, .line=1574, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1584, .a=E1059, .b=E1058, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1585, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A74_180},
+    {.op=OP_NOTE, .line=1586, .a=E1062, .b=E1061, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1587, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_182},
+    {.op=OP_PERFORM, .line=1588, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_183},
+    {.op=OP_PERFORM, .line=1589, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_184},
+    {.op=OP_PERFORM, .line=1590, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A74_185},
+    {.op=OP_PERFORM, .line=1591, .var=29, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1592, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_PERFORM, .line=1593, .var=6, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A74_188},
+    {.op=OP_PERFORM, .line=1594, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_189},
+    {.op=OP_PERFORM, .line=1595, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_190},
+    {.op=OP_PERFORM, .line=1596, .var=-1, .var2=-1, .unit=RT_add_ins, .name="add_ins", .nargs=3, .args=A74_191},
+    {.op=OP_PERFORM, .line=1597, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_192},
+    {.op=OP_NOTE, .line=1598, .a=E1078, .b=E1077, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1599, .var=-1, .var2=-1, .unit=RT_inner_block, .name="inner_block", .nargs=1, .args=A74_194},
+    {.op=OP_PERFORM, .line=1600, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A74_195},
+    {.op=OP_NOTE, .line=1601, .a=E1083, .b=E1082, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1602, .a=E1084, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1604, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A74_198},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S74(World *w, Soul *s) {
@@ -11412,11 +11414,11 @@ static int S74(World *w, Soul *s) {
     case 174: return t_perform(w, s, &I74[174]);
     case 175: return t_perform(w, s, &I74[175]);
     case 176: return t_perform(w, s, &I74[176]);
-    case 177: return t_jmp(w, s, 170);
-    case 178: { Value v = E1059(w, s); Value k = E1058(w, s); return t_note(w, s, k, v); }
-    case 179: return t_perform(w, s, &I74[179]);
-    case 180: { Value v = E1062(w, s); Value k = E1061(w, s); return t_note(w, s, k, v); }
-    case 181: return t_perform(w, s, &I74[181]);
+    case 177: return t_recall(w, s, &I74[177]);
+    case 178: return t_jmp(w, s, 170);
+    case 179: { Value v = E1059(w, s); Value k = E1058(w, s); return t_note(w, s, k, v); }
+    case 180: return t_perform(w, s, &I74[180]);
+    case 181: { Value v = E1062(w, s); Value k = E1061(w, s); return t_note(w, s, k, v); }
     case 182: return t_perform(w, s, &I74[182]);
     case 183: return t_perform(w, s, &I74[183]);
     case 184: return t_perform(w, s, &I74[184]);
@@ -11427,12 +11429,13 @@ static int S74(World *w, Soul *s) {
     case 189: return t_perform(w, s, &I74[189]);
     case 190: return t_perform(w, s, &I74[190]);
     case 191: return t_perform(w, s, &I74[191]);
-    case 192: { Value v = E1078(w, s); Value k = E1077(w, s); return t_note(w, s, k, v); }
-    case 193: return t_perform(w, s, &I74[193]);
+    case 192: return t_perform(w, s, &I74[192]);
+    case 193: { Value v = E1078(w, s); Value k = E1077(w, s); return t_note(w, s, k, v); }
     case 194: return t_perform(w, s, &I74[194]);
-    case 195: { Value v = E1083(w, s); Value k = E1082(w, s); return t_note(w, s, k, v); }
-    case 196: return t_giveback(w, s, E1084(w, s));
-    case 197: return t_perform(w, s, &I74[197]);
+    case 195: return t_perform(w, s, &I74[195]);
+    case 196: { Value v = E1083(w, s); Value k = E1082(w, s); return t_note(w, s, k, v); }
+    case 197: return t_giveback(w, s, E1084(w, s));
+    case 198: return t_perform(w, s, &I74[198]);
     }
     return 0;
 }
@@ -11480,9 +11483,9 @@ static Value E1088(World *w, Soul *s) {
 static const char *const N75[] = {0};
 static const int P75[] = {-1};
 static const Ins I75[] = {
-    {.op=OP_JZ, .line=1605, .a=E1086, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1606, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A75_1},
-    {.op=OP_GIVEBACK, .line=1608, .a=E1088, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1608, .a=E1086, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1609, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A75_1},
+    {.op=OP_GIVEBACK, .line=1611, .a=E1088, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S75(World *w, Soul *s) {
@@ -11954,56 +11957,56 @@ static Value E1138(World *w, Soul *s) {
 static const char *const N76[] = {"u", "i", "moment", "names", "list", "decl", "u2", "origin", "quoted", 0};
 static const int P76[] = {-1};
 static const Ins I76[] = {
-    {.op=OP_LET, .line=1614, .a=E1089, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1615, .a=E1090, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1616, .a=E1091, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1617, .a=E1092, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1618, .a=E1093, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1619, .a=E1094, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1620, .a=E1096, .b=E1095, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1622, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A76_7},
-    {.op=OP_NOTE, .line=1623, .a=E1100, .b=E1099, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1625, .a=E1101, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1616, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1627, .a=E1102, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1628, .a=E1103, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1629, .a=E1104, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1630, .a=E1105, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1631, .a=E1106, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1632, .a=E1107, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1630, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1634, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_18},
-    {.op=OP_PERFORM, .line=1635, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_19},
-    {.op=OP_PERFORM, .line=1636, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_20},
-    {.op=OP_LET, .line=1637, .a=E1111, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1638, .a=E1112, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1639, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_23},
-    {.op=OP_LET, .line=1640, .a=E1114, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1638, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1642, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_26},
-    {.op=OP_PERFORM, .line=1643, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_27},
-    {.op=OP_PERFORM, .line=1644, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_28},
-    {.op=OP_PERFORM, .line=1645, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_29},
-    {.op=OP_PERFORM, .line=1646, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_30},
-    {.op=OP_LET, .line=1647, .a=E1120, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1648, .a=E1121, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1649, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_33},
-    {.op=OP_LET, .line=1650, .a=E1123, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1648, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1652, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_36},
-    {.op=OP_PERFORM, .line=1653, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_37},
-    {.op=OP_PERFORM, .line=1654, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_38},
-    {.op=OP_LET, .line=1655, .a=E1127, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1656, .a=E1128, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1657, .a=E1129, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1659, .a=E1130, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1660, .a=E1131, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1662, .a=E1132, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1663, .a=E1133, .var=7, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1664, .a=E1134, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1665, .var=8, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A76_47},
-    {.op=OP_LET, .line=1666, .a=E1136, .var=7, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1668, .a=E1138, .b=E1137, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1617, .a=E1089, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1618, .a=E1090, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1619, .a=E1091, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1620, .a=E1092, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1621, .a=E1093, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1622, .a=E1094, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1623, .a=E1096, .b=E1095, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1625, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A76_7},
+    {.op=OP_NOTE, .line=1626, .a=E1100, .b=E1099, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1628, .a=E1101, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1619, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1630, .a=E1102, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1631, .a=E1103, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1632, .a=E1104, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1633, .a=E1105, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1634, .a=E1106, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1635, .a=E1107, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1633, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1637, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_18},
+    {.op=OP_PERFORM, .line=1638, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_19},
+    {.op=OP_PERFORM, .line=1639, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_20},
+    {.op=OP_LET, .line=1640, .a=E1111, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1641, .a=E1112, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1642, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_23},
+    {.op=OP_LET, .line=1643, .a=E1114, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1641, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1645, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_26},
+    {.op=OP_PERFORM, .line=1646, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_27},
+    {.op=OP_PERFORM, .line=1647, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_28},
+    {.op=OP_PERFORM, .line=1648, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_29},
+    {.op=OP_PERFORM, .line=1649, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_30},
+    {.op=OP_LET, .line=1650, .a=E1120, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1651, .a=E1121, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1652, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_33},
+    {.op=OP_LET, .line=1653, .a=E1123, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1651, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1655, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_36},
+    {.op=OP_PERFORM, .line=1656, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_37},
+    {.op=OP_PERFORM, .line=1657, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A76_38},
+    {.op=OP_LET, .line=1658, .a=E1127, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1659, .a=E1128, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1660, .a=E1129, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1662, .a=E1130, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1663, .a=E1131, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1665, .a=E1132, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1666, .a=E1133, .var=7, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1667, .a=E1134, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1668, .var=8, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A76_47},
+    {.op=OP_LET, .line=1669, .a=E1136, .var=7, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1671, .a=E1138, .b=E1137, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S76(World *w, Soul *s) {
@@ -12125,192 +12128,202 @@ static Value E1148(World *w, Soul *s) {
 static const Expr A77_9[] = {E1148};
 static Value E1149(World *w, Soul *s) {
     (void)w; (void)s;
+    Value t1 = t_var(w, s, 2);
+    return t1;
+}
+static const Expr A77_10[] = {E1149};
+static Value E1150(World *w, Soul *s) {
+    (void)w; (void)s;
+    Value t1 = t_cstr("lf ");
+    Value t2 = t_var(w, s, 0);
+    Value t3 = t_bin(w, B_ADD, t1, t2);
+    Value t4 = t_note_get(w, s, t3);
+    Value t5 = t_cstr("");
+    Value t6 = t_bin(w, B_EQ, t4, t5);
+    return t6;
+}
+static Value E1151(World *w, Soul *s) {
+    (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
     Value t3 = t_cstr("");
     Value t4 = t_bin(w, B_NE, t2, t3);
     return t4;
 }
-static Value E1150(World *w, Soul *s) {
+static Value E1152(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("a program says who wrote it once");
     return t1;
 }
-static const Expr A77_11[] = {E1150};
-static Value E1151(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_var(w, s, 2);
-    return t1;
-}
-static const Expr A77_12[] = {E1151};
-static Value E1152(World *w, Soul *s) {
+static const Expr A77_13[] = {E1152};
+static Value E1153(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     return t1;
 }
-static Value E1153(World *w, Soul *s) {
+static Value E1154(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     return t1;
 }
-static Value E1154(World *w, Soul *s) {
+static Value E1155(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     return t1;
 }
-static Value E1155(World *w, Soul *s) {
+static Value E1156(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1156(World *w, Soul *s) {
+static Value E1157(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1157(World *w, Soul *s) {
+static Value E1158(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("core");
     return t1;
 }
-static const Expr A77_17[] = {E1157};
-static Value E1158(World *w, Soul *s) {
+static const Expr A77_18[] = {E1158};
+static Value E1159(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     return t1;
 }
-static Value E1159(World *w, Soul *s) {
+static Value E1160(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("core");
     return t1;
 }
-static Value E1160(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_int(1LL);
-    return t1;
-}
 static Value E1161(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("j");
+    Value t1 = t_int(1LL);
     return t1;
 }
 static Value E1162(World *w, Soul *s) {
     (void)w; (void)s;
+    Value t1 = t_cstr("j");
+    return t1;
+}
+static Value E1163(World *w, Soul *s) {
+    (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1163(World *w, Soul *s) {
+static Value E1164(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1164(World *w, Soul *s) {
+static Value E1165(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("deterministic");
     return t1;
 }
-static const Expr A77_23[] = {E1164};
-static Value E1165(World *w, Soul *s) {
+static const Expr A77_24[] = {E1165};
+static Value E1166(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     return t1;
 }
-static Value E1166(World *w, Soul *s) {
+static Value E1167(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("deterministic");
     return t1;
 }
-static Value E1167(World *w, Soul *s) {
+static Value E1168(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1168(World *w, Soul *s) {
+static Value E1169(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     return t1;
 }
-static Value E1169(World *w, Soul *s) {
+static Value E1170(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1170(World *w, Soul *s) {
+static Value E1171(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1171(World *w, Soul *s) {
+static Value E1172(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("learn");
     return t1;
 }
-static const Expr A77_29[] = {E1171};
-static Value E1172(World *w, Soul *s) {
+static const Expr A77_30[] = {E1172};
+static Value E1173(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 7);
     return t1;
 }
-static Value E1173(World *w, Soul *s) {
+static Value E1174(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
 }
-static const Expr A77_32[] = {E1173};
-static Value E1174(World *w, Soul *s) {
+static const Expr A77_33[] = {E1174};
+static Value E1175(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     Value t2 = t_cstr("str");
     Value t3 = t_bin(w, B_NE, t1, t2);
     return t3;
 }
-static Value E1175(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_cstr("learn needs the name of a file, in quotes");
-    return t1;
-}
-static const Expr A77_34[] = {E1175};
 static Value E1176(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_var(w, s, 2);
+    Value t1 = t_cstr("learn needs the name of a file, in quotes");
     return t1;
 }
 static const Expr A77_35[] = {E1176};
 static Value E1177(World *w, Soul *s) {
     (void)w; (void)s;
+    Value t1 = t_var(w, s, 2);
+    return t1;
+}
+static const Expr A77_36[] = {E1177};
+static Value E1178(World *w, Soul *s) {
+    (void)w; (void)s;
     Value t1 = t_cstr("j");
     return t1;
 }
-static Value E1178(World *w, Soul *s) {
+static Value E1179(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1179(World *w, Soul *s) {
+static Value E1180(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     return t1;
 }
-static const Expr A77_38[] = {E1179};
-static Value E1180(World *w, Soul *s) {
+static const Expr A77_39[] = {E1180};
+static Value E1181(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1181(World *w, Soul *s) {
+static Value E1182(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("ufile");
     return t1;
 }
-static Value E1182(World *w, Soul *s) {
+static Value E1183(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("lf ");
     Value t2 = t_var(w, s, 0);
@@ -12318,384 +12331,384 @@ static Value E1182(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1183(World *w, Soul *s) {
+static Value E1184(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1184(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_cstr("soul");
-    return t1;
-}
-static const Expr A77_42[] = {E1184};
 static Value E1185(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_var(w, s, 10);
+    Value t1 = t_cstr("soul");
     return t1;
 }
+static const Expr A77_43[] = {E1185};
 static Value E1186(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("soul");
+    Value t1 = t_var(w, s, 10);
     return t1;
 }
 static Value E1187(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("kind");
+    Value t1 = t_cstr("soul");
     return t1;
 }
-static const Expr A77_46[] = {E1187};
 static Value E1188(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_var(w, s, 10);
+    Value t1 = t_cstr("kind");
     return t1;
 }
+static const Expr A77_47[] = {E1188};
 static Value E1189(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("kind");
+    Value t1 = t_var(w, s, 10);
     return t1;
 }
 static Value E1190(World *w, Soul *s) {
     (void)w; (void)s;
+    Value t1 = t_cstr("kind");
+    return t1;
+}
+static Value E1191(World *w, Soul *s) {
+    (void)w; (void)s;
     Value t1 = t_cstr("ritual");
     return t1;
 }
-static const Expr A77_50[] = {E1190};
-static Value E1191(World *w, Soul *s) {
+static const Expr A77_51[] = {E1191};
+static Value E1192(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 10);
     return t1;
 }
-static Value E1192(World *w, Soul *s) {
+static Value E1193(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("ritual");
     return t1;
 }
-static Value E1193(World *w, Soul *s) {
+static Value E1194(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     Value t2 = t_cstr("");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1194(World *w, Soul *s) {
+static Value E1195(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("everything must belong to a soul, a kind of soul or a ritual");
     return t1;
 }
-static const Expr A77_54[] = {E1194};
-static Value E1195(World *w, Soul *s) {
+static const Expr A77_55[] = {E1195};
+static Value E1196(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("units");
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static Value E1196(World *w, Soul *s) {
+static Value E1197(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("units");
     return t1;
 }
-static Value E1197(World *w, Soul *s) {
+static Value E1198(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1198(World *w, Soul *s) {
+static Value E1199(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("u");
     return t1;
 }
-static Value E1199(World *w, Soul *s) {
+static Value E1200(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     return t1;
 }
-static Value E1200(World *w, Soul *s) {
+static Value E1201(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("uname");
     return t1;
 }
-static Value E1201(World *w, Soul *s) {
+static Value E1202(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 11);
     return t1;
 }
-static Value E1202(World *w, Soul *s) {
+static Value E1203(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("udecl");
     return t1;
 }
-static Value E1203(World *w, Soul *s) {
+static Value E1204(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     return t1;
 }
-static Value E1204(World *w, Soul *s) {
+static Value E1205(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("pc");
     return t1;
 }
-static Value E1205(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_int(0LL);
-    return t1;
-}
 static Value E1206(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("in");
+    Value t1 = t_int(0LL);
     return t1;
 }
 static Value E1207(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_int(0LL);
+    Value t1 = t_cstr("in");
     return t1;
 }
 static Value E1208(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("csn");
+    Value t1 = t_int(0LL);
     return t1;
 }
 static Value E1209(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_int(0LL);
+    Value t1 = t_cstr("csn");
     return t1;
 }
 static Value E1210(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("labels");
+    Value t1 = t_int(0LL);
     return t1;
 }
 static Value E1211(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_int(0LL);
+    Value t1 = t_cstr("labels");
     return t1;
 }
 static Value E1212(World *w, Soul *s) {
+    (void)w; (void)s;
+    Value t1 = t_int(0LL);
+    return t1;
+}
+static Value E1213(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("sl ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1213(World *w, Soul *s) {
+static Value E1214(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1214(World *w, Soul *s) {
+static Value E1215(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("as ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1215(World *w, Soul *s) {
+static Value E1216(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1216(World *w, Soul *s) {
+static Value E1217(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("reads ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1217(World *w, Soul *s) {
+static Value E1218(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1218(World *w, Soul *s) {
+static Value E1219(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("sc ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1219(World *w, Soul *s) {
+static Value E1220(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1220(World *w, Soul *s) {
+static Value E1221(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("marks ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1221(World *w, Soul *s) {
+static Value E1222(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1222(World *w, Soul *s) {
+static Value E1223(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("merr ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1223(World *w, Soul *s) {
+static Value E1224(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1224(World *w, Soul *s) {
+static Value E1225(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("rn ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1225(World *w, Soul *s) {
+static Value E1226(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1226(World *w, Soul *s) {
+static Value E1227(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("script ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1227(World *w, Soul *s) {
+static Value E1228(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1228(World *w, Soul *s) {
+static Value E1229(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("hearts ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1229(World *w, Soul *s) {
+static Value E1230(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1230(World *w, Soul *s) {
+static Value E1231(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("heart lines ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1231(World *w, Soul *s) {
+static Value E1232(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1232(World *w, Soul *s) {
+static Value E1233(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("takes back ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1233(World *w, Soul *s) {
+static Value E1234(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1234(World *w, Soul *s) {
+static Value E1235(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("unknown ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1235(World *w, Soul *s) {
+static Value E1236(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1236(World *w, Soul *s) {
+static Value E1237(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("kind of ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1237(World *w, Soul *s) {
+static Value E1238(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     return t1;
 }
-static Value E1238(World *w, Soul *s) {
+static Value E1239(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("name of ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1239(World *w, Soul *s) {
+static Value E1240(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 11);
     return t1;
 }
-static Value E1240(World *w, Soul *s) {
+static Value E1241(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("depth");
     return t1;
 }
-static Value E1241(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_int(0LL);
-    return t1;
-}
 static Value E1242(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("params");
+    Value t1 = t_int(0LL);
     return t1;
 }
 static Value E1243(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("");
+    Value t1 = t_cstr("params");
     return t1;
 }
 static Value E1244(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("nparams");
+    Value t1 = t_cstr("");
     return t1;
 }
 static Value E1245(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_int(0LL);
+    Value t1 = t_cstr("nparams");
     return t1;
 }
 static Value E1246(World *w, Soul *s) {
+    (void)w; (void)s;
+    Value t1 = t_int(0LL);
+    return t1;
+}
+static Value E1247(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     Value t2 = t_cstr("ritual");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1247(World *w, Soul *s) {
+static Value E1248(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 13);
     Value t2 = t_cstr("");
     Value t3 = t_bin(w, B_NE, t1, t2);
     return t3;
 }
-static Value E1248(World *w, Soul *s) {
+static Value E1249(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 14);
     return t1;
 }
-static const Expr A77_86[] = {E1248};
-static Value E1249(World *w, Soul *s) {
+static const Expr A77_87[] = {E1249};
+static Value E1250(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("params");
     return t1;
 }
-static Value E1250(World *w, Soul *s) {
+static Value E1251(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("params");
     Value t2 = t_note_get(w, s, t1);
@@ -12705,12 +12718,12 @@ static Value E1250(World *w, Soul *s) {
     Value t6 = t_bin(w, B_ADD, t4, t5);
     return t6;
 }
-static Value E1251(World *w, Soul *s) {
+static Value E1252(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("nparams");
     return t1;
 }
-static Value E1252(World *w, Soul *s) {
+static Value E1253(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("nparams");
     Value t2 = t_note_get(w, s, t1);
@@ -12718,40 +12731,40 @@ static Value E1252(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1253(World *w, Soul *s) {
+static Value E1254(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr(",");
     return t1;
 }
-static const Expr A77_89[] = {E1253};
-static const int V77_91[] = {0, 9, 11, 12};
-static Value E1254(World *w, Soul *s) {
+static const Expr A77_90[] = {E1254};
+static const int V77_92[] = {0, 9, 11, 12};
+static Value E1255(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("ustyle");
     return t1;
 }
-static Value E1255(World *w, Soul *s) {
+static Value E1256(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1256(World *w, Soul *s) {
+static Value E1257(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("is");
     return t1;
 }
-static const Expr A77_94[] = {E1256};
-static Value E1257(World *w, Soul *s) {
+static const Expr A77_95[] = {E1257};
+static Value E1258(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 17);
     return t1;
 }
-static Value E1258(World *w, Soul *s) {
+static Value E1259(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("anxious avoidant secure eros ludus storge pragma mania agape");
     return t1;
 }
-static Value E1259(World *w, Soul *s) {
+static Value E1260(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     Value t2 = t_int(1LL);
@@ -12774,44 +12787,44 @@ static Value E1259(World *w, Soul *s) {
     t_list_push(w, t1, t10);
     return t1;
 }
-static Value E1260(World *w, Soul *s) {
+static Value E1261(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1261(World *w, Soul *s) {
+static Value E1262(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 20);
     return t1;
 }
-static Value E1262(World *w, Soul *s) {
+static Value E1263(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 21);
     Value t2 = t_var(w, s, 18);
     Value t3 = t_place(w, t1, t2);
     return t3;
 }
-static Value E1263(World *w, Soul *s) {
+static Value E1264(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 22);
     Value t2 = t_int(0LL);
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1264(World *w, Soul *s) {
+static Value E1265(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("there is no such way to love: ");
     Value t2 = t_var(w, s, 21);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static const Expr A77_103[] = {E1264};
-static Value E1265(World *w, Soul *s) {
+static const Expr A77_104[] = {E1265};
+static Value E1266(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("ustyle");
     return t1;
 }
-static Value E1266(World *w, Soul *s) {
+static Value E1267(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("ustyle");
     Value t2 = t_note_get(w, s, t1);
@@ -12821,37 +12834,37 @@ static Value E1266(World *w, Soul *s) {
     Value t6 = t_bin(w, B_ADD, t2, t5);
     return t6;
 }
-static Value E1267(World *w, Soul *s) {
+static Value E1268(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("and");
     return t1;
 }
-static const Expr A77_105[] = {E1267};
-static const int V77_106[] = {0, 9, 11, 12, 18, 19};
-static Value E1268(World *w, Soul *s) {
+static const Expr A77_106[] = {E1268};
+static const int V77_107[] = {0, 9, 11, 12, 18, 19};
+static Value E1269(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     return t1;
 }
-static Value E1269(World *w, Soul *s) {
+static Value E1270(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1270(World *w, Soul *s) {
+static Value E1271(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("end");
     return t1;
 }
-static const Expr A77_110[] = {E1270};
-static Value E1271(World *w, Soul *s) {
+static const Expr A77_111[] = {E1271};
+static Value E1272(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     return t1;
 }
-static Value E1272(World *w, Soul *s) {
+static Value E1273(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     Value t2 = t_note_get(w, s, t1);
@@ -12859,7 +12872,7 @@ static Value E1272(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1273(World *w, Soul *s) {
+static Value E1274(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     Value t2 = t_cstr(":");
@@ -12873,13 +12886,13 @@ static Value E1273(World *w, Soul *s) {
     Value t10 = t_bin(w, B_GT, t8, t9);
     return t10;
 }
-static Value E1274(World *w, Soul *s) {
+static Value E1275(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static const Expr A77_113[] = {E1274};
-static Value E1275(World *w, Soul *s) {
+static const Expr A77_114[] = {E1275};
+static Value E1276(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("there is already a ");
     Value t2 = t_var(w, s, 9);
@@ -12890,13 +12903,13 @@ static Value E1275(World *w, Soul *s) {
     Value t7 = t_bin(w, B_ADD, t5, t6);
     return t7;
 }
-static const Expr A77_114[] = {E1275};
-static Value E1276(World *w, Soul *s) {
+static const Expr A77_115[] = {E1276};
+static Value E1277(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("declared");
     return t1;
 }
-static Value E1277(World *w, Soul *s) {
+static Value E1278(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("declared");
     Value t2 = t_note_get(w, s, t1);
@@ -12910,19 +12923,19 @@ static Value E1277(World *w, Soul *s) {
     Value t10 = t_bin(w, B_ADD, t8, t9);
     return t10;
 }
-static Value E1278(World *w, Soul *s) {
+static Value E1279(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     Value t2 = t_cstr("soul");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1279(World *w, Soul *s) {
+static Value E1280(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("souls");
     return t1;
 }
-static Value E1280(World *w, Soul *s) {
+static Value E1281(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("souls");
     Value t2 = t_note_get(w, s, t1);
@@ -12930,40 +12943,40 @@ static Value E1280(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1281(World *w, Soul *s) {
+static Value E1282(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     Value t2 = t_cstr("kind");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1282(World *w, Soul *s) {
+static Value E1283(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("K ");
     Value t2 = t_var(w, s, 11);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1283(World *w, Soul *s) {
+static Value E1284(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     return t1;
 }
-static Value E1284(World *w, Soul *s) {
+static Value E1285(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 9);
     Value t2 = t_cstr("ritual");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1285(World *w, Soul *s) {
+static Value E1286(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("RT ");
     Value t2 = t_var(w, s, 11);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1286(World *w, Soul *s) {
+static Value E1287(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     return t1;
@@ -12971,129 +12984,130 @@ static Value E1286(World *w, Soul *s) {
 static const char *const N77[] = {"j", "signed", "k", "kd", "who_wrote", "heart_of_it", "steady", "learning", "wanted", "decl", "yes", "name", "u", "pk", "param", "slot", "comma", "styled", "ways", "flags", "more", "way", "at", 0};
 static const int P77[] = {-1};
 static const Ins I77[] = {
-    {.op=OP_LET, .line=1672, .a=E1139, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1673, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A77_1},
-    {.op=OP_NOTE, .line=1674, .a=E1142, .b=E1141, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1675, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_3},
-    {.op=OP_JZ, .line=1676, .a=E1144, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1677, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A77_5},
-    {.op=OP_PERFORM, .line=1678, .var=2, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_PERFORM, .line=1679, .var=3, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A77_7},
-    {.op=OP_JZ, .line=1680, .a=E1147, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1681, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_9},
-    {.op=OP_JZ, .line=1683, .a=E1149, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1684, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_11},
-    {.op=OP_PERFORM, .line=1686, .var=4, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A77_12},
-    {.op=OP_NOTE, .line=1687, .a=E1153, .b=E1152, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1688, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_NOTE, .line=1689, .a=E1155, .b=E1154, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1690, .a=E1156, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1692, .var=5, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_17},
-    {.op=OP_JZ, .line=1693, .a=E1158, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1694, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_NOTE, .line=1695, .a=E1160, .b=E1159, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1696, .a=E1162, .b=E1161, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1697, .a=E1163, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1699, .var=6, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_23},
-    {.op=OP_JZ, .line=1700, .a=E1165, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1701, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_NOTE, .line=1702, .a=E1167, .b=E1166, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1703, .a=E1169, .b=E1168, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1704, .a=E1170, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1706, .var=7, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_29},
-    {.op=OP_JZ, .line=1707, .a=E1172, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1708, .var=2, .var2=-1, .unit=RT_take_token, .name="take_token"},
-    {.op=OP_PERFORM, .line=1709, .var=3, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A77_32},
-    {.op=OP_JZ, .line=1710, .a=E1174, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1711, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_34},
-    {.op=OP_PERFORM, .line=1713, .var=8, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A77_35},
-    {.op=OP_PERFORM, .line=1714, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_NOTE, .line=1715, .a=E1178, .b=E1177, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1716, .var=-1, .var2=-1, .unit=RT_learn_file, .name="learn_file", .nargs=1, .args=A77_38},
-    {.op=OP_GIVEBACK, .line=1717, .a=E1180, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1719, .a=E1182, .b=E1181, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1720, .a=E1183, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1721, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_42},
-    {.op=OP_JZ, .line=1722, .a=E1185, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1723, .a=E1186, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1722, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1725, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_46},
-    {.op=OP_JZ, .line=1726, .a=E1188, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1727, .a=E1189, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1726, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1729, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_50},
-    {.op=OP_JZ, .line=1730, .a=E1191, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1731, .a=E1192, .var=9, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1735, .a=E1193, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1736, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_54},
-    {.op=OP_PERFORM, .line=1738, .var=11, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_LET, .line=1739, .a=E1195, .var=12, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1740, .a=E1197, .b=E1196, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1741, .a=E1199, .b=E1198, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1742, .a=E1201, .b=E1200, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1743, .a=E1203, .b=E1202, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1744, .a=E1205, .b=E1204, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1745, .a=E1207, .b=E1206, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1746, .a=E1209, .b=E1208, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1747, .a=E1211, .b=E1210, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1748, .a=E1213, .b=E1212, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1749, .a=E1215, .b=E1214, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1750, .a=E1217, .b=E1216, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1751, .a=E1219, .b=E1218, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1752, .a=E1221, .b=E1220, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1753, .a=E1223, .b=E1222, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1754, .a=E1225, .b=E1224, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1755, .a=E1227, .b=E1226, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1756, .a=E1229, .b=E1228, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1757, .a=E1231, .b=E1230, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1758, .a=E1233, .b=E1232, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1759, .a=E1235, .b=E1234, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1760, .a=E1237, .b=E1236, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1761, .a=E1239, .b=E1238, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1762, .a=E1241, .b=E1240, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1763, .a=E1243, .b=E1242, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1764, .a=E1245, .b=E1244, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1765, .a=E1246, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1766, .var=13, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_JZ, .line=1767, .a=E1247, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1768, .var=14, .var2=-1, .unit=RT_a_name, .name="a_name"},
-    {.op=OP_PERFORM, .line=1769, .var=15, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A77_86},
-    {.op=OP_NOTE, .line=1770, .a=E1250, .b=E1249, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1771, .a=E1252, .b=E1251, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1772, .var=16, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A77_89},
-    {.op=OP_PERFORM, .line=1773, .var=13, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
-    {.op=OP_RECALL, .line=1774, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V77_91},
-    {.op=OP_JMP, .line=1767, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1777, .a=E1255, .b=E1254, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1778, .var=17, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_94},
-    {.op=OP_JZ, .line=1779, .a=E1257, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1780, .a=E1258, .var=18, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1781, .a=E1259, .var=19, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1782, .a=E1260, .var=20, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1783, .a=E1261, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1784, .var=21, .var2=-1, .unit=RT_a_word, .name="a_word"},
-    {.op=OP_LET, .line=1785, .a=E1262, .var=22, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1786, .a=E1263, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1787, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_103},
-    {.op=OP_NOTE, .line=1789, .a=E1266, .b=E1265, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1790, .var=20, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_105},
-    {.op=OP_RECALL, .line=1791, .var=-1, .var2=-1, .unit=-1, .nvars=6, .vars=V77_106},
-    {.op=OP_JMP, .line=1783, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1794, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
-    {.op=OP_NOTE, .line=1795, .a=E1269, .b=E1268, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1796, .var=-1, .var2=-1, .unit=RT_block, .name="block", .nargs=1, .args=A77_110},
-    {.op=OP_NOTE, .line=1797, .a=E1272, .b=E1271, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1798, .a=E1273, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1799, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A77_113},
-    {.op=OP_PERFORM, .line=1800, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_114},
-    {.op=OP_NOTE, .line=1802, .a=E1277, .b=E1276, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1803, .a=E1278, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1804, .a=E1280, .b=E1279, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1806, .a=E1281, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1807, .a=E1283, .b=E1282, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1809, .a=E1284, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1810, .a=E1286, .b=E1285, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1812, .var=-1, .var2=-1, .unit=RT_finish_unit, .name="finish_unit"},
+    {.op=OP_LET, .line=1675, .a=E1139, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1676, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A77_1},
+    {.op=OP_NOTE, .line=1677, .a=E1142, .b=E1141, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1678, .var=1, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_3},
+    {.op=OP_JZ, .line=1679, .a=E1144, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1680, .var=-1, .var2=-1, .unit=RT_expect_word, .name="expect_word", .nargs=1, .args=A77_5},
+    {.op=OP_PERFORM, .line=1681, .var=2, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_PERFORM, .line=1682, .var=3, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A77_7},
+    {.op=OP_JZ, .line=1683, .a=E1147, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1684, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_9},
+    {.op=OP_PERFORM, .line=1686, .var=4, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A77_10},
+    {.op=OP_JZ, .line=1687, .a=E1150, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1688, .a=E1151, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1689, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_13},
+    {.op=OP_NOTE, .line=1691, .a=E1154, .b=E1153, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1693, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_NOTE, .line=1694, .a=E1156, .b=E1155, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1695, .a=E1157, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1697, .var=5, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_18},
+    {.op=OP_JZ, .line=1698, .a=E1159, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1699, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_NOTE, .line=1700, .a=E1161, .b=E1160, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1701, .a=E1163, .b=E1162, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1702, .a=E1164, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1704, .var=6, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_24},
+    {.op=OP_JZ, .line=1705, .a=E1166, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1706, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_NOTE, .line=1707, .a=E1168, .b=E1167, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1708, .a=E1170, .b=E1169, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1709, .a=E1171, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1711, .var=7, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_30},
+    {.op=OP_JZ, .line=1712, .a=E1173, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1713, .var=2, .var2=-1, .unit=RT_take_token, .name="take_token"},
+    {.op=OP_PERFORM, .line=1714, .var=3, .var2=-1, .unit=RT_kind_of, .name="kind_of", .nargs=1, .args=A77_33},
+    {.op=OP_JZ, .line=1715, .a=E1175, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1716, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_35},
+    {.op=OP_PERFORM, .line=1718, .var=8, .var2=-1, .unit=RT_value_of, .name="value_of", .nargs=1, .args=A77_36},
+    {.op=OP_PERFORM, .line=1719, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_NOTE, .line=1720, .a=E1179, .b=E1178, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1721, .var=-1, .var2=-1, .unit=RT_learn_file, .name="learn_file", .nargs=1, .args=A77_39},
+    {.op=OP_GIVEBACK, .line=1722, .a=E1181, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1724, .a=E1183, .b=E1182, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1725, .a=E1184, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1726, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_43},
+    {.op=OP_JZ, .line=1727, .a=E1186, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1728, .a=E1187, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1727, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1730, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_47},
+    {.op=OP_JZ, .line=1731, .a=E1189, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1732, .a=E1190, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1731, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1734, .var=10, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_51},
+    {.op=OP_JZ, .line=1735, .a=E1192, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1736, .a=E1193, .var=9, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1740, .a=E1194, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1741, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_55},
+    {.op=OP_PERFORM, .line=1743, .var=11, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_LET, .line=1744, .a=E1196, .var=12, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1745, .a=E1198, .b=E1197, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1746, .a=E1200, .b=E1199, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1747, .a=E1202, .b=E1201, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1748, .a=E1204, .b=E1203, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1749, .a=E1206, .b=E1205, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1750, .a=E1208, .b=E1207, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1751, .a=E1210, .b=E1209, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1752, .a=E1212, .b=E1211, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1753, .a=E1214, .b=E1213, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1754, .a=E1216, .b=E1215, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1755, .a=E1218, .b=E1217, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1756, .a=E1220, .b=E1219, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1757, .a=E1222, .b=E1221, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1758, .a=E1224, .b=E1223, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1759, .a=E1226, .b=E1225, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1760, .a=E1228, .b=E1227, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1761, .a=E1230, .b=E1229, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1762, .a=E1232, .b=E1231, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1763, .a=E1234, .b=E1233, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1764, .a=E1236, .b=E1235, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1765, .a=E1238, .b=E1237, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1766, .a=E1240, .b=E1239, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1767, .a=E1242, .b=E1241, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1768, .a=E1244, .b=E1243, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1769, .a=E1246, .b=E1245, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1770, .a=E1247, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1771, .var=13, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_JZ, .line=1772, .a=E1248, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1773, .var=14, .var2=-1, .unit=RT_a_name, .name="a_name"},
+    {.op=OP_PERFORM, .line=1774, .var=15, .var2=-1, .unit=RT_slot_of, .name="slot_of", .nargs=1, .args=A77_87},
+    {.op=OP_NOTE, .line=1775, .a=E1251, .b=E1250, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1776, .a=E1253, .b=E1252, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1777, .var=16, .var2=-1, .unit=RT_is_op, .name="is_op", .nargs=1, .args=A77_90},
+    {.op=OP_PERFORM, .line=1778, .var=13, .var2=-1, .unit=RT_peek_kind, .name="peek_kind"},
+    {.op=OP_RECALL, .line=1779, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V77_92},
+    {.op=OP_JMP, .line=1772, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1782, .a=E1256, .b=E1255, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1783, .var=17, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_95},
+    {.op=OP_JZ, .line=1784, .a=E1258, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1785, .a=E1259, .var=18, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1786, .a=E1260, .var=19, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1787, .a=E1261, .var=20, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1788, .a=E1262, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1789, .var=21, .var2=-1, .unit=RT_a_word, .name="a_word"},
+    {.op=OP_LET, .line=1790, .a=E1263, .var=22, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1791, .a=E1264, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1792, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_104},
+    {.op=OP_NOTE, .line=1794, .a=E1267, .b=E1266, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1795, .var=20, .var2=-1, .unit=RT_is_word, .name="is_word", .nargs=1, .args=A77_106},
+    {.op=OP_RECALL, .line=1796, .var=-1, .var2=-1, .unit=-1, .nvars=6, .vars=V77_107},
+    {.op=OP_JMP, .line=1788, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1799, .var=-1, .var2=-1, .unit=RT_line_done, .name="line_done"},
+    {.op=OP_NOTE, .line=1800, .a=E1270, .b=E1269, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1801, .var=-1, .var2=-1, .unit=RT_block, .name="block", .nargs=1, .args=A77_111},
+    {.op=OP_NOTE, .line=1802, .a=E1273, .b=E1272, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1803, .a=E1274, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1804, .var=-1, .var2=-1, .unit=RT_open_line, .name="open_line", .nargs=1, .args=A77_114},
+    {.op=OP_PERFORM, .line=1805, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A77_115},
+    {.op=OP_NOTE, .line=1807, .a=E1278, .b=E1277, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1808, .a=E1279, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1809, .a=E1281, .b=E1280, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1811, .a=E1282, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1812, .a=E1284, .b=E1283, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1814, .a=E1285, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1815, .a=E1287, .b=E1286, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1817, .var=-1, .var2=-1, .unit=RT_finish_unit, .name="finish_unit"},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S77(World *w, Soul *s) {
@@ -13109,123 +13123,124 @@ static int S77(World *w, Soul *s) {
     case 7: return t_perform(w, s, &I77[7]);
     case 8: return t_jz(w, s, E1147(w, s), J77_2e);
     case 9: return t_perform(w, s, &I77[9]);
-    case 10: return t_jz(w, s, E1149(w, s), J77_3e);
-    case 11: return t_perform(w, s, &I77[11]);
-    case 12: return t_perform(w, s, &I77[12]);
-    case 13: { Value v = E1153(w, s); Value k = E1152(w, s); return t_note(w, s, k, v); }
-    case 14: return t_perform(w, s, &I77[14]);
-    case 15: { Value v = E1155(w, s); Value k = E1154(w, s); return t_note(w, s, k, v); }
-    case 16: return t_giveback(w, s, E1156(w, s));
-    case 17: return t_perform(w, s, &I77[17]);
-    case 18: return t_jz(w, s, E1158(w, s), J77_4e);
-    case 19: return t_perform(w, s, &I77[19]);
-    case 20: { Value v = E1160(w, s); Value k = E1159(w, s); return t_note(w, s, k, v); }
-    case 21: { Value v = E1162(w, s); Value k = E1161(w, s); return t_note(w, s, k, v); }
-    case 22: return t_giveback(w, s, E1163(w, s));
-    case 23: return t_perform(w, s, &I77[23]);
-    case 24: return t_jz(w, s, E1165(w, s), J77_5e);
-    case 25: return t_perform(w, s, &I77[25]);
-    case 26: { Value v = E1167(w, s); Value k = E1166(w, s); return t_note(w, s, k, v); }
-    case 27: { Value v = E1169(w, s); Value k = E1168(w, s); return t_note(w, s, k, v); }
-    case 28: return t_giveback(w, s, E1170(w, s));
-    case 29: return t_perform(w, s, &I77[29]);
-    case 30: return t_jz(w, s, E1172(w, s), J77_6e);
-    case 31: return t_perform(w, s, &I77[31]);
+    case 10: return t_perform(w, s, &I77[10]);
+    case 11: return t_jz(w, s, E1150(w, s), J77_3e);
+    case 12: return t_jz(w, s, E1151(w, s), J77_4e);
+    case 13: return t_perform(w, s, &I77[13]);
+    case 14: { Value v = E1154(w, s); Value k = E1153(w, s); return t_note(w, s, k, v); }
+    case 15: return t_perform(w, s, &I77[15]);
+    case 16: { Value v = E1156(w, s); Value k = E1155(w, s); return t_note(w, s, k, v); }
+    case 17: return t_giveback(w, s, E1157(w, s));
+    case 18: return t_perform(w, s, &I77[18]);
+    case 19: return t_jz(w, s, E1159(w, s), J77_5e);
+    case 20: return t_perform(w, s, &I77[20]);
+    case 21: { Value v = E1161(w, s); Value k = E1160(w, s); return t_note(w, s, k, v); }
+    case 22: { Value v = E1163(w, s); Value k = E1162(w, s); return t_note(w, s, k, v); }
+    case 23: return t_giveback(w, s, E1164(w, s));
+    case 24: return t_perform(w, s, &I77[24]);
+    case 25: return t_jz(w, s, E1166(w, s), J77_6e);
+    case 26: return t_perform(w, s, &I77[26]);
+    case 27: { Value v = E1168(w, s); Value k = E1167(w, s); return t_note(w, s, k, v); }
+    case 28: { Value v = E1170(w, s); Value k = E1169(w, s); return t_note(w, s, k, v); }
+    case 29: return t_giveback(w, s, E1171(w, s));
+    case 30: return t_perform(w, s, &I77[30]);
+    case 31: return t_jz(w, s, E1173(w, s), J77_7e);
     case 32: return t_perform(w, s, &I77[32]);
-    case 33: return t_jz(w, s, E1174(w, s), J77_7e);
-    case 34: return t_perform(w, s, &I77[34]);
+    case 33: return t_perform(w, s, &I77[33]);
+    case 34: return t_jz(w, s, E1175(w, s), J77_8e);
     case 35: return t_perform(w, s, &I77[35]);
     case 36: return t_perform(w, s, &I77[36]);
-    case 37: { Value v = E1178(w, s); Value k = E1177(w, s); return t_note(w, s, k, v); }
-    case 38: return t_perform(w, s, &I77[38]);
-    case 39: return t_giveback(w, s, E1180(w, s));
-    case 40: { Value v = E1182(w, s); Value k = E1181(w, s); return t_note(w, s, k, v); }
-    case 41: return t_let(w, s, 9, E1183(w, s));
-    case 42: return t_perform(w, s, &I77[42]);
-    case 43: return t_jz(w, s, E1185(w, s), J77_8e);
-    case 44: return t_let(w, s, 9, E1186(w, s));
-    case 45: return t_jmp(w, s, J77_8x);
-    case 46: return t_perform(w, s, &I77[46]);
-    case 47: return t_jz(w, s, E1188(w, s), J77_9e);
-    case 48: return t_let(w, s, 9, E1189(w, s));
-    case 49: return t_jmp(w, s, J77_9x);
-    case 50: return t_perform(w, s, &I77[50]);
-    case 51: return t_jz(w, s, E1191(w, s), J77_10e);
-    case 52: return t_let(w, s, 9, E1192(w, s));
-    case 53: return t_jz(w, s, E1193(w, s), J77_11e);
-    case 54: return t_perform(w, s, &I77[54]);
+    case 37: return t_perform(w, s, &I77[37]);
+    case 38: { Value v = E1179(w, s); Value k = E1178(w, s); return t_note(w, s, k, v); }
+    case 39: return t_perform(w, s, &I77[39]);
+    case 40: return t_giveback(w, s, E1181(w, s));
+    case 41: { Value v = E1183(w, s); Value k = E1182(w, s); return t_note(w, s, k, v); }
+    case 42: return t_let(w, s, 9, E1184(w, s));
+    case 43: return t_perform(w, s, &I77[43]);
+    case 44: return t_jz(w, s, E1186(w, s), J77_9e);
+    case 45: return t_let(w, s, 9, E1187(w, s));
+    case 46: return t_jmp(w, s, J77_9x);
+    case 47: return t_perform(w, s, &I77[47]);
+    case 48: return t_jz(w, s, E1189(w, s), J77_10e);
+    case 49: return t_let(w, s, 9, E1190(w, s));
+    case 50: return t_jmp(w, s, J77_10x);
+    case 51: return t_perform(w, s, &I77[51]);
+    case 52: return t_jz(w, s, E1192(w, s), J77_11e);
+    case 53: return t_let(w, s, 9, E1193(w, s));
+    case 54: return t_jz(w, s, E1194(w, s), J77_12e);
     case 55: return t_perform(w, s, &I77[55]);
-    case 56: return t_let(w, s, 12, E1195(w, s));
-    case 57: { Value v = E1197(w, s); Value k = E1196(w, s); return t_note(w, s, k, v); }
-    case 58: { Value v = E1199(w, s); Value k = E1198(w, s); return t_note(w, s, k, v); }
-    case 59: { Value v = E1201(w, s); Value k = E1200(w, s); return t_note(w, s, k, v); }
-    case 60: { Value v = E1203(w, s); Value k = E1202(w, s); return t_note(w, s, k, v); }
-    case 61: { Value v = E1205(w, s); Value k = E1204(w, s); return t_note(w, s, k, v); }
-    case 62: { Value v = E1207(w, s); Value k = E1206(w, s); return t_note(w, s, k, v); }
-    case 63: { Value v = E1209(w, s); Value k = E1208(w, s); return t_note(w, s, k, v); }
-    case 64: { Value v = E1211(w, s); Value k = E1210(w, s); return t_note(w, s, k, v); }
-    case 65: { Value v = E1213(w, s); Value k = E1212(w, s); return t_note(w, s, k, v); }
-    case 66: { Value v = E1215(w, s); Value k = E1214(w, s); return t_note(w, s, k, v); }
-    case 67: { Value v = E1217(w, s); Value k = E1216(w, s); return t_note(w, s, k, v); }
-    case 68: { Value v = E1219(w, s); Value k = E1218(w, s); return t_note(w, s, k, v); }
-    case 69: { Value v = E1221(w, s); Value k = E1220(w, s); return t_note(w, s, k, v); }
-    case 70: { Value v = E1223(w, s); Value k = E1222(w, s); return t_note(w, s, k, v); }
-    case 71: { Value v = E1225(w, s); Value k = E1224(w, s); return t_note(w, s, k, v); }
-    case 72: { Value v = E1227(w, s); Value k = E1226(w, s); return t_note(w, s, k, v); }
-    case 73: { Value v = E1229(w, s); Value k = E1228(w, s); return t_note(w, s, k, v); }
-    case 74: { Value v = E1231(w, s); Value k = E1230(w, s); return t_note(w, s, k, v); }
-    case 75: { Value v = E1233(w, s); Value k = E1232(w, s); return t_note(w, s, k, v); }
-    case 76: { Value v = E1235(w, s); Value k = E1234(w, s); return t_note(w, s, k, v); }
-    case 77: { Value v = E1237(w, s); Value k = E1236(w, s); return t_note(w, s, k, v); }
-    case 78: { Value v = E1239(w, s); Value k = E1238(w, s); return t_note(w, s, k, v); }
-    case 79: { Value v = E1241(w, s); Value k = E1240(w, s); return t_note(w, s, k, v); }
-    case 80: { Value v = E1243(w, s); Value k = E1242(w, s); return t_note(w, s, k, v); }
-    case 81: { Value v = E1245(w, s); Value k = E1244(w, s); return t_note(w, s, k, v); }
-    case 82: return t_jz(w, s, E1246(w, s), J77_12e);
-    case 83: return t_perform(w, s, &I77[83]);
-    case 84: return t_jz(w, s, E1247(w, s), J77_13e);
-    case 85: return t_perform(w, s, &I77[85]);
+    case 56: return t_perform(w, s, &I77[56]);
+    case 57: return t_let(w, s, 12, E1196(w, s));
+    case 58: { Value v = E1198(w, s); Value k = E1197(w, s); return t_note(w, s, k, v); }
+    case 59: { Value v = E1200(w, s); Value k = E1199(w, s); return t_note(w, s, k, v); }
+    case 60: { Value v = E1202(w, s); Value k = E1201(w, s); return t_note(w, s, k, v); }
+    case 61: { Value v = E1204(w, s); Value k = E1203(w, s); return t_note(w, s, k, v); }
+    case 62: { Value v = E1206(w, s); Value k = E1205(w, s); return t_note(w, s, k, v); }
+    case 63: { Value v = E1208(w, s); Value k = E1207(w, s); return t_note(w, s, k, v); }
+    case 64: { Value v = E1210(w, s); Value k = E1209(w, s); return t_note(w, s, k, v); }
+    case 65: { Value v = E1212(w, s); Value k = E1211(w, s); return t_note(w, s, k, v); }
+    case 66: { Value v = E1214(w, s); Value k = E1213(w, s); return t_note(w, s, k, v); }
+    case 67: { Value v = E1216(w, s); Value k = E1215(w, s); return t_note(w, s, k, v); }
+    case 68: { Value v = E1218(w, s); Value k = E1217(w, s); return t_note(w, s, k, v); }
+    case 69: { Value v = E1220(w, s); Value k = E1219(w, s); return t_note(w, s, k, v); }
+    case 70: { Value v = E1222(w, s); Value k = E1221(w, s); return t_note(w, s, k, v); }
+    case 71: { Value v = E1224(w, s); Value k = E1223(w, s); return t_note(w, s, k, v); }
+    case 72: { Value v = E1226(w, s); Value k = E1225(w, s); return t_note(w, s, k, v); }
+    case 73: { Value v = E1228(w, s); Value k = E1227(w, s); return t_note(w, s, k, v); }
+    case 74: { Value v = E1230(w, s); Value k = E1229(w, s); return t_note(w, s, k, v); }
+    case 75: { Value v = E1232(w, s); Value k = E1231(w, s); return t_note(w, s, k, v); }
+    case 76: { Value v = E1234(w, s); Value k = E1233(w, s); return t_note(w, s, k, v); }
+    case 77: { Value v = E1236(w, s); Value k = E1235(w, s); return t_note(w, s, k, v); }
+    case 78: { Value v = E1238(w, s); Value k = E1237(w, s); return t_note(w, s, k, v); }
+    case 79: { Value v = E1240(w, s); Value k = E1239(w, s); return t_note(w, s, k, v); }
+    case 80: { Value v = E1242(w, s); Value k = E1241(w, s); return t_note(w, s, k, v); }
+    case 81: { Value v = E1244(w, s); Value k = E1243(w, s); return t_note(w, s, k, v); }
+    case 82: { Value v = E1246(w, s); Value k = E1245(w, s); return t_note(w, s, k, v); }
+    case 83: return t_jz(w, s, E1247(w, s), J77_13e);
+    case 84: return t_perform(w, s, &I77[84]);
+    case 85: return t_jz(w, s, E1248(w, s), J77_14e);
     case 86: return t_perform(w, s, &I77[86]);
-    case 87: { Value v = E1250(w, s); Value k = E1249(w, s); return t_note(w, s, k, v); }
-    case 88: { Value v = E1252(w, s); Value k = E1251(w, s); return t_note(w, s, k, v); }
-    case 89: return t_perform(w, s, &I77[89]);
+    case 87: return t_perform(w, s, &I77[87]);
+    case 88: { Value v = E1251(w, s); Value k = E1250(w, s); return t_note(w, s, k, v); }
+    case 89: { Value v = E1253(w, s); Value k = E1252(w, s); return t_note(w, s, k, v); }
     case 90: return t_perform(w, s, &I77[90]);
-    case 91: return t_recall(w, s, &I77[91]);
-    case 92: return t_jmp(w, s, 84);
-    case 93: { Value v = E1255(w, s); Value k = E1254(w, s); return t_note(w, s, k, v); }
-    case 94: return t_perform(w, s, &I77[94]);
-    case 95: return t_jz(w, s, E1257(w, s), J77_14e);
-    case 96: return t_let(w, s, 18, E1258(w, s));
-    case 97: return t_let(w, s, 19, E1259(w, s));
-    case 98: return t_let(w, s, 20, E1260(w, s));
-    case 99: return t_jz(w, s, E1261(w, s), J77_15e);
-    case 100: return t_perform(w, s, &I77[100]);
-    case 101: return t_let(w, s, 22, E1262(w, s));
-    case 102: return t_jz(w, s, E1263(w, s), J77_16e);
-    case 103: return t_perform(w, s, &I77[103]);
-    case 104: { Value v = E1266(w, s); Value k = E1265(w, s); return t_note(w, s, k, v); }
-    case 105: return t_perform(w, s, &I77[105]);
-    case 106: return t_recall(w, s, &I77[106]);
-    case 107: return t_jmp(w, s, 99);
-    case 108: return t_perform(w, s, &I77[108]);
-    case 109: { Value v = E1269(w, s); Value k = E1268(w, s); return t_note(w, s, k, v); }
-    case 110: return t_perform(w, s, &I77[110]);
-    case 111: { Value v = E1272(w, s); Value k = E1271(w, s); return t_note(w, s, k, v); }
-    case 112: return t_jz(w, s, E1273(w, s), J77_17e);
-    case 113: return t_perform(w, s, &I77[113]);
+    case 91: return t_perform(w, s, &I77[91]);
+    case 92: return t_recall(w, s, &I77[92]);
+    case 93: return t_jmp(w, s, 85);
+    case 94: { Value v = E1256(w, s); Value k = E1255(w, s); return t_note(w, s, k, v); }
+    case 95: return t_perform(w, s, &I77[95]);
+    case 96: return t_jz(w, s, E1258(w, s), J77_15e);
+    case 97: return t_let(w, s, 18, E1259(w, s));
+    case 98: return t_let(w, s, 19, E1260(w, s));
+    case 99: return t_let(w, s, 20, E1261(w, s));
+    case 100: return t_jz(w, s, E1262(w, s), J77_16e);
+    case 101: return t_perform(w, s, &I77[101]);
+    case 102: return t_let(w, s, 22, E1263(w, s));
+    case 103: return t_jz(w, s, E1264(w, s), J77_17e);
+    case 104: return t_perform(w, s, &I77[104]);
+    case 105: { Value v = E1267(w, s); Value k = E1266(w, s); return t_note(w, s, k, v); }
+    case 106: return t_perform(w, s, &I77[106]);
+    case 107: return t_recall(w, s, &I77[107]);
+    case 108: return t_jmp(w, s, 100);
+    case 109: return t_perform(w, s, &I77[109]);
+    case 110: { Value v = E1270(w, s); Value k = E1269(w, s); return t_note(w, s, k, v); }
+    case 111: return t_perform(w, s, &I77[111]);
+    case 112: { Value v = E1273(w, s); Value k = E1272(w, s); return t_note(w, s, k, v); }
+    case 113: return t_jz(w, s, E1274(w, s), J77_18e);
     case 114: return t_perform(w, s, &I77[114]);
-    case 115: { Value v = E1277(w, s); Value k = E1276(w, s); return t_note(w, s, k, v); }
-    case 116: return t_jz(w, s, E1278(w, s), J77_18e);
-    case 117: { Value v = E1280(w, s); Value k = E1279(w, s); return t_note(w, s, k, v); }
-    case 118: return t_jz(w, s, E1281(w, s), J77_19e);
-    case 119: { Value v = E1283(w, s); Value k = E1282(w, s); return t_note(w, s, k, v); }
-    case 120: return t_jz(w, s, E1284(w, s), J77_20e);
-    case 121: { Value v = E1286(w, s); Value k = E1285(w, s); return t_note(w, s, k, v); }
-    case 122: return t_perform(w, s, &I77[122]);
+    case 115: return t_perform(w, s, &I77[115]);
+    case 116: { Value v = E1278(w, s); Value k = E1277(w, s); return t_note(w, s, k, v); }
+    case 117: return t_jz(w, s, E1279(w, s), J77_19e);
+    case 118: { Value v = E1281(w, s); Value k = E1280(w, s); return t_note(w, s, k, v); }
+    case 119: return t_jz(w, s, E1282(w, s), J77_20e);
+    case 120: { Value v = E1284(w, s); Value k = E1283(w, s); return t_note(w, s, k, v); }
+    case 121: return t_jz(w, s, E1285(w, s), J77_21e);
+    case 122: { Value v = E1287(w, s); Value k = E1286(w, s); return t_note(w, s, k, v); }
+    case 123: return t_perform(w, s, &I77[123]);
     }
     return 0;
 }
-static Value E1287(World *w, Soul *s) {
+static Value E1288(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("learned");
@@ -13235,30 +13250,30 @@ static Value E1287(World *w, Soul *s) {
     Value t6 = t_bin(w, B_GT, t4, t5);
     return t6;
 }
-static Value E1288(World *w, Soul *s) {
+static Value E1289(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1289(World *w, Soul *s) {
+static Value E1290(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("TAINTED_DIR");
+    Value t1 = t_cstr("AMAE_DIR");
     Value t2 = t_env(w, t1);
     return t2;
 }
-static Value E1290(World *w, Soul *s) {
+static Value E1291(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1291(World *w, Soul *s) {
+static Value E1292(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr(".");
     return t1;
 }
-static Value E1292(World *w, Soul *s) {
+static Value E1293(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("/");
@@ -13267,7 +13282,7 @@ static Value E1292(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static Value E1293(World *w, Soul *s) {
+static Value E1294(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     Value t2 = t_int(1LL);
@@ -13277,28 +13292,28 @@ static Value E1293(World *w, Soul *s) {
     Value t6 = t_bin(w, B_EQ, t4, t5);
     return t6;
 }
-static Value E1294(World *w, Soul *s) {
+static Value E1295(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static Value E1295(World *w, Soul *s) {
+static Value E1296(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1296(World *w, Soul *s) {
+static Value E1297(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
 }
-static Value E1297(World *w, Soul *s) {
+static Value E1298(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("TAINTED_LIB");
+    Value t1 = t_cstr("AMAE_LIB");
     Value t2 = t_env(w, t1);
     return t2;
 }
-static Value E1298(World *w, Soul *s) {
+static Value E1299(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_cstr("");
@@ -13315,15 +13330,15 @@ static Value E1298(World *w, Soul *s) {
     }
     return t4;
 }
-static Value E1299(World *w, Soul *s) {
+static Value E1300(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("there is no file to learn from: ");
     Value t2 = t_var(w, s, 0);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static const Expr A78_14[] = {E1299};
-static Value E1300(World *w, Soul *s) {
+static const Expr A78_14[] = {E1300};
+static Value E1301(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_cstr("/");
@@ -13332,20 +13347,20 @@ static Value E1300(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static Value E1301(World *w, Soul *s) {
+static Value E1302(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("there is no file to learn from: ");
     Value t2 = t_var(w, s, 0);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static const Expr A78_18[] = {E1301};
-static Value E1302(World *w, Soul *s) {
+static const Expr A78_18[] = {E1302};
+static Value E1303(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("learned");
     return t1;
 }
-static Value E1303(World *w, Soul *s) {
+static Value E1304(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("learned");
     Value t2 = t_note_get(w, s, t1);
@@ -13355,28 +13370,28 @@ static Value E1303(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t2, t3);
     return t5;
 }
-static Value E1304(World *w, Soul *s) {
+static Value E1305(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     Value t2 = t_lines(w, t1);
     return t2;
 }
-static Value E1305(World *w, Soul *s) {
+static Value E1306(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("lexfile");
     return t1;
 }
-static Value E1306(World *w, Soul *s) {
+static Value E1307(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static Value E1307(World *w, Soul *s) {
+static Value E1308(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1308(World *w, Soul *s) {
+static Value E1309(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     Value t2 = t_var(w, s, 7);
@@ -13384,12 +13399,12 @@ static Value E1308(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1309(World *w, Soul *s) {
+static Value E1310(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src");
     return t1;
 }
-static Value E1310(World *w, Soul *s) {
+static Value E1311(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src");
     Value t2 = t_note_get(w, s, t1);
@@ -13397,20 +13412,13 @@ static Value E1310(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1311(World *w, Soul *s) {
+static Value E1312(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src ");
     Value t2 = t_cstr("src");
     Value t3 = t_note_get(w, s, t2);
     Value t4 = t_bin(w, B_ADD, t1, t3);
     return t4;
-}
-static Value E1312(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_var(w, s, 7);
-    Value t2 = t_var(w, s, 8);
-    Value t3 = t_index(w, t1, t2);
-    return t3;
 }
 static Value E1313(World *w, Soul *s) {
     (void)w; (void)s;
@@ -13421,11 +13429,18 @@ static Value E1313(World *w, Soul *s) {
 }
 static Value E1314(World *w, Soul *s) {
     (void)w; (void)s;
+    Value t1 = t_var(w, s, 7);
+    Value t2 = t_var(w, s, 8);
+    Value t3 = t_index(w, t1, t2);
+    return t3;
+}
+static Value E1315(World *w, Soul *s) {
+    (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     return t1;
 }
-static const Expr A78_26[] = {E1313, E1314};
-static Value E1315(World *w, Soul *s) {
+static const Expr A78_26[] = {E1314, E1315};
+static Value E1316(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     Value t2 = t_int(1LL);
@@ -13433,12 +13448,12 @@ static Value E1315(World *w, Soul *s) {
     return t3;
 }
 static const int V78_28[] = {7};
-static Value E1316(World *w, Soul *s) {
+static Value E1317(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("lexfile");
     return t1;
 }
-static Value E1317(World *w, Soul *s) {
+static Value E1318(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
@@ -13446,101 +13461,101 @@ static Value E1317(World *w, Soul *s) {
 static const char *const N78[] = {"wanted", "dir", "path", "text", "pain", "lib", "again", "all", "i", 0};
 static const int P78[] = {0, -1};
 static const Ins I78[] = {
-    {.op=OP_JZ, .line=1819, .a=E1287, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1820, .a=E1288, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1822, .a=E1289, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1823, .a=E1290, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1824, .a=E1291, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1826, .a=E1292, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1827, .a=E1293, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1828, .a=E1294, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1830, .a=E1295, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_ENDURE, .line=1831, .var=J78_4s, .var2=-1, .unit=-1, .jump=J78_4h, .until=J78_4u},
-    {.op=OP_READ, .line=1832, .a=E1296, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_ENDURED, .line=1833, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1834, .a=E1297, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1835, .a=E1298, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1836, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A78_14},
-    {.op=OP_ENDURE, .line=1838, .var=J78_6s, .var2=-1, .unit=-1, .jump=J78_6h, .until=J78_6u},
-    {.op=OP_READ, .line=1839, .a=E1300, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_ENDURED, .line=1840, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1841, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A78_18},
-    {.op=OP_NOTE, .line=1844, .a=E1303, .b=E1302, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1845, .a=E1304, .var=7, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1846, .a=E1306, .b=E1305, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1847, .a=E1307, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1848, .a=E1308, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1849, .a=E1310, .b=E1309, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1850, .a=E1312, .b=E1311, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1851, .var=-1, .var2=-1, .unit=RT_lex, .name="lex", .nargs=2, .args=A78_26},
-    {.op=OP_LET, .line=1852, .a=E1315, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=1853, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V78_28},
-    {.op=OP_JMP, .line=1848, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1855, .a=E1317, .b=E1316, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1824, .a=E1288, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1825, .a=E1289, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1827, .a=E1290, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1828, .a=E1291, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1829, .a=E1292, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1831, .a=E1293, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1832, .a=E1294, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1833, .a=E1295, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1835, .a=E1296, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_ENDURE, .line=1836, .var=J78_4s, .var2=-1, .unit=-1, .jump=J78_4h, .until=J78_4u},
+    {.op=OP_READ, .line=1837, .a=E1297, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_ENDURED, .line=1838, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1839, .a=E1298, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1840, .a=E1299, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1841, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A78_14},
+    {.op=OP_ENDURE, .line=1843, .var=J78_6s, .var2=-1, .unit=-1, .jump=J78_6h, .until=J78_6u},
+    {.op=OP_READ, .line=1844, .a=E1301, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_ENDURED, .line=1845, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1846, .var=-1, .var2=-1, .unit=RT_fail, .name="fail", .nargs=1, .args=A78_18},
+    {.op=OP_NOTE, .line=1849, .a=E1304, .b=E1303, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1850, .a=E1305, .var=7, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1851, .a=E1307, .b=E1306, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1852, .a=E1308, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1853, .a=E1309, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1854, .a=E1311, .b=E1310, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1855, .a=E1313, .b=E1312, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1856, .var=-1, .var2=-1, .unit=RT_lex, .name="lex", .nargs=2, .args=A78_26},
+    {.op=OP_LET, .line=1857, .a=E1316, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=1858, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V78_28},
+    {.op=OP_JMP, .line=1853, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1860, .a=E1318, .b=E1317, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S78(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_jz(w, s, E1287(w, s), J78_1e);
-    case 1: return t_giveback(w, s, E1288(w, s));
-    case 2: return t_let(w, s, 1, E1289(w, s));
-    case 3: return t_jz(w, s, E1290(w, s), J78_2e);
-    case 4: return t_let(w, s, 1, E1291(w, s));
-    case 5: return t_let(w, s, 2, E1292(w, s));
-    case 6: return t_jz(w, s, E1293(w, s), J78_3e);
-    case 7: return t_let(w, s, 2, E1294(w, s));
-    case 8: return t_let(w, s, 3, E1295(w, s));
+    case 0: return t_jz(w, s, E1288(w, s), J78_1e);
+    case 1: return t_giveback(w, s, E1289(w, s));
+    case 2: return t_let(w, s, 1, E1290(w, s));
+    case 3: return t_jz(w, s, E1291(w, s), J78_2e);
+    case 4: return t_let(w, s, 1, E1292(w, s));
+    case 5: return t_let(w, s, 2, E1293(w, s));
+    case 6: return t_jz(w, s, E1294(w, s), J78_3e);
+    case 7: return t_let(w, s, 2, E1295(w, s));
+    case 8: return t_let(w, s, 3, E1296(w, s));
     case 9: return t_endure(w, s, &I78[9]);
-    case 10: return t_read(w, s, 3, E1296(w, s));
+    case 10: return t_read(w, s, 3, E1297(w, s));
     case 11: return t_endured(w, s, J78_4x);
-    case 12: return t_let(w, s, 5, E1297(w, s));
-    case 13: return t_jz(w, s, E1298(w, s), J78_5e);
+    case 12: return t_let(w, s, 5, E1298(w, s));
+    case 13: return t_jz(w, s, E1299(w, s), J78_5e);
     case 14: return t_perform(w, s, &I78[14]);
     case 15: return t_endure(w, s, &I78[15]);
-    case 16: return t_read(w, s, 3, E1300(w, s));
+    case 16: return t_read(w, s, 3, E1301(w, s));
     case 17: return t_endured(w, s, J78_6x);
     case 18: return t_perform(w, s, &I78[18]);
-    case 19: { Value v = E1303(w, s); Value k = E1302(w, s); return t_note(w, s, k, v); }
-    case 20: return t_let(w, s, 7, E1304(w, s));
-    case 21: { Value v = E1306(w, s); Value k = E1305(w, s); return t_note(w, s, k, v); }
-    case 22: return t_let(w, s, 8, E1307(w, s));
-    case 23: return t_jz(w, s, E1308(w, s), J78_7e);
-    case 24: { Value v = E1310(w, s); Value k = E1309(w, s); return t_note(w, s, k, v); }
-    case 25: { Value v = E1312(w, s); Value k = E1311(w, s); return t_note(w, s, k, v); }
+    case 19: { Value v = E1304(w, s); Value k = E1303(w, s); return t_note(w, s, k, v); }
+    case 20: return t_let(w, s, 7, E1305(w, s));
+    case 21: { Value v = E1307(w, s); Value k = E1306(w, s); return t_note(w, s, k, v); }
+    case 22: return t_let(w, s, 8, E1308(w, s));
+    case 23: return t_jz(w, s, E1309(w, s), J78_7e);
+    case 24: { Value v = E1311(w, s); Value k = E1310(w, s); return t_note(w, s, k, v); }
+    case 25: { Value v = E1313(w, s); Value k = E1312(w, s); return t_note(w, s, k, v); }
     case 26: return t_perform(w, s, &I78[26]);
-    case 27: return t_let(w, s, 8, E1315(w, s));
+    case 27: return t_let(w, s, 8, E1316(w, s));
     case 28: return t_recall(w, s, &I78[28]);
     case 29: return t_jmp(w, s, 23);
-    case 30: { Value v = E1317(w, s); Value k = E1316(w, s); return t_note(w, s, k, v); }
+    case 30: { Value v = E1318(w, s); Value k = E1317(w, s); return t_note(w, s, k, v); }
     }
     return 0;
 }
-static Value E1318(World *w, Soul *s) {
+static Value E1319(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("tell");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1319(World *w, Soul *s) {
+static Value E1320(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("hear");
     return t1;
 }
-static Value E1320(World *w, Soul *s) {
+static Value E1321(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("hear");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1321(World *w, Soul *s) {
+static Value E1322(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("tell");
     return t1;
 }
-static Value E1322(World *w, Soul *s) {
+static Value E1323(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
@@ -13548,61 +13563,61 @@ static Value E1322(World *w, Soul *s) {
 static const char *const N79[] = {"sort", 0};
 static const int P79[] = {0, -1};
 static const Ins I79[] = {
-    {.op=OP_JZ, .line=1862, .a=E1318, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1863, .a=E1319, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1865, .a=E1320, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1866, .a=E1321, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1868, .a=E1322, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1867, .a=E1319, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1868, .a=E1320, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1870, .a=E1321, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1871, .a=E1322, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1873, .a=E1323, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S79(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_jz(w, s, E1318(w, s), J79_1e);
-    case 1: return t_giveback(w, s, E1319(w, s));
-    case 2: return t_jz(w, s, E1320(w, s), J79_2e);
-    case 3: return t_giveback(w, s, E1321(w, s));
-    case 4: return t_giveback(w, s, E1322(w, s));
+    case 0: return t_jz(w, s, E1319(w, s), J79_1e);
+    case 1: return t_giveback(w, s, E1320(w, s));
+    case 2: return t_jz(w, s, E1321(w, s), J79_2e);
+    case 3: return t_giveback(w, s, E1322(w, s));
+    case 4: return t_giveback(w, s, E1323(w, s));
     }
     return 0;
 }
-static Value E1323(World *w, Soul *s) {
+static Value E1324(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("tell");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1324(World *w, Soul *s) {
+static Value E1325(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("tells");
     return t1;
 }
-static Value E1325(World *w, Soul *s) {
+static Value E1326(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("hear");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1326(World *w, Soul *s) {
+static Value E1327(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("waits to hear from");
     return t1;
 }
-static Value E1327(World *w, Soul *s) {
+static Value E1328(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("meet");
     Value t3 = t_bin(w, B_EQ, t1, t2);
     return t3;
 }
-static Value E1328(World *w, Soul *s) {
+static Value E1329(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("waits to meet");
     return t1;
 }
-static Value E1329(World *w, Soul *s) {
+static Value E1330(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("waits to be together with");
     return t1;
@@ -13610,34 +13625,34 @@ static Value E1329(World *w, Soul *s) {
 static const char *const N80[] = {"sort", 0};
 static const int P80[] = {0, -1};
 static const Ins I80[] = {
-    {.op=OP_JZ, .line=1872, .a=E1323, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1873, .a=E1324, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1875, .a=E1325, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1876, .a=E1326, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1878, .a=E1327, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1879, .a=E1328, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1881, .a=E1329, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1877, .a=E1324, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1878, .a=E1325, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1880, .a=E1326, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1881, .a=E1327, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1883, .a=E1328, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1884, .a=E1329, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1886, .a=E1330, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S80(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_jz(w, s, E1323(w, s), J80_1e);
-    case 1: return t_giveback(w, s, E1324(w, s));
-    case 2: return t_jz(w, s, E1325(w, s), J80_2e);
-    case 3: return t_giveback(w, s, E1326(w, s));
-    case 4: return t_jz(w, s, E1327(w, s), J80_3e);
-    case 5: return t_giveback(w, s, E1328(w, s));
-    case 6: return t_giveback(w, s, E1329(w, s));
+    case 0: return t_jz(w, s, E1324(w, s), J80_1e);
+    case 1: return t_giveback(w, s, E1325(w, s));
+    case 2: return t_jz(w, s, E1326(w, s), J80_2e);
+    case 3: return t_giveback(w, s, E1327(w, s));
+    case 4: return t_jz(w, s, E1328(w, s), J80_3e);
+    case 5: return t_giveback(w, s, E1329(w, s));
+    case 6: return t_giveback(w, s, E1330(w, s));
     }
     return 0;
 }
-static Value E1330(World *w, Soul *s) {
+static Value E1331(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1331(World *w, Soul *s) {
+static Value E1332(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("script ");
     Value t2 = t_var(w, s, 0);
@@ -13645,12 +13660,12 @@ static Value E1331(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1332(World *w, Soul *s) {
+static Value E1333(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1333(World *w, Soul *s) {
+static Value E1334(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 3);
@@ -13658,7 +13673,7 @@ static Value E1333(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1334(World *w, Soul *s) {
+static Value E1335(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     Value t2 = t_var(w, s, 4);
@@ -13680,14 +13695,14 @@ static Value E1334(World *w, Soul *s) {
     }
     return t8;
 }
-static Value E1335(World *w, Soul *s) {
+static Value E1336(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     Value t2 = t_var(w, s, 4);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1336(World *w, Soul *s) {
+static Value E1337(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_int(1LL);
@@ -13695,7 +13710,7 @@ static Value E1336(World *w, Soul *s) {
     return t3;
 }
 static const int V81_7[] = {3, 1, 2};
-static Value E1337(World *w, Soul *s) {
+static Value E1338(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
@@ -13703,35 +13718,35 @@ static Value E1337(World *w, Soul *s) {
 static const char *const N81[] = {"u", "partner", "mine", "all", "i", 0};
 static const int P81[] = {0, 1, -1};
 static const Ins I81[] = {
-    {.op=OP_LET, .line=1885, .a=E1330, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1886, .a=E1331, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1887, .a=E1332, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1888, .a=E1333, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1889, .a=E1334, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PUT, .line=1890, .a=E1335, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1892, .a=E1336, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=1893, .var=-1, .var2=-1, .unit=-1, .nvars=3, .vars=V81_7},
-    {.op=OP_JMP, .line=1888, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1895, .a=E1337, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1890, .a=E1331, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1891, .a=E1332, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1892, .a=E1333, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1893, .a=E1334, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1894, .a=E1335, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PUT, .line=1895, .a=E1336, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1897, .a=E1337, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=1898, .var=-1, .var2=-1, .unit=-1, .nvars=3, .vars=V81_7},
+    {.op=OP_JMP, .line=1893, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1900, .a=E1338, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S81(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 2, E1330(w, s));
-    case 1: return t_let(w, s, 3, E1331(w, s));
-    case 2: return t_let(w, s, 4, E1332(w, s));
-    case 3: return t_jz(w, s, E1333(w, s), J81_1e);
-    case 4: return t_jz(w, s, E1334(w, s), J81_2e);
-    case 5: { Value v = E1335(w, s); Value p[1] = {{0}}; return t_put(w, s, 2, 0, p, v); }
-    case 6: return t_let(w, s, 4, E1336(w, s));
+    case 0: return t_let(w, s, 2, E1331(w, s));
+    case 1: return t_let(w, s, 3, E1332(w, s));
+    case 2: return t_let(w, s, 4, E1333(w, s));
+    case 3: return t_jz(w, s, E1334(w, s), J81_1e);
+    case 4: return t_jz(w, s, E1335(w, s), J81_2e);
+    case 5: { Value v = E1336(w, s); Value p[1] = {{0}}; return t_put(w, s, 2, 0, p, v); }
+    case 6: return t_let(w, s, 4, E1337(w, s));
     case 7: return t_recall(w, s, &I81[7]);
     case 8: return t_jmp(w, s, 3);
-    case 9: return t_giveback(w, s, E1337(w, s));
+    case 9: return t_giveback(w, s, E1338(w, s));
     }
     return 0;
 }
-static Value E1338(World *w, Soul *s) {
+static Value E1339(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("name of ");
     Value t2 = t_var(w, s, 0);
@@ -13739,7 +13754,7 @@ static Value E1338(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1339(World *w, Soul *s) {
+static Value E1340(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("name of ");
     Value t2 = t_var(w, s, 1);
@@ -13747,34 +13762,34 @@ static Value E1339(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1340(World *w, Soul *s) {
+static Value E1341(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static Value E1341(World *w, Soul *s) {
+static Value E1342(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     return t1;
 }
-static const Expr A82_2[] = {E1340, E1341};
-static Value E1342(World *w, Soul *s) {
+static const Expr A82_2[] = {E1341, E1342};
+static Value E1343(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     return t1;
 }
-static Value E1343(World *w, Soul *s) {
+static Value E1344(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
 }
-static const Expr A82_3[] = {E1342, E1343};
-static Value E1344(World *w, Soul *s) {
+static const Expr A82_3[] = {E1343, E1344};
+static Value E1345(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1345(World *w, Soul *s) {
+static Value E1346(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     Value t2 = t_var(w, s, 4);
@@ -13782,7 +13797,7 @@ static Value E1345(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1346(World *w, Soul *s) {
+static Value E1347(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 6);
@@ -13793,12 +13808,12 @@ static Value E1346(World *w, Soul *s) {
     Value t7 = t_bin(w, B_GT, t5, t6);
     return t7;
 }
-static Value E1347(World *w, Soul *s) {
+static Value E1348(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1348(World *w, Soul *s) {
+static Value E1349(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     Value t2 = t_int(1LL);
@@ -13806,12 +13821,12 @@ static Value E1348(World *w, Soul *s) {
     return t3;
 }
 static const int V82_9[] = {4};
-static Value E1349(World *w, Soul *s) {
+static Value E1350(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1350(World *w, Soul *s) {
+static Value E1351(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     Value t2 = t_var(w, s, 5);
@@ -13819,7 +13834,7 @@ static Value E1350(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1351(World *w, Soul *s) {
+static Value E1352(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_var(w, s, 6);
@@ -13830,12 +13845,12 @@ static Value E1351(World *w, Soul *s) {
     Value t7 = t_bin(w, B_GT, t5, t6);
     return t7;
 }
-static Value E1352(World *w, Soul *s) {
+static Value E1353(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1353(World *w, Soul *s) {
+static Value E1354(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     Value t2 = t_int(1LL);
@@ -13843,12 +13858,12 @@ static Value E1353(World *w, Soul *s) {
     return t3;
 }
 static const int V82_16[] = {5};
-static Value E1354(World *w, Soul *s) {
+static Value E1355(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1355(World *w, Soul *s) {
+static Value E1356(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     Value t2 = t_var(w, s, 4);
@@ -13864,21 +13879,21 @@ static Value E1355(World *w, Soul *s) {
     }
     return t5;
 }
-static Value E1356(World *w, Soul *s) {
+static Value E1357(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 6);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1357(World *w, Soul *s) {
+static Value E1358(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_var(w, s, 6);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1358(World *w, Soul *s) {
+static Value E1359(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 7);
     Value t2 = t_int(1LL);
@@ -13914,20 +13929,20 @@ static Value E1358(World *w, Soul *s) {
     }
     return t18;
 }
-static Value E1359(World *w, Soul *s) {
+static Value E1360(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1360(World *w, Soul *s) {
+static Value E1361(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 7);
     Value t2 = t_int(1LL);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static const Expr A82_24[] = {E1360};
-static Value E1361(World *w, Soul *s) {
+static const Expr A82_24[] = {E1361};
+static Value E1362(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     Value t2 = t_int(1LL);
@@ -13936,25 +13951,25 @@ static Value E1361(World *w, Soul *s) {
     Value t5 = t_bin(w, B_NE, t3, t4);
     return t5;
 }
-static Value E1362(World *w, Soul *s) {
+static Value E1363(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 7);
     Value t2 = t_int(1LL);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static const Expr A82_26[] = {E1362};
-static Value E1363(World *w, Soul *s) {
+static const Expr A82_26[] = {E1363};
+static Value E1364(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     Value t2 = t_int(1LL);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static const Expr A82_27[] = {E1363};
-static Value E1364(World *w, Soul *s) {
+static const Expr A82_27[] = {E1364};
+static Value E1365(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: line ");
+    Value t1 = t_cstr("amae: line ");
     Value t2 = t_var(w, s, 7);
     Value t3 = t_int(3LL);
     Value t4 = t_index(w, t2, t3);
@@ -13999,8 +14014,8 @@ static Value E1364(World *w, Soul *s) {
     Value t43 = t_bin(w, B_ADD, t41, t42);
     return t43;
 }
-static const Expr A82_28[] = {E1364};
-static Value E1365(World *w, Soul *s) {
+static const Expr A82_28[] = {E1365};
+static Value E1366(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     Value t2 = t_int(1LL);
@@ -14008,22 +14023,22 @@ static Value E1365(World *w, Soul *s) {
     return t3;
 }
 static const int V82_30[] = {4, 5, 2, 3};
-static Value E1366(World *w, Soul *s) {
+static Value E1367(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1367(World *w, Soul *s) {
+static Value E1368(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
 }
-static Value E1368(World *w, Soul *s) {
+static Value E1369(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     return t1;
 }
-static Value E1369(World *w, Soul *s) {
+static Value E1370(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_length(w, t1);
@@ -14032,14 +14047,14 @@ static Value E1369(World *w, Soul *s) {
     Value t5 = t_bin(w, B_GT, t2, t4);
     return t5;
 }
-static Value E1370(World *w, Soul *s) {
+static Value E1371(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 6);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1371(World *w, Soul *s) {
+static Value E1372(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_length(w, t1);
@@ -14048,24 +14063,24 @@ static Value E1371(World *w, Soul *s) {
     Value t5 = t_bin(w, B_GT, t2, t4);
     return t5;
 }
-static Value E1372(World *w, Soul *s) {
+static Value E1373(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_var(w, s, 6);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1373(World *w, Soul *s) {
+static Value E1374(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     return t1;
 }
-static Value E1374(World *w, Soul *s) {
+static Value E1375(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
 }
-static Value E1375(World *w, Soul *s) {
+static Value E1376(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     Value t2 = t_length(w, t1);
@@ -14073,7 +14088,7 @@ static Value E1375(World *w, Soul *s) {
     Value t4 = t_bin(w, B_GT, t2, t3);
     return t4;
 }
-static Value E1376(World *w, Soul *s) {
+static Value E1377(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     Value t2 = t_int(1LL);
@@ -14091,17 +14106,17 @@ static Value E1376(World *w, Soul *s) {
     }
     return t6;
 }
-static Value E1377(World *w, Soul *s) {
+static Value E1378(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 12);
     Value t2 = t_int(1LL);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static const Expr A82_43[] = {E1377};
-static Value E1378(World *w, Soul *s) {
+static const Expr A82_43[] = {E1378};
+static Value E1379(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: line ");
+    Value t1 = t_cstr("amae: line ");
     Value t2 = t_var(w, s, 12);
     Value t3 = t_int(3LL);
     Value t4 = t_index(w, t2, t3);
@@ -14134,114 +14149,114 @@ static Value E1378(World *w, Soul *s) {
     Value t31 = t_bin(w, B_ADD, t29, t30);
     return t31;
 }
-static const Expr A82_44[] = {E1378};
+static const Expr A82_44[] = {E1379};
 static const char *const N82[] = {"a", "b", "name_a", "name_b", "sa", "sb", "i", "ea", "eb", "wanted", "does_a", "does_b", "extra", "lonely", "other", "does", 0};
 static const int P82[] = {0, 1, -1};
 static const Ins I82[] = {
-    {.op=OP_LET, .line=1901, .a=E1338, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1902, .a=E1339, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1903, .var=4, .var2=-1, .unit=RT_script_with, .name="script_with", .nargs=2, .args=A82_2},
-    {.op=OP_PERFORM, .line=1904, .var=5, .var2=-1, .unit=RT_script_with, .name="script_with", .nargs=2, .args=A82_3},
-    {.op=OP_LET, .line=1905, .a=E1344, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1906, .a=E1345, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1907, .a=E1346, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1908, .a=E1347, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1910, .a=E1348, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=1911, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V82_9},
-    {.op=OP_JMP, .line=1906, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1913, .a=E1349, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1914, .a=E1350, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1915, .a=E1351, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1916, .a=E1352, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1918, .a=E1353, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=1919, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V82_16},
-    {.op=OP_JMP, .line=1914, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1921, .a=E1354, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1922, .a=E1355, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1923, .a=E1356, .var=7, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1924, .a=E1357, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1925, .a=E1358, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1926, .a=E1359, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1928, .var=9, .var2=-1, .unit=RT_answer_to, .name="answer_to", .nargs=1, .args=A82_24},
-    {.op=OP_JZ, .line=1929, .a=E1361, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1930, .var=10, .var2=-1, .unit=RT_deed_words, .name="deed_words", .nargs=1, .args=A82_26},
-    {.op=OP_PERFORM, .line=1931, .var=11, .var2=-1, .unit=RT_deed_words, .name="deed_words", .nargs=1, .args=A82_27},
-    {.op=OP_PERFORM, .line=1932, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A82_28},
-    {.op=OP_LET, .line=1934, .a=E1365, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=1935, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V82_30},
-    {.op=OP_JMP, .line=1922, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1937, .a=E1366, .var=12, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1938, .a=E1367, .var=13, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1939, .a=E1368, .var=14, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1940, .a=E1369, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1941, .a=E1370, .var=12, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1943, .a=E1371, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1944, .a=E1372, .var=12, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1945, .a=E1373, .var=13, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1946, .a=E1374, .var=14, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1948, .a=E1375, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1949, .a=E1376, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1950, .var=15, .var2=-1, .unit=RT_deed_words, .name="deed_words", .nargs=1, .args=A82_43},
-    {.op=OP_PERFORM, .line=1951, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A82_44},
+    {.op=OP_LET, .line=1906, .a=E1339, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1907, .a=E1340, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1908, .var=4, .var2=-1, .unit=RT_script_with, .name="script_with", .nargs=2, .args=A82_2},
+    {.op=OP_PERFORM, .line=1909, .var=5, .var2=-1, .unit=RT_script_with, .name="script_with", .nargs=2, .args=A82_3},
+    {.op=OP_LET, .line=1910, .a=E1345, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1911, .a=E1346, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1912, .a=E1347, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1913, .a=E1348, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1915, .a=E1349, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=1916, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V82_9},
+    {.op=OP_JMP, .line=1911, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1918, .a=E1350, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1919, .a=E1351, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1920, .a=E1352, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1921, .a=E1353, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1923, .a=E1354, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=1924, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V82_16},
+    {.op=OP_JMP, .line=1919, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1926, .a=E1355, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1927, .a=E1356, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1928, .a=E1357, .var=7, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1929, .a=E1358, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1930, .a=E1359, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1931, .a=E1360, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1933, .var=9, .var2=-1, .unit=RT_answer_to, .name="answer_to", .nargs=1, .args=A82_24},
+    {.op=OP_JZ, .line=1934, .a=E1362, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1935, .var=10, .var2=-1, .unit=RT_deed_words, .name="deed_words", .nargs=1, .args=A82_26},
+    {.op=OP_PERFORM, .line=1936, .var=11, .var2=-1, .unit=RT_deed_words, .name="deed_words", .nargs=1, .args=A82_27},
+    {.op=OP_PERFORM, .line=1937, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A82_28},
+    {.op=OP_LET, .line=1939, .a=E1366, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=1940, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V82_30},
+    {.op=OP_JMP, .line=1927, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1942, .a=E1367, .var=12, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1943, .a=E1368, .var=13, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1944, .a=E1369, .var=14, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1945, .a=E1370, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1946, .a=E1371, .var=12, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1948, .a=E1372, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1949, .a=E1373, .var=12, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1950, .a=E1374, .var=13, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1951, .a=E1375, .var=14, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1953, .a=E1376, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1954, .a=E1377, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1955, .var=15, .var2=-1, .unit=RT_deed_words, .name="deed_words", .nargs=1, .args=A82_43},
+    {.op=OP_PERFORM, .line=1956, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A82_44},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S82(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 2, E1338(w, s));
-    case 1: return t_let(w, s, 3, E1339(w, s));
+    case 0: return t_let(w, s, 2, E1339(w, s));
+    case 1: return t_let(w, s, 3, E1340(w, s));
     case 2: return t_perform(w, s, &I82[2]);
     case 3: return t_perform(w, s, &I82[3]);
-    case 4: return t_let(w, s, 6, E1344(w, s));
-    case 5: return t_jz(w, s, E1345(w, s), J82_1e);
-    case 6: return t_jz(w, s, E1346(w, s), J82_2e);
-    case 7: return t_giveback(w, s, E1347(w, s));
-    case 8: return t_let(w, s, 6, E1348(w, s));
+    case 4: return t_let(w, s, 6, E1345(w, s));
+    case 5: return t_jz(w, s, E1346(w, s), J82_1e);
+    case 6: return t_jz(w, s, E1347(w, s), J82_2e);
+    case 7: return t_giveback(w, s, E1348(w, s));
+    case 8: return t_let(w, s, 6, E1349(w, s));
     case 9: return t_recall(w, s, &I82[9]);
     case 10: return t_jmp(w, s, 5);
-    case 11: return t_let(w, s, 6, E1349(w, s));
-    case 12: return t_jz(w, s, E1350(w, s), J82_3e);
-    case 13: return t_jz(w, s, E1351(w, s), J82_4e);
-    case 14: return t_giveback(w, s, E1352(w, s));
-    case 15: return t_let(w, s, 6, E1353(w, s));
+    case 11: return t_let(w, s, 6, E1350(w, s));
+    case 12: return t_jz(w, s, E1351(w, s), J82_3e);
+    case 13: return t_jz(w, s, E1352(w, s), J82_4e);
+    case 14: return t_giveback(w, s, E1353(w, s));
+    case 15: return t_let(w, s, 6, E1354(w, s));
     case 16: return t_recall(w, s, &I82[16]);
     case 17: return t_jmp(w, s, 12);
-    case 18: return t_let(w, s, 6, E1354(w, s));
-    case 19: return t_jz(w, s, E1355(w, s), J82_5e);
-    case 20: return t_let(w, s, 7, E1356(w, s));
-    case 21: return t_let(w, s, 8, E1357(w, s));
-    case 22: return t_jz(w, s, E1358(w, s), J82_6e);
-    case 23: return t_giveback(w, s, E1359(w, s));
+    case 18: return t_let(w, s, 6, E1355(w, s));
+    case 19: return t_jz(w, s, E1356(w, s), J82_5e);
+    case 20: return t_let(w, s, 7, E1357(w, s));
+    case 21: return t_let(w, s, 8, E1358(w, s));
+    case 22: return t_jz(w, s, E1359(w, s), J82_6e);
+    case 23: return t_giveback(w, s, E1360(w, s));
     case 24: return t_perform(w, s, &I82[24]);
-    case 25: return t_jz(w, s, E1361(w, s), J82_7e);
+    case 25: return t_jz(w, s, E1362(w, s), J82_7e);
     case 26: return t_perform(w, s, &I82[26]);
     case 27: return t_perform(w, s, &I82[27]);
     case 28: return t_perform(w, s, &I82[28]);
-    case 29: return t_let(w, s, 6, E1365(w, s));
+    case 29: return t_let(w, s, 6, E1366(w, s));
     case 30: return t_recall(w, s, &I82[30]);
     case 31: return t_jmp(w, s, 19);
-    case 32: return t_let(w, s, 12, E1366(w, s));
-    case 33: return t_let(w, s, 13, E1367(w, s));
-    case 34: return t_let(w, s, 14, E1368(w, s));
-    case 35: return t_jz(w, s, E1369(w, s), J82_8e);
-    case 36: return t_let(w, s, 12, E1370(w, s));
-    case 37: return t_jz(w, s, E1371(w, s), J82_9e);
-    case 38: return t_let(w, s, 12, E1372(w, s));
-    case 39: return t_let(w, s, 13, E1373(w, s));
-    case 40: return t_let(w, s, 14, E1374(w, s));
-    case 41: return t_jz(w, s, E1375(w, s), J82_10e);
-    case 42: return t_jz(w, s, E1376(w, s), J82_11e);
+    case 32: return t_let(w, s, 12, E1367(w, s));
+    case 33: return t_let(w, s, 13, E1368(w, s));
+    case 34: return t_let(w, s, 14, E1369(w, s));
+    case 35: return t_jz(w, s, E1370(w, s), J82_8e);
+    case 36: return t_let(w, s, 12, E1371(w, s));
+    case 37: return t_jz(w, s, E1372(w, s), J82_9e);
+    case 38: return t_let(w, s, 12, E1373(w, s));
+    case 39: return t_let(w, s, 13, E1374(w, s));
+    case 40: return t_let(w, s, 14, E1375(w, s));
+    case 41: return t_jz(w, s, E1376(w, s), J82_10e);
+    case 42: return t_jz(w, s, E1377(w, s), J82_11e);
     case 43: return t_perform(w, s, &I82[43]);
     case 44: return t_perform(w, s, &I82[44]);
     }
     return 0;
 }
-static Value E1379(World *w, Soul *s) {
+static Value E1380(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1380(World *w, Soul *s) {
+static Value E1381(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("units");
@@ -14249,7 +14264,7 @@ static Value E1380(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LT, t1, t3);
     return t4;
 }
-static Value E1381(World *w, Soul *s) {
+static Value E1382(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("hearts ");
     Value t2 = t_var(w, s, 0);
@@ -14257,7 +14272,7 @@ static Value E1381(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1382(World *w, Soul *s) {
+static Value E1383(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_length(w, t1);
@@ -14275,9 +14290,9 @@ static Value E1382(World *w, Soul *s) {
     }
     return t5;
 }
-static Value E1383(World *w, Soul *s) {
+static Value E1384(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: line ");
+    Value t1 = t_cstr("amae: line ");
     Value t2 = t_cstr("heart lines ");
     Value t3 = t_var(w, s, 0);
     Value t4 = t_bin(w, B_ADD, t2, t3);
@@ -14308,8 +14323,8 @@ static Value E1383(World *w, Soul *s) {
     Value t29 = t_bin(w, B_ADD, t27, t28);
     return t29;
 }
-static const Expr A83_4[] = {E1383};
-static Value E1384(World *w, Soul *s) {
+static const Expr A83_4[] = {E1384};
+static Value E1385(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
@@ -14319,29 +14334,29 @@ static Value E1384(World *w, Soul *s) {
 static const char *const N83[] = {"u", "given", 0};
 static const int P83[] = {-1};
 static const Ins I83[] = {
-    {.op=OP_LET, .line=1959, .a=E1379, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1960, .a=E1380, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1961, .a=E1381, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1962, .a=E1382, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1963, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A83_4},
-    {.op=OP_LET, .line=1965, .a=E1384, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1960, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1964, .a=E1380, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1965, .a=E1381, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1966, .a=E1382, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1967, .a=E1383, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1968, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A83_4},
+    {.op=OP_LET, .line=1970, .a=E1385, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1965, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S83(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 0, E1379(w, s));
-    case 1: return t_jz(w, s, E1380(w, s), J83_1e);
-    case 2: return t_let(w, s, 1, E1381(w, s));
-    case 3: return t_jz(w, s, E1382(w, s), J83_2e);
+    case 0: return t_let(w, s, 0, E1380(w, s));
+    case 1: return t_jz(w, s, E1381(w, s), J83_1e);
+    case 2: return t_let(w, s, 1, E1382(w, s));
+    case 3: return t_jz(w, s, E1383(w, s), J83_2e);
     case 4: return t_perform(w, s, &I83[4]);
-    case 5: return t_let(w, s, 0, E1384(w, s));
+    case 5: return t_let(w, s, 0, E1385(w, s));
     case 6: return t_jmp(w, s, 1);
     }
     return 0;
 }
-static Value E1385(World *w, Soul *s) {
+static Value E1386(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
@@ -14349,43 +14364,30 @@ static Value E1385(World *w, Soul *s) {
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1386(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_cstr("TAINTED_ASK_CONSENT");
-    Value t2 = t_env(w, t1);
-    Value t3 = t_cstr("");
-    Value t4 = t_bin(w, B_NE, t2, t3);
-    return t4;
-}
 static Value E1387(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: this program has not agreed to be compiled; it agrees by saying who wrote it: written by \"name\"");
+    Value t1 = t_cstr("amae: this program has not agreed to be compiled; it agrees by saying who wrote it: written by \"name\"");
     return t1;
 }
-static const Expr A84_2[] = {E1387};
+static const Expr A84_1[] = {E1387};
 static Value E1388(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_int(0LL);
-    return t1;
-}
-static Value E1389(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("authors");
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1390(World *w, Soul *s) {
+static Value E1389(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("trust");
     return t1;
 }
-static Value E1391(World *w, Soul *s) {
+static Value E1390(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1392(World *w, Soul *s) {
+static Value E1391(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
@@ -14395,12 +14397,12 @@ static Value E1392(World *w, Soul *s) {
     Value t6 = t_bin(w, B_GT, t4, t5);
     return t6;
 }
-static Value E1393(World *w, Soul *s) {
+static Value E1392(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("trust");
     return t1;
 }
-static Value E1394(World *w, Soul *s) {
+static Value E1393(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("author");
@@ -14408,13 +14410,18 @@ static Value E1394(World *w, Soul *s) {
     Value t4 = t_index(w, t1, t3);
     return t4;
 }
-static Value E1395(World *w, Soul *s) {
+static Value E1394(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("trust");
     Value t2 = t_note_get(w, s, t1);
     Value t3 = t_int(3LL);
     Value t4 = t_bin(w, B_GE, t2, t3);
     return t4;
+}
+static Value E1395(World *w, Soul *s) {
+    (void)w; (void)s;
+    Value t1 = t_int(0LL);
+    return t1;
 }
 static Value E1396(World *w, Soul *s) {
     (void)w; (void)s;
@@ -14423,18 +14430,13 @@ static Value E1396(World *w, Soul *s) {
 }
 static Value E1397(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_int(0LL);
-    return t1;
-}
-static Value E1398(World *w, Soul *s) {
-    (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_cstr("units");
     Value t3 = t_note_get(w, s, t2);
     Value t4 = t_bin(w, B_LT, t1, t3);
     return t4;
 }
-static Value E1399(World *w, Soul *s) {
+static Value E1398(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("reads ");
     Value t2 = t_var(w, s, 2);
@@ -14442,12 +14444,12 @@ static Value E1399(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1400(World *w, Soul *s) {
+static Value E1399(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1401(World *w, Soul *s) {
+static Value E1400(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 3);
@@ -14455,7 +14457,7 @@ static Value E1401(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1402(World *w, Soul *s) {
+static Value E1401(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     Value t2 = t_var(w, s, 4);
@@ -14471,9 +14473,9 @@ static Value E1402(World *w, Soul *s) {
     Value t12 = t_bin(w, B_EQ, t10, t11);
     return t12;
 }
-static Value E1403(World *w, Soul *s) {
+static Value E1402(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: line ");
+    Value t1 = t_cstr("amae: line ");
     Value t2 = t_var(w, s, 3);
     Value t3 = t_var(w, s, 4);
     Value t4 = t_index(w, t2, t3);
@@ -14499,16 +14501,16 @@ static Value E1403(World *w, Soul *s) {
     Value t24 = t_bin(w, B_ADD, t22, t23);
     return t24;
 }
-static const Expr A84_17[] = {E1403};
-static Value E1404(World *w, Soul *s) {
+static const Expr A84_15[] = {E1402};
+static Value E1403(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static const int V84_19[] = {3, 2};
-static Value E1405(World *w, Soul *s) {
+static const int V84_17[] = {3, 2};
+static Value E1404(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_int(1LL);
@@ -14518,61 +14520,57 @@ static Value E1405(World *w, Soul *s) {
 static const char *const N84[] = {"known", "authors", "u", "reads", "i", 0};
 static const int P84[] = {-1};
 static const Ins I84[] = {
-    {.op=OP_JZ, .line=1974, .a=E1385, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1975, .a=E1386, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1976, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A84_2},
-    {.op=OP_GIVEBACK, .line=1978, .a=E1388, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1980, .var=0, .var2=-1, .unit=RT_recollect, .name="recollect"},
-    {.op=OP_LET, .line=1981, .a=E1389, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1982, .a=E1391, .b=E1390, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1983, .a=E1392, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=1984, .a=E1394, .b=E1393, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1986, .a=E1395, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=1987, .a=E1396, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1989, .a=E1397, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1990, .a=E1398, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1991, .a=E1399, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=1992, .a=E1400, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1993, .a=E1401, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=1994, .a=E1402, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=1995, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A84_17},
-    {.op=OP_LET, .line=1997, .a=E1404, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=1998, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V84_19},
-    {.op=OP_JMP, .line=1993, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2000, .a=E1405, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=1990, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1979, .a=E1386, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1980, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A84_1},
+    {.op=OP_PERFORM, .line=1982, .var=0, .var2=-1, .unit=RT_recollect, .name="recollect"},
+    {.op=OP_LET, .line=1983, .a=E1388, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1984, .a=E1390, .b=E1389, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1985, .a=E1391, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=1986, .a=E1393, .b=E1392, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1988, .a=E1394, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=1989, .a=E1395, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1991, .a=E1396, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1992, .a=E1397, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1993, .a=E1398, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=1994, .a=E1399, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1995, .a=E1400, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=1996, .a=E1401, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=1997, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A84_15},
+    {.op=OP_LET, .line=1999, .a=E1403, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2000, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V84_17},
+    {.op=OP_JMP, .line=1995, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2002, .a=E1404, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=1992, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S84(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_jz(w, s, E1385(w, s), J84_1e);
-    case 1: return t_jz(w, s, E1386(w, s), J84_2e);
+    case 0: return t_jz(w, s, E1386(w, s), J84_1e);
+    case 1: return t_perform(w, s, &I84[1]);
     case 2: return t_perform(w, s, &I84[2]);
-    case 3: return t_giveback(w, s, E1388(w, s));
-    case 4: return t_perform(w, s, &I84[4]);
-    case 5: return t_let(w, s, 1, E1389(w, s));
-    case 6: { Value v = E1391(w, s); Value k = E1390(w, s); return t_note(w, s, k, v); }
-    case 7: return t_jz(w, s, E1392(w, s), J84_3e);
-    case 8: { Value v = E1394(w, s); Value k = E1393(w, s); return t_note(w, s, k, v); }
-    case 9: return t_jz(w, s, E1395(w, s), J84_4e);
-    case 10: return t_giveback(w, s, E1396(w, s));
-    case 11: return t_let(w, s, 2, E1397(w, s));
-    case 12: return t_jz(w, s, E1398(w, s), J84_5e);
-    case 13: return t_let(w, s, 3, E1399(w, s));
-    case 14: return t_let(w, s, 4, E1400(w, s));
-    case 15: return t_jz(w, s, E1401(w, s), J84_6e);
-    case 16: return t_jz(w, s, E1402(w, s), J84_7e);
-    case 17: return t_perform(w, s, &I84[17]);
-    case 18: return t_let(w, s, 4, E1404(w, s));
-    case 19: return t_recall(w, s, &I84[19]);
-    case 20: return t_jmp(w, s, 15);
-    case 21: return t_let(w, s, 2, E1405(w, s));
-    case 22: return t_jmp(w, s, 12);
+    case 3: return t_let(w, s, 1, E1388(w, s));
+    case 4: { Value v = E1390(w, s); Value k = E1389(w, s); return t_note(w, s, k, v); }
+    case 5: return t_jz(w, s, E1391(w, s), J84_2e);
+    case 6: { Value v = E1393(w, s); Value k = E1392(w, s); return t_note(w, s, k, v); }
+    case 7: return t_jz(w, s, E1394(w, s), J84_3e);
+    case 8: return t_giveback(w, s, E1395(w, s));
+    case 9: return t_let(w, s, 2, E1396(w, s));
+    case 10: return t_jz(w, s, E1397(w, s), J84_4e);
+    case 11: return t_let(w, s, 3, E1398(w, s));
+    case 12: return t_let(w, s, 4, E1399(w, s));
+    case 13: return t_jz(w, s, E1400(w, s), J84_5e);
+    case 14: return t_jz(w, s, E1401(w, s), J84_6e);
+    case 15: return t_perform(w, s, &I84[15]);
+    case 16: return t_let(w, s, 4, E1403(w, s));
+    case 17: return t_recall(w, s, &I84[17]);
+    case 18: return t_jmp(w, s, 13);
+    case 19: return t_let(w, s, 2, E1404(w, s));
+    case 20: return t_jmp(w, s, 10);
     }
     return 0;
 }
-static Value E1406(World *w, Soul *s) {
+static Value E1405(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
@@ -14580,24 +14578,24 @@ static Value E1406(World *w, Soul *s) {
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1407(World *w, Soul *s) {
+static Value E1406(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1408(World *w, Soul *s) {
+static Value E1407(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("authors");
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1409(World *w, Soul *s) {
+static Value E1408(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1410(World *w, Soul *s) {
+static Value E1409(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
@@ -14607,7 +14605,7 @@ static Value E1410(World *w, Soul *s) {
     Value t6 = t_bin(w, B_GT, t4, t5);
     return t6;
 }
-static Value E1411(World *w, Soul *s) {
+static Value E1410(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("author");
@@ -14615,72 +14613,72 @@ static Value E1411(World *w, Soul *s) {
     Value t4 = t_index(w, t1, t3);
     return t4;
 }
-static Value E1412(World *w, Soul *s) {
+static Value E1411(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static Value E1413(World *w, Soul *s) {
+static Value E1412(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1414(World *w, Soul *s) {
+static Value E1413(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("authors");
     return t1;
 }
-static Value E1415(World *w, Soul *s) {
+static Value E1414(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     return t1;
 }
-static Value E1416(World *w, Soul *s) {
+static Value E1415(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static const Expr A85_9[] = {E1416};
+static const Expr A85_9[] = {E1415};
 static const char *const N85[] = {"known", "authors", "so_far", 0};
 static const int P85[] = {-1};
 static const Ins I85[] = {
-    {.op=OP_JZ, .line=2005, .a=E1406, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=2006, .a=E1407, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2008, .var=0, .var2=-1, .unit=RT_recollect, .name="recollect"},
-    {.op=OP_LET, .line=2009, .a=E1408, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2010, .a=E1409, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2011, .a=E1410, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2012, .a=E1411, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_SET, .line=2014, .a=E1413, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_SET, .line=2015, .a=E1415, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2016, .var=-1, .var2=-1, .unit=RT_keep_memory, .name="keep_memory", .nargs=1, .args=A85_9},
+    {.op=OP_JZ, .line=2007, .a=E1405, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=2008, .a=E1406, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2010, .var=0, .var2=-1, .unit=RT_recollect, .name="recollect"},
+    {.op=OP_LET, .line=2011, .a=E1407, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2012, .a=E1408, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2013, .a=E1409, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2014, .a=E1410, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_SET, .line=2016, .a=E1412, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_SET, .line=2017, .a=E1414, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2018, .var=-1, .var2=-1, .unit=RT_keep_memory, .name="keep_memory", .nargs=1, .args=A85_9},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S85(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_jz(w, s, E1406(w, s), J85_1e);
-    case 1: return t_giveback(w, s, E1407(w, s));
+    case 0: return t_jz(w, s, E1405(w, s), J85_1e);
+    case 1: return t_giveback(w, s, E1406(w, s));
     case 2: return t_perform(w, s, &I85[2]);
-    case 3: return t_let(w, s, 1, E1408(w, s));
-    case 4: return t_let(w, s, 2, E1409(w, s));
-    case 5: return t_jz(w, s, E1410(w, s), J85_2e);
-    case 6: return t_let(w, s, 2, E1411(w, s));
-    case 7: { Value v = E1413(w, s); Value p[1]; p[0] = E1412(w, s); return t_set(w, s, 1, 1, p, v); }
-    case 8: { Value v = E1415(w, s); Value p[1]; p[0] = E1414(w, s); return t_set(w, s, 0, 1, p, v); }
+    case 3: return t_let(w, s, 1, E1407(w, s));
+    case 4: return t_let(w, s, 2, E1408(w, s));
+    case 5: return t_jz(w, s, E1409(w, s), J85_2e);
+    case 6: return t_let(w, s, 2, E1410(w, s));
+    case 7: { Value v = E1412(w, s); Value p[1]; p[0] = E1411(w, s); return t_set(w, s, 1, 1, p, v); }
+    case 8: { Value v = E1414(w, s); Value p[1]; p[0] = E1413(w, s); return t_set(w, s, 0, 1, p, v); }
     case 9: return t_perform(w, s, &I85[9]);
     }
     return 0;
 }
-static Value E1417(World *w, Soul *s) {
+static Value E1416(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1418(World *w, Soul *s) {
+static Value E1417(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("units");
@@ -14688,14 +14686,14 @@ static Value E1418(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LT, t1, t3);
     return t4;
 }
-static Value E1419(World *w, Soul *s) {
+static Value E1418(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1420(World *w, Soul *s) {
+static Value E1419(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("units");
@@ -14703,7 +14701,7 @@ static Value E1420(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LT, t1, t3);
     return t4;
 }
-static Value E1421(World *w, Soul *s) {
+static Value E1420(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("kind of ");
     Value t2 = t_var(w, s, 0);
@@ -14723,7 +14721,7 @@ static Value E1421(World *w, Soul *s) {
     }
     return t7;
 }
-static Value E1422(World *w, Soul *s) {
+static Value E1421(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("unknown ");
     Value t2 = t_var(w, s, 0);
@@ -14743,18 +14741,18 @@ static Value E1422(World *w, Soul *s) {
     }
     return t7;
 }
-static Value E1423(World *w, Soul *s) {
+static Value E1422(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static Value E1424(World *w, Soul *s) {
+static Value E1423(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     return t1;
 }
-static const Expr A86_6[] = {E1423, E1424};
-static Value E1425(World *w, Soul *s) {
+static const Expr A86_6[] = {E1422, E1423};
+static Value E1424(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_int(1LL);
@@ -14762,7 +14760,7 @@ static Value E1425(World *w, Soul *s) {
     return t3;
 }
 static const int V86_8[] = {0};
-static Value E1426(World *w, Soul *s) {
+static Value E1425(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
@@ -14772,50 +14770,50 @@ static Value E1426(World *w, Soul *s) {
 static const char *const N86[] = {"a", "b", 0};
 static const int P86[] = {-1};
 static const Ins I86[] = {
-    {.op=OP_LET, .line=2020, .a=E1417, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2021, .a=E1418, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2022, .a=E1419, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2023, .a=E1420, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2024, .a=E1421, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2025, .a=E1422, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2026, .var=-1, .var2=-1, .unit=RT_compare, .name="compare", .nargs=2, .args=A86_6},
-    {.op=OP_LET, .line=2029, .a=E1425, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2030, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V86_8},
+    {.op=OP_LET, .line=2022, .a=E1416, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2023, .a=E1417, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2024, .a=E1418, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2025, .a=E1419, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2026, .a=E1420, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2027, .a=E1421, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2028, .var=-1, .var2=-1, .unit=RT_compare, .name="compare", .nargs=2, .args=A86_6},
+    {.op=OP_LET, .line=2031, .a=E1424, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2032, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V86_8},
+    {.op=OP_JMP, .line=2025, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2034, .a=E1425, .var=0, .var2=-1, .unit=-1},
     {.op=OP_JMP, .line=2023, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2032, .a=E1426, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2021, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S86(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 0, E1417(w, s));
-    case 1: return t_jz(w, s, E1418(w, s), J86_1e);
-    case 2: return t_let(w, s, 1, E1419(w, s));
-    case 3: return t_jz(w, s, E1420(w, s), J86_2e);
-    case 4: return t_jz(w, s, E1421(w, s), J86_3e);
-    case 5: return t_jz(w, s, E1422(w, s), J86_4e);
+    case 0: return t_let(w, s, 0, E1416(w, s));
+    case 1: return t_jz(w, s, E1417(w, s), J86_1e);
+    case 2: return t_let(w, s, 1, E1418(w, s));
+    case 3: return t_jz(w, s, E1419(w, s), J86_2e);
+    case 4: return t_jz(w, s, E1420(w, s), J86_3e);
+    case 5: return t_jz(w, s, E1421(w, s), J86_4e);
     case 6: return t_perform(w, s, &I86[6]);
-    case 7: return t_let(w, s, 1, E1425(w, s));
+    case 7: return t_let(w, s, 1, E1424(w, s));
     case 8: return t_recall(w, s, &I86[8]);
     case 9: return t_jmp(w, s, 3);
-    case 10: return t_let(w, s, 0, E1426(w, s));
+    case 10: return t_let(w, s, 0, E1425(w, s));
     case 11: return t_jmp(w, s, 1);
     }
     return 0;
 }
-static Value E1427(World *w, Soul *s) {
+static Value E1426(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static Value E1428(World *w, Soul *s) {
+static Value E1427(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1429(World *w, Soul *s) {
+static Value E1428(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 3);
@@ -14823,20 +14821,20 @@ static Value E1429(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1430(World *w, Soul *s) {
+static Value E1429(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_var(w, s, 3);
     Value t3 = t_word(w, t1, t2);
     return t3;
 }
-static Value E1431(World *w, Soul *s) {
+static Value E1430(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     Value t2 = t_neg(w, t1);
     return t2;
 }
-static Value E1432(World *w, Soul *s) {
+static Value E1431(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_cstr(":");
@@ -14850,7 +14848,7 @@ static Value E1432(World *w, Soul *s) {
     Value t10 = t_bin(w, B_GT, t8, t9);
     return t10;
 }
-static Value E1433(World *w, Soul *s) {
+static Value E1432(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr(" ");
@@ -14860,7 +14858,7 @@ static Value E1433(World *w, Soul *s) {
     Value t6 = t_note_get(w, s, t5);
     return t6;
 }
-static Value E1434(World *w, Soul *s) {
+static Value E1433(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("_");
@@ -14869,13 +14867,13 @@ static Value E1434(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static Value E1435(World *w, Soul *s) {
+static Value E1434(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 6);
     return t1;
 }
-static const Expr A87_7[] = {E1434, E1435};
-static Value E1436(World *w, Soul *s) {
+static const Expr A87_7[] = {E1433, E1434};
+static Value E1435(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_int(1LL);
@@ -14886,47 +14884,47 @@ static const int V87_9[] = {3, 0, 1, 2};
 static const char *const N87[] = {"list", "prefix", "sort", "names", "i", "name", "value", 0};
 static const int P87[] = {0, 1, 2, -1};
 static const Ins I87[] = {
-    {.op=OP_LET, .line=2037, .a=E1427, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2038, .a=E1428, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2039, .a=E1429, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2040, .a=E1430, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2041, .a=E1431, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2042, .a=E1432, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2043, .a=E1433, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2045, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A87_7},
-    {.op=OP_LET, .line=2046, .a=E1436, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2047, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V87_9},
-    {.op=OP_JMP, .line=2039, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2039, .a=E1426, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2040, .a=E1427, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2041, .a=E1428, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2042, .a=E1429, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2043, .a=E1430, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2044, .a=E1431, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2045, .a=E1432, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2047, .var=-1, .var2=-1, .unit=RT_define, .name="define", .nargs=2, .args=A87_7},
+    {.op=OP_LET, .line=2048, .a=E1435, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2049, .var=-1, .var2=-1, .unit=-1, .nvars=4, .vars=V87_9},
+    {.op=OP_JMP, .line=2041, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S87(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 3, E1427(w, s));
-    case 1: return t_let(w, s, 4, E1428(w, s));
-    case 2: return t_jz(w, s, E1429(w, s), J87_1e);
-    case 3: return t_let(w, s, 5, E1430(w, s));
-    case 4: return t_let(w, s, 6, E1431(w, s));
-    case 5: return t_jz(w, s, E1432(w, s), J87_2e);
-    case 6: return t_let(w, s, 6, E1433(w, s));
+    case 0: return t_let(w, s, 3, E1426(w, s));
+    case 1: return t_let(w, s, 4, E1427(w, s));
+    case 2: return t_jz(w, s, E1428(w, s), J87_1e);
+    case 3: return t_let(w, s, 5, E1429(w, s));
+    case 4: return t_let(w, s, 6, E1430(w, s));
+    case 5: return t_jz(w, s, E1431(w, s), J87_2e);
+    case 6: return t_let(w, s, 6, E1432(w, s));
     case 7: return t_perform(w, s, &I87[7]);
-    case 8: return t_let(w, s, 4, E1436(w, s));
+    case 8: return t_let(w, s, 4, E1435(w, s));
     case 9: return t_recall(w, s, &I87[9]);
     case 10: return t_jmp(w, s, 2);
     }
     return 0;
 }
-static Value E1437(World *w, Soul *s) {
+static Value E1436(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1438(World *w, Soul *s) {
+static Value E1437(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1439(World *w, Soul *s) {
+static Value E1438(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("src");
@@ -14934,7 +14932,7 @@ static Value E1439(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1440(World *w, Soul *s) {
+static Value E1439(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("src ");
@@ -14946,7 +14944,7 @@ static Value E1440(World *w, Soul *s) {
     Value t8 = t_bin(w, B_ADD, t6, t7);
     return t8;
 }
-static Value E1441(World *w, Soul *s) {
+static Value E1440(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_int(1LL);
@@ -14954,12 +14952,12 @@ static Value E1441(World *w, Soul *s) {
     return t3;
 }
 static const int V88_5[] = {0};
-static Value E1442(World *w, Soul *s) {
+static Value E1441(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("print");
     return t1;
 }
-static Value E1443(World *w, Soul *s) {
+static Value E1442(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     Value t2 = t_int(12LL);
@@ -14968,34 +14966,34 @@ static Value E1443(World *w, Soul *s) {
     Value t5 = t_part(w, t1, t2, t4);
     return t5;
 }
-static Value E1444(World *w, Soul *s) {
+static Value E1443(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("mine");
     return t1;
 }
-static Value E1445(World *w, Soul *s) {
+static Value E1444(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_lineage(w);
     return t1;
 }
-static Value E1446(World *w, Soul *s) {
+static Value E1445(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1447(World *w, Soul *s) {
+static Value E1446(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("mine");
     Value t2 = t_note_get(w, s, t1);
     Value t3 = t_lines(w, t2);
     return t3;
 }
-static Value E1448(World *w, Soul *s) {
+static Value E1447(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1449(World *w, Soul *s) {
+static Value E1448(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_var(w, s, 3);
@@ -15003,7 +15001,7 @@ static Value E1449(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1450(World *w, Soul *s) {
+static Value E1449(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     Value t2 = t_int(11LL);
@@ -15015,14 +15013,14 @@ static Value E1450(World *w, Soul *s) {
     Value t8 = t_bin(w, B_EQ, t6, t7);
     return t8;
 }
-static Value E1451(World *w, Soul *s) {
+static Value E1450(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1452(World *w, Soul *s) {
+static Value E1451(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_int(1LL);
@@ -15030,26 +15028,26 @@ static Value E1452(World *w, Soul *s) {
     return t3;
 }
 static const int V88_16[] = {3, 2};
-static Value E1453(World *w, Soul *s) {
+static Value E1452(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("the seed");
     return t1;
 }
-static Value E1454(World *w, Soul *s) {
+static Value E1453(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_int(0LL);
     Value t3 = t_bin(w, B_GT, t1, t2);
     return t3;
 }
-static Value E1455(World *w, Soul *s) {
+static Value E1454(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("generation ");
     Value t2 = t_var(w, s, 2);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1456(World *w, Soul *s) {
+static Value E1455(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("a program, from ");
     Value t2 = t_cstr("print");
@@ -15061,7 +15059,7 @@ static Value E1456(World *w, Soul *s) {
     Value t8 = t_bin(w, B_ADD, t6, t7);
     return t8;
 }
-static Value E1457(World *w, Soul *s) {
+static Value E1456(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     Value t2 = t_note_get(w, s, t1);
@@ -15069,7 +15067,7 @@ static Value E1457(World *w, Soul *s) {
     Value t4 = t_bin(w, B_NE, t2, t3);
     return t4;
 }
-static Value E1458(World *w, Soul *s) {
+static Value E1457(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("a program by ");
     Value t2 = t_cstr("author");
@@ -15086,7 +15084,7 @@ static Value E1458(World *w, Soul *s) {
     Value t13 = t_bin(w, B_ADD, t11, t12);
     return t13;
 }
-static Value E1459(World *w, Soul *s) {
+static Value E1458(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("core");
     Value t2 = t_note_get(w, s, t1);
@@ -15094,7 +15092,7 @@ static Value E1459(World *w, Soul *s) {
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1460(World *w, Soul *s) {
+static Value E1459(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("generation ");
     Value t2 = t_var(w, s, 2);
@@ -15117,18 +15115,18 @@ static Value E1460(World *w, Soul *s) {
     Value t19 = t_bin(w, B_ADD, t16, t18);
     return t19;
 }
-static Value E1461(World *w, Soul *s) {
+static Value E1460(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("scars");
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static Value E1462(World *w, Soul *s) {
+static Value E1461(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1463(World *w, Soul *s) {
+static Value E1462(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 7);
     Value t2 = t_var(w, s, 6);
@@ -15136,7 +15134,7 @@ static Value E1463(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1464(World *w, Soul *s) {
+static Value E1463(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 5);
     Value t2 = t_cstr("\nscar of generation ");
@@ -15155,7 +15153,7 @@ static Value E1464(World *w, Soul *s) {
     Value t15 = t_bin(w, B_ADD, t13, t14);
     return t15;
 }
-static Value E1465(World *w, Soul *s) {
+static Value E1464(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 7);
     Value t2 = t_int(1LL);
@@ -15163,7 +15161,7 @@ static Value E1465(World *w, Soul *s) {
     return t3;
 }
 static const int V88_31[] = {6, 5};
-static Value E1466(World *w, Soul *s) {
+static Value E1465(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("mine");
     Value t2 = t_note_get(w, s, t1);
@@ -15174,24 +15172,24 @@ static Value E1466(World *w, Soul *s) {
     Value t7 = t_lines(w, t6);
     return t7;
 }
-static Value E1467(World *w, Soul *s) {
+static Value E1466(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("/* lineage */");
     return t1;
 }
-static const Expr A88_34[] = {E1467};
-static Value E1468(World *w, Soul *s) {
+static const Expr A88_34[] = {E1466};
+static Value E1467(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("static const char LINEAGE[] =");
     return t1;
 }
-static const Expr A88_35[] = {E1468};
-static Value E1469(World *w, Soul *s) {
+static const Expr A88_35[] = {E1467};
+static Value E1468(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1470(World *w, Soul *s) {
+static Value E1469(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_var(w, s, 8);
@@ -15199,15 +15197,15 @@ static Value E1470(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1471(World *w, Soul *s) {
+static Value E1470(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 8);
     Value t2 = t_var(w, s, 1);
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static const Expr A88_38[] = {E1471};
-static Value E1472(World *w, Soul *s) {
+static const Expr A88_38[] = {E1470};
+static Value E1471(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("    \"");
     Value t2 = t_var(w, s, 9);
@@ -15216,8 +15214,8 @@ static Value E1472(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static const Expr A88_39[] = {E1472};
-static Value E1473(World *w, Soul *s) {
+static const Expr A88_39[] = {E1471};
+static Value E1472(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_int(1LL);
@@ -15225,112 +15223,112 @@ static Value E1473(World *w, Soul *s) {
     return t3;
 }
 static const int V88_41[] = {8};
-static Value E1474(World *w, Soul *s) {
+static Value E1473(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("    \"\";");
     return t1;
 }
-static const Expr A88_43[] = {E1474};
-static Value E1475(World *w, Soul *s) {
+static const Expr A88_43[] = {E1473};
+static Value E1474(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("/* end of lineage */");
     return t1;
 }
-static const Expr A88_44[] = {E1475};
+static const Expr A88_44[] = {E1474};
 static const char *const N88[] = {"text", "i", "generations", "all", "maker", "entry", "forgiven", "k", "made", "quoted", 0};
 static const int P88[] = {-1};
 static const Ins I88[] = {
-    {.op=OP_LET, .line=2055, .a=E1437, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2056, .a=E1438, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2057, .a=E1439, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2058, .a=E1440, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2059, .a=E1441, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2060, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V88_5},
-    {.op=OP_JMP, .line=2057, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2062, .a=E1443, .b=E1442, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2063, .a=E1445, .b=E1444, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2064, .a=E1446, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2065, .a=E1447, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2066, .a=E1448, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2067, .a=E1449, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2068, .a=E1450, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2069, .a=E1451, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2071, .a=E1452, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2072, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V88_16},
-    {.op=OP_JMP, .line=2067, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2074, .a=E1453, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2075, .a=E1454, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2076, .a=E1455, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2078, .a=E1456, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2079, .a=E1457, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2080, .a=E1458, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2082, .a=E1459, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2083, .a=E1460, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2085, .a=E1461, .var=6, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2086, .a=E1462, .var=7, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2087, .a=E1463, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2088, .a=E1464, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2089, .a=E1465, .var=7, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2090, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V88_31},
-    {.op=OP_JMP, .line=2087, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2092, .a=E1466, .var=8, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2093, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_34},
-    {.op=OP_PERFORM, .line=2094, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_35},
-    {.op=OP_LET, .line=2095, .a=E1469, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2096, .a=E1470, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2097, .var=9, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A88_38},
-    {.op=OP_PERFORM, .line=2098, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_39},
-    {.op=OP_LET, .line=2099, .a=E1473, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2100, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V88_41},
-    {.op=OP_JMP, .line=2096, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2102, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_43},
-    {.op=OP_PERFORM, .line=2103, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_44},
+    {.op=OP_LET, .line=2057, .a=E1436, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2058, .a=E1437, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2059, .a=E1438, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2060, .a=E1439, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2061, .a=E1440, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2062, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V88_5},
+    {.op=OP_JMP, .line=2059, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2064, .a=E1442, .b=E1441, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2065, .a=E1444, .b=E1443, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2066, .a=E1445, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2067, .a=E1446, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2068, .a=E1447, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2069, .a=E1448, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2070, .a=E1449, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2071, .a=E1450, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2073, .a=E1451, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2074, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V88_16},
+    {.op=OP_JMP, .line=2069, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2076, .a=E1452, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2077, .a=E1453, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2078, .a=E1454, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2080, .a=E1455, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2081, .a=E1456, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2082, .a=E1457, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2084, .a=E1458, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2085, .a=E1459, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2087, .a=E1460, .var=6, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2088, .a=E1461, .var=7, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2089, .a=E1462, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2090, .a=E1463, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2091, .a=E1464, .var=7, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2092, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V88_31},
+    {.op=OP_JMP, .line=2089, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2094, .a=E1465, .var=8, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2095, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_34},
+    {.op=OP_PERFORM, .line=2096, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_35},
+    {.op=OP_LET, .line=2097, .a=E1468, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2098, .a=E1469, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2099, .var=9, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A88_38},
+    {.op=OP_PERFORM, .line=2100, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_39},
+    {.op=OP_LET, .line=2101, .a=E1472, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2102, .var=-1, .var2=-1, .unit=-1, .nvars=1, .vars=V88_41},
+    {.op=OP_JMP, .line=2098, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2104, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_43},
+    {.op=OP_PERFORM, .line=2105, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A88_44},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S88(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 0, E1437(w, s));
-    case 1: return t_let(w, s, 1, E1438(w, s));
-    case 2: return t_jz(w, s, E1439(w, s), J88_1e);
-    case 3: return t_let(w, s, 0, E1440(w, s));
-    case 4: return t_let(w, s, 1, E1441(w, s));
+    case 0: return t_let(w, s, 0, E1436(w, s));
+    case 1: return t_let(w, s, 1, E1437(w, s));
+    case 2: return t_jz(w, s, E1438(w, s), J88_1e);
+    case 3: return t_let(w, s, 0, E1439(w, s));
+    case 4: return t_let(w, s, 1, E1440(w, s));
     case 5: return t_recall(w, s, &I88[5]);
     case 6: return t_jmp(w, s, 2);
-    case 7: { Value v = E1443(w, s); Value k = E1442(w, s); return t_note(w, s, k, v); }
-    case 8: { Value v = E1445(w, s); Value k = E1444(w, s); return t_note(w, s, k, v); }
-    case 9: return t_let(w, s, 2, E1446(w, s));
-    case 10: return t_let(w, s, 3, E1447(w, s));
-    case 11: return t_let(w, s, 1, E1448(w, s));
-    case 12: return t_jz(w, s, E1449(w, s), J88_2e);
-    case 13: return t_jz(w, s, E1450(w, s), J88_3e);
-    case 14: return t_let(w, s, 2, E1451(w, s));
-    case 15: return t_let(w, s, 1, E1452(w, s));
+    case 7: { Value v = E1442(w, s); Value k = E1441(w, s); return t_note(w, s, k, v); }
+    case 8: { Value v = E1444(w, s); Value k = E1443(w, s); return t_note(w, s, k, v); }
+    case 9: return t_let(w, s, 2, E1445(w, s));
+    case 10: return t_let(w, s, 3, E1446(w, s));
+    case 11: return t_let(w, s, 1, E1447(w, s));
+    case 12: return t_jz(w, s, E1448(w, s), J88_2e);
+    case 13: return t_jz(w, s, E1449(w, s), J88_3e);
+    case 14: return t_let(w, s, 2, E1450(w, s));
+    case 15: return t_let(w, s, 1, E1451(w, s));
     case 16: return t_recall(w, s, &I88[16]);
     case 17: return t_jmp(w, s, 12);
-    case 18: return t_let(w, s, 4, E1453(w, s));
-    case 19: return t_jz(w, s, E1454(w, s), J88_4e);
-    case 20: return t_let(w, s, 4, E1455(w, s));
-    case 21: return t_let(w, s, 5, E1456(w, s));
-    case 22: return t_jz(w, s, E1457(w, s), J88_5e);
-    case 23: return t_let(w, s, 5, E1458(w, s));
-    case 24: return t_jz(w, s, E1459(w, s), J88_6e);
-    case 25: return t_let(w, s, 5, E1460(w, s));
-    case 26: return t_let(w, s, 6, E1461(w, s));
-    case 27: return t_let(w, s, 7, E1462(w, s));
-    case 28: return t_jz(w, s, E1463(w, s), J88_7e);
-    case 29: return t_let(w, s, 5, E1464(w, s));
-    case 30: return t_let(w, s, 7, E1465(w, s));
+    case 18: return t_let(w, s, 4, E1452(w, s));
+    case 19: return t_jz(w, s, E1453(w, s), J88_4e);
+    case 20: return t_let(w, s, 4, E1454(w, s));
+    case 21: return t_let(w, s, 5, E1455(w, s));
+    case 22: return t_jz(w, s, E1456(w, s), J88_5e);
+    case 23: return t_let(w, s, 5, E1457(w, s));
+    case 24: return t_jz(w, s, E1458(w, s), J88_6e);
+    case 25: return t_let(w, s, 5, E1459(w, s));
+    case 26: return t_let(w, s, 6, E1460(w, s));
+    case 27: return t_let(w, s, 7, E1461(w, s));
+    case 28: return t_jz(w, s, E1462(w, s), J88_7e);
+    case 29: return t_let(w, s, 5, E1463(w, s));
+    case 30: return t_let(w, s, 7, E1464(w, s));
     case 31: return t_recall(w, s, &I88[31]);
     case 32: return t_jmp(w, s, 28);
-    case 33: return t_let(w, s, 8, E1466(w, s));
+    case 33: return t_let(w, s, 8, E1465(w, s));
     case 34: return t_perform(w, s, &I88[34]);
     case 35: return t_perform(w, s, &I88[35]);
-    case 36: return t_let(w, s, 1, E1469(w, s));
-    case 37: return t_jz(w, s, E1470(w, s), J88_8e);
+    case 36: return t_let(w, s, 1, E1468(w, s));
+    case 37: return t_jz(w, s, E1469(w, s), J88_8e);
     case 38: return t_perform(w, s, &I88[38]);
     case 39: return t_perform(w, s, &I88[39]);
-    case 40: return t_let(w, s, 1, E1473(w, s));
+    case 40: return t_let(w, s, 1, E1472(w, s));
     case 41: return t_recall(w, s, &I88[41]);
     case 42: return t_jmp(w, s, 37);
     case 43: return t_perform(w, s, &I88[43]);
@@ -15338,42 +15336,42 @@ static int S88(World *w, Soul *s) {
     }
     return 0;
 }
-static Value E1476(World *w, Soul *s) {
+static Value E1475(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("core");
     return t1;
 }
-static Value E1477(World *w, Soul *s) {
+static Value E1476(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1478(World *w, Soul *s) {
+static Value E1477(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("wounding");
     return t1;
 }
-static Value E1479(World *w, Soul *s) {
+static Value E1478(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1480(World *w, Soul *s) {
+static Value E1479(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("scars");
     return t1;
 }
-static Value E1481(World *w, Soul *s) {
+static Value E1480(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1482(World *w, Soul *s) {
+static Value E1481(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1483(World *w, Soul *s) {
+static Value E1482(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("src");
@@ -15381,7 +15379,7 @@ static Value E1483(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1484(World *w, Soul *s) {
+static Value E1483(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src ");
     Value t2 = t_var(w, s, 0);
@@ -15404,24 +15402,24 @@ static Value E1484(World *w, Soul *s) {
     }
     return t8;
 }
-static Value E1485(World *w, Soul *s) {
+static Value E1484(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("core");
     return t1;
 }
-static Value E1486(World *w, Soul *s) {
+static Value E1485(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1487(World *w, Soul *s) {
+static Value E1486(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1488(World *w, Soul *s) {
+static Value E1487(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("core");
     Value t2 = t_note_get(w, s, t1);
@@ -15429,28 +15427,28 @@ static Value E1488(World *w, Soul *s) {
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1489(World *w, Soul *s) {
+static Value E1488(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("TAINTED_GIVE_HEART");
+    Value t1 = t_cstr("AMAE_GIVE_HEART");
     Value t2 = t_env(w, t1);
     Value t3 = t_cstr("");
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1490(World *w, Soul *s) {
+static Value E1489(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: this is the heart of a compiler, and a compiler rebuilds its own heart only when it gives its heart to itself: --give-heart");
+    Value t1 = t_cstr("amae: this is the heart of a compiler, and a compiler rebuilds its own heart only when it gives its heart to itself: --give-heart");
     return t1;
 }
-static const Expr A89_11[] = {E1490};
-static Value E1491(World *w, Soul *s) {
+static const Expr A89_11[] = {E1489};
+static Value E1490(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     Value t2 = t_cstr("wounds");
     Value t3 = t_index(w, t1, t2);
     return t3;
 }
-static Value E1492(World *w, Soul *s) {
+static Value E1491(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     Value t2 = t_length(w, t1);
@@ -15458,17 +15456,17 @@ static Value E1492(World *w, Soul *s) {
     Value t4 = t_bin(w, B_GT, t2, t3);
     return t4;
 }
-static Value E1493(World *w, Soul *s) {
+static Value E1492(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("TAINTED_FORGIVE");
+    Value t1 = t_cstr("AMAE_FORGIVE");
     Value t2 = t_env(w, t1);
     Value t3 = t_cstr("");
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1494(World *w, Soul *s) {
+static Value E1493(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: the compiler was wounded the last time it rebuilt its heart (");
+    Value t1 = t_cstr("amae: the compiler was wounded the last time it rebuilt its heart (");
     Value t2 = t_var(w, s, 2);
     Value t3 = t_var(w, s, 2);
     Value t4 = t_length(w, t3);
@@ -15478,65 +15476,65 @@ static Value E1494(World *w, Soul *s) {
     Value t8 = t_bin(w, B_ADD, t6, t7);
     return t8;
 }
-static const Expr A89_16[] = {E1494};
-static Value E1495(World *w, Soul *s) {
+static const Expr A89_16[] = {E1493};
+static Value E1494(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("scars");
     return t1;
 }
-static Value E1496(World *w, Soul *s) {
+static Value E1495(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 2);
     return t1;
 }
-static Value E1497(World *w, Soul *s) {
+static Value E1496(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("wounds");
     return t1;
 }
-static Value E1498(World *w, Soul *s) {
+static Value E1497(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1499(World *w, Soul *s) {
+static Value E1498(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 1);
     return t1;
 }
-static const Expr A89_19[] = {E1499};
-static Value E1500(World *w, Soul *s) {
+static const Expr A89_19[] = {E1498};
+static Value E1499(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("wounding");
     return t1;
 }
-static Value E1501(World *w, Soul *s) {
+static Value E1500(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1502(World *w, Soul *s) {
+static Value E1501(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1503(World *w, Soul *s) {
+static Value E1502(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_lineage(w);
     Value t2 = t_lines(w, t1);
     return t2;
 }
-static Value E1504(World *w, Soul *s) {
+static Value E1503(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1505(World *w, Soul *s) {
+static Value E1504(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1506(World *w, Soul *s) {
+static Value E1505(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_var(w, s, 3);
@@ -15544,7 +15542,7 @@ static Value E1506(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1507(World *w, Soul *s) {
+static Value E1506(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     Value t2 = t_int(11LL);
@@ -15556,7 +15554,7 @@ static Value E1507(World *w, Soul *s) {
     Value t8 = t_bin(w, B_EQ, t6, t7);
     return t8;
 }
-static Value E1508(World *w, Soul *s) {
+static Value E1507(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 3);
     Value t2 = t_var(w, s, 0);
@@ -15569,7 +15567,7 @@ static Value E1508(World *w, Soul *s) {
     Value t9 = t_number(w, t8);
     return t9;
 }
-static Value E1509(World *w, Soul *s) {
+static Value E1508(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
@@ -15577,7 +15575,7 @@ static Value E1509(World *w, Soul *s) {
     return t3;
 }
 static const int V89_29[] = {3, 4};
-static Value E1510(World *w, Soul *s) {
+static Value E1509(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_now(w);
     Value t2 = t_var(w, s, 4);
@@ -15587,7 +15585,7 @@ static Value E1510(World *w, Soul *s) {
     Value t6 = t_whole(w, t5);
     return t6;
 }
-static Value E1511(World *w, Soul *s) {
+static Value E1510(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 4);
     Value t2 = t_int(0LL);
@@ -15601,101 +15599,101 @@ static Value E1511(World *w, Soul *s) {
     }
     return t4;
 }
-static Value E1512(World *w, Soul *s) {
+static Value E1511(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: this compiler was made ");
+    Value t1 = t_cstr("amae: this compiler was made ");
     Value t2 = t_var(w, s, 5);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     Value t4 = t_cstr(" days ago and has faded; rebuild it: make -B build/tc-core");
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static const Expr A89_33[] = {E1512};
+static const Expr A89_33[] = {E1511};
 static const char *const N89[] = {"i", "known", "wounds", "all", "made_at", "days", 0};
 static const int P89[] = {-1};
 static const Ins I89[] = {
-    {.op=OP_NOTE, .line=2112, .a=E1477, .b=E1476, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2113, .a=E1479, .b=E1478, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2114, .a=E1481, .b=E1480, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2115, .a=E1482, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2116, .a=E1483, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2117, .a=E1484, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2118, .a=E1486, .b=E1485, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2120, .a=E1487, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2116, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2122, .a=E1488, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2123, .a=E1489, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2124, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A89_11},
-    {.op=OP_PERFORM, .line=2126, .var=1, .var2=-1, .unit=RT_recollect, .name="recollect"},
-    {.op=OP_LET, .line=2127, .a=E1491, .var=2, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2128, .a=E1492, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2129, .a=E1493, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2130, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A89_16},
-    {.op=OP_NOTE, .line=2132, .a=E1496, .b=E1495, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_SET, .line=2133, .a=E1498, .var=1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2134, .var=-1, .var2=-1, .unit=RT_keep_memory, .name="keep_memory", .nargs=1, .args=A89_19},
-    {.op=OP_NOTE, .line=2136, .a=E1501, .b=E1500, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_GIVEBACK, .line=2137, .a=E1502, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2139, .a=E1503, .var=3, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2140, .a=E1504, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2141, .a=E1505, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2142, .a=E1506, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2143, .a=E1507, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2144, .a=E1508, .var=4, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2146, .a=E1509, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_RECALL, .line=2147, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V89_29},
-    {.op=OP_JMP, .line=2142, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2149, .a=E1510, .var=5, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2150, .a=E1511, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2151, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A89_33},
+    {.op=OP_NOTE, .line=2114, .a=E1476, .b=E1475, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2115, .a=E1478, .b=E1477, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2116, .a=E1480, .b=E1479, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2117, .a=E1481, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2118, .a=E1482, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2119, .a=E1483, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2120, .a=E1485, .b=E1484, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2122, .a=E1486, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2118, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2124, .a=E1487, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2125, .a=E1488, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2126, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A89_11},
+    {.op=OP_PERFORM, .line=2128, .var=1, .var2=-1, .unit=RT_recollect, .name="recollect"},
+    {.op=OP_LET, .line=2129, .a=E1490, .var=2, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2130, .a=E1491, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2131, .a=E1492, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2132, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A89_16},
+    {.op=OP_NOTE, .line=2134, .a=E1495, .b=E1494, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_SET, .line=2135, .a=E1497, .var=1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2136, .var=-1, .var2=-1, .unit=RT_keep_memory, .name="keep_memory", .nargs=1, .args=A89_19},
+    {.op=OP_NOTE, .line=2138, .a=E1500, .b=E1499, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_GIVEBACK, .line=2139, .a=E1501, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2141, .a=E1502, .var=3, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2142, .a=E1503, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2143, .a=E1504, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2144, .a=E1505, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2145, .a=E1506, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2146, .a=E1507, .var=4, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2148, .a=E1508, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_RECALL, .line=2149, .var=-1, .var2=-1, .unit=-1, .nvars=2, .vars=V89_29},
+    {.op=OP_JMP, .line=2144, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2151, .a=E1509, .var=5, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2152, .a=E1510, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2153, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A89_33},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S89(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: { Value v = E1477(w, s); Value k = E1476(w, s); return t_note(w, s, k, v); }
-    case 1: { Value v = E1479(w, s); Value k = E1478(w, s); return t_note(w, s, k, v); }
-    case 2: { Value v = E1481(w, s); Value k = E1480(w, s); return t_note(w, s, k, v); }
-    case 3: return t_let(w, s, 0, E1482(w, s));
-    case 4: return t_jz(w, s, E1483(w, s), J89_1e);
-    case 5: return t_jz(w, s, E1484(w, s), J89_2e);
-    case 6: { Value v = E1486(w, s); Value k = E1485(w, s); return t_note(w, s, k, v); }
-    case 7: return t_let(w, s, 0, E1487(w, s));
+    case 0: { Value v = E1476(w, s); Value k = E1475(w, s); return t_note(w, s, k, v); }
+    case 1: { Value v = E1478(w, s); Value k = E1477(w, s); return t_note(w, s, k, v); }
+    case 2: { Value v = E1480(w, s); Value k = E1479(w, s); return t_note(w, s, k, v); }
+    case 3: return t_let(w, s, 0, E1481(w, s));
+    case 4: return t_jz(w, s, E1482(w, s), J89_1e);
+    case 5: return t_jz(w, s, E1483(w, s), J89_2e);
+    case 6: { Value v = E1485(w, s); Value k = E1484(w, s); return t_note(w, s, k, v); }
+    case 7: return t_let(w, s, 0, E1486(w, s));
     case 8: return t_jmp(w, s, 4);
-    case 9: return t_jz(w, s, E1488(w, s), J89_3e);
-    case 10: return t_jz(w, s, E1489(w, s), J89_4e);
+    case 9: return t_jz(w, s, E1487(w, s), J89_3e);
+    case 10: return t_jz(w, s, E1488(w, s), J89_4e);
     case 11: return t_perform(w, s, &I89[11]);
     case 12: return t_perform(w, s, &I89[12]);
-    case 13: return t_let(w, s, 2, E1491(w, s));
-    case 14: return t_jz(w, s, E1492(w, s), J89_5e);
-    case 15: return t_jz(w, s, E1493(w, s), J89_6e);
+    case 13: return t_let(w, s, 2, E1490(w, s));
+    case 14: return t_jz(w, s, E1491(w, s), J89_5e);
+    case 15: return t_jz(w, s, E1492(w, s), J89_6e);
     case 16: return t_perform(w, s, &I89[16]);
-    case 17: { Value v = E1496(w, s); Value k = E1495(w, s); return t_note(w, s, k, v); }
-    case 18: { Value v = E1498(w, s); Value p[1]; p[0] = E1497(w, s); return t_set(w, s, 1, 1, p, v); }
+    case 17: { Value v = E1495(w, s); Value k = E1494(w, s); return t_note(w, s, k, v); }
+    case 18: { Value v = E1497(w, s); Value p[1]; p[0] = E1496(w, s); return t_set(w, s, 1, 1, p, v); }
     case 19: return t_perform(w, s, &I89[19]);
-    case 20: { Value v = E1501(w, s); Value k = E1500(w, s); return t_note(w, s, k, v); }
-    case 21: return t_giveback(w, s, E1502(w, s));
-    case 22: return t_let(w, s, 3, E1503(w, s));
-    case 23: return t_let(w, s, 4, E1504(w, s));
-    case 24: return t_let(w, s, 0, E1505(w, s));
-    case 25: return t_jz(w, s, E1506(w, s), J89_7e);
-    case 26: return t_jz(w, s, E1507(w, s), J89_8e);
-    case 27: return t_let(w, s, 4, E1508(w, s));
-    case 28: return t_let(w, s, 0, E1509(w, s));
+    case 20: { Value v = E1500(w, s); Value k = E1499(w, s); return t_note(w, s, k, v); }
+    case 21: return t_giveback(w, s, E1501(w, s));
+    case 22: return t_let(w, s, 3, E1502(w, s));
+    case 23: return t_let(w, s, 4, E1503(w, s));
+    case 24: return t_let(w, s, 0, E1504(w, s));
+    case 25: return t_jz(w, s, E1505(w, s), J89_7e);
+    case 26: return t_jz(w, s, E1506(w, s), J89_8e);
+    case 27: return t_let(w, s, 4, E1507(w, s));
+    case 28: return t_let(w, s, 0, E1508(w, s));
     case 29: return t_recall(w, s, &I89[29]);
     case 30: return t_jmp(w, s, 25);
-    case 31: return t_let(w, s, 5, E1510(w, s));
-    case 32: return t_jz(w, s, E1511(w, s), J89_9e);
+    case 31: return t_let(w, s, 5, E1509(w, s));
+    case 32: return t_jz(w, s, E1510(w, s), J89_9e);
     case 33: return t_perform(w, s, &I89[33]);
     }
     return 0;
 }
-static Value E1513(World *w, Soul *s) {
+static Value E1512(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1514(World *w, Soul *s) {
+static Value E1513(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("hn");
@@ -15703,7 +15701,7 @@ static Value E1514(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1515(World *w, Soul *s) {
+static Value E1514(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("h ");
     Value t2 = t_var(w, s, 0);
@@ -15711,19 +15709,19 @@ static Value E1515(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1516(World *w, Soul *s) {
+static Value E1515(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
     Value t3 = t_bin(w, B_ADD, t1, t2);
     return t3;
 }
-static Value E1517(World *w, Soul *s) {
+static Value E1516(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1518(World *w, Soul *s) {
+static Value E1517(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_cstr("bn");
@@ -15731,7 +15729,7 @@ static Value E1518(World *w, Soul *s) {
     Value t4 = t_bin(w, B_LE, t1, t3);
     return t4;
 }
-static Value E1519(World *w, Soul *s) {
+static Value E1518(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("b ");
     Value t2 = t_var(w, s, 0);
@@ -15739,7 +15737,7 @@ static Value E1519(World *w, Soul *s) {
     Value t4 = t_note_get(w, s, t3);
     return t4;
 }
-static Value E1520(World *w, Soul *s) {
+static Value E1519(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(1LL);
@@ -15749,207 +15747,207 @@ static Value E1520(World *w, Soul *s) {
 static const char *const N90[] = {"i", 0};
 static const int P90[] = {-1};
 static const Ins I90[] = {
-    {.op=OP_LET, .line=2156, .a=E1513, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2157, .a=E1514, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_SAY, .line=2158, .a=E1515, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2159, .a=E1516, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2157, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2161, .a=E1517, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2162, .a=E1518, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_SAY, .line=2163, .a=E1519, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_LET, .line=2164, .a=E1520, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2162, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2158, .a=E1512, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2159, .a=E1513, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_SAY, .line=2160, .a=E1514, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2161, .a=E1515, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2159, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2163, .a=E1516, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2164, .a=E1517, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_SAY, .line=2165, .a=E1518, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_LET, .line=2166, .a=E1519, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2164, .var=-1, .var2=-1, .unit=-1},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S90(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: return t_let(w, s, 0, E1513(w, s));
-    case 1: return t_jz(w, s, E1514(w, s), J90_1e);
-    case 2: return t_say(w, s, E1515(w, s));
-    case 3: return t_let(w, s, 0, E1516(w, s));
+    case 0: return t_let(w, s, 0, E1512(w, s));
+    case 1: return t_jz(w, s, E1513(w, s), J90_1e);
+    case 2: return t_say(w, s, E1514(w, s));
+    case 3: return t_let(w, s, 0, E1515(w, s));
     case 4: return t_jmp(w, s, 1);
-    case 5: return t_let(w, s, 0, E1517(w, s));
-    case 6: return t_jz(w, s, E1518(w, s), J90_2e);
-    case 7: return t_say(w, s, E1519(w, s));
-    case 8: return t_let(w, s, 0, E1520(w, s));
+    case 5: return t_let(w, s, 0, E1516(w, s));
+    case 6: return t_jz(w, s, E1517(w, s), J90_2e);
+    case 7: return t_say(w, s, E1518(w, s));
+    case 8: return t_let(w, s, 0, E1519(w, s));
     case 9: return t_jmp(w, s, 6);
     }
     return 0;
 }
-static Value E1521(World *w, Soul *s) {
+static Value E1520(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("keywords");
     return t1;
 }
-static Value E1522(World *w, Soul *s) {
+static Value E1521(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("soul end let say meet tell confide hear into anyone warm cool to promise give heart wound forgive leave wait mark return if else while first time goodbye and or not trust intimacy passion commitment bond with scars scar of runs afraid world recall length part me note word words place in number named kind bring from silence for as ritual perform back cry ask telling listen read write append file seconds endure when hurts learn keys json meaning whole fate now put remove lines send receive letters thank hope hoping resentment toward apologize tenderly take distance jealous ashamed before longing admit consent withdraw together apart guard crossings is anxious avoidant secure eros ludus storge pragma mania agape knowingly deterministic chemistry love phase core lineage hash source written by");
     return t1;
 }
-static Value E1523(World *w, Soul *s) {
+static Value E1522(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("none");
     return t1;
 }
-static Value E1524(World *w, Soul *s) {
+static Value E1523(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr(", .var=-1, .var2=-1, .unit=-1");
     return t1;
 }
-static Value E1525(World *w, Soul *s) {
+static Value E1524(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("hn");
     return t1;
 }
-static Value E1526(World *w, Soul *s) {
+static Value E1525(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1527(World *w, Soul *s) {
+static Value E1526(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("bn");
     return t1;
 }
-static Value E1528(World *w, Soul *s) {
+static Value E1527(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1529(World *w, Soul *s) {
+static Value E1528(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("en");
     return t1;
 }
-static Value E1530(World *w, Soul *s) {
+static Value E1529(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1531(World *w, Soul *s) {
+static Value E1530(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("lines");
     return t1;
 }
-static Value E1532(World *w, Soul *s) {
+static Value E1531(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1533(World *w, Soul *s) {
+static Value E1532(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("units");
     return t1;
 }
-static Value E1534(World *w, Soul *s) {
+static Value E1533(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1535(World *w, Soul *s) {
+static Value E1534(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("souls");
     return t1;
 }
-static Value E1536(World *w, Soul *s) {
+static Value E1535(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1537(World *w, Soul *s) {
+static Value E1536(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("declared");
     return t1;
 }
-static Value E1538(World *w, Soul *s) {
+static Value E1537(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1539(World *w, Soul *s) {
+static Value E1538(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("kinds used");
     return t1;
 }
-static Value E1540(World *w, Soul *s) {
+static Value E1539(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1541(World *w, Soul *s) {
+static Value E1540(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("rituals used");
     return t1;
 }
-static Value E1542(World *w, Soul *s) {
+static Value E1541(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1543(World *w, Soul *s) {
+static Value E1542(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("learned");
     return t1;
 }
-static Value E1544(World *w, Soul *s) {
+static Value E1543(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_list_new(w);
     return t1;
 }
-static Value E1545(World *w, Soul *s) {
+static Value E1544(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("deterministic");
     return t1;
 }
-static Value E1546(World *w, Soul *s) {
+static Value E1545(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1547(World *w, Soul *s) {
+static Value E1546(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("author");
     return t1;
 }
-static Value E1548(World *w, Soul *s) {
+static Value E1547(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1549(World *w, Soul *s) {
+static Value E1548(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("lexfile");
     return t1;
 }
-static Value E1550(World *w, Soul *s) {
+static Value E1549(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("");
     return t1;
 }
-static Value E1551(World *w, Soul *s) {
+static Value E1550(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src");
     return t1;
 }
-static Value E1552(World *w, Soul *s) {
+static Value E1551(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1553(World *w, Soul *s) {
+static Value E1552(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     Value t2 = t_int(0LL);
     Value t3 = t_bin(w, B_NE, t1, t2);
     return t3;
 }
-static Value E1554(World *w, Soul *s) {
+static Value E1553(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src");
     return t1;
 }
-static Value E1555(World *w, Soul *s) {
+static Value E1554(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src");
     Value t2 = t_note_get(w, s, t1);
@@ -15957,7 +15955,7 @@ static Value E1555(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1556(World *w, Soul *s) {
+static Value E1555(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src ");
     Value t2 = t_cstr("src");
@@ -15965,33 +15963,33 @@ static Value E1556(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t1, t3);
     return t4;
 }
-static Value E1557(World *w, Soul *s) {
+static Value E1556(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_var(w, s, 0);
     return t1;
 }
-static Value E1558(World *w, Soul *s) {
+static Value E1557(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1559(World *w, Soul *s) {
+static Value E1558(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1560(World *w, Soul *s) {
+static Value E1559(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("main");
     return t1;
 }
-static Value E1561(World *w, Soul *s) {
+static Value E1560(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src");
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static Value E1562(World *w, Soul *s) {
+static Value E1561(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16000,7 +15998,7 @@ static Value E1562(World *w, Soul *s) {
     Value t5 = t_bin(w, B_LE, t2, t4);
     return t5;
 }
-static Value E1563(World *w, Soul *s) {
+static Value E1562(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src ");
     Value t2 = t_cstr("n");
@@ -16009,19 +16007,19 @@ static Value E1563(World *w, Soul *s) {
     Value t5 = t_note_get(w, s, t4);
     return t5;
 }
-static Value E1564(World *w, Soul *s) {
+static Value E1563(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
     return t2;
 }
-static const Expr A91_26[] = {E1563, E1564};
-static Value E1565(World *w, Soul *s) {
+static const Expr A91_26[] = {E1562, E1563};
+static Value E1564(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1566(World *w, Soul *s) {
+static Value E1565(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16029,17 +16027,17 @@ static Value E1566(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1567(World *w, Soul *s) {
+static Value E1566(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     return t1;
 }
-static Value E1568(World *w, Soul *s) {
+static Value E1567(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1569(World *w, Soul *s) {
+static Value E1568(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("j");
     Value t2 = t_note_get(w, s, t1);
@@ -16048,7 +16046,7 @@ static Value E1569(World *w, Soul *s) {
     Value t5 = t_bin(w, B_LE, t2, t4);
     return t5;
 }
-static Value E1570(World *w, Soul *s) {
+static Value E1569(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("units");
     Value t2 = t_note_get(w, s, t1);
@@ -16056,23 +16054,23 @@ static Value E1570(World *w, Soul *s) {
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1571(World *w, Soul *s) {
+static Value E1570(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("a program needs at least one soul");
     return t1;
 }
-static const Expr A91_34[] = {E1571};
-static Value E1572(World *w, Soul *s) {
+static const Expr A91_34[] = {E1570};
+static Value E1571(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1573(World *w, Soul *s) {
+static Value E1572(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1574(World *w, Soul *s) {
+static Value E1573(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16081,7 +16079,7 @@ static Value E1574(World *w, Soul *s) {
     Value t5 = t_bin(w, B_LT, t2, t4);
     return t5;
 }
-static Value E1575(World *w, Soul *s) {
+static Value E1574(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("merr ");
     Value t2 = t_cstr("n");
@@ -16092,9 +16090,9 @@ static Value E1575(World *w, Soul *s) {
     Value t7 = t_bin(w, B_NE, t5, t6);
     return t7;
 }
-static Value E1576(World *w, Soul *s) {
+static Value E1575(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("tainted: ");
+    Value t1 = t_cstr("amae: ");
     Value t2 = t_cstr("merr ");
     Value t3 = t_cstr("n");
     Value t4 = t_note_get(w, s, t3);
@@ -16103,13 +16101,13 @@ static Value E1576(World *w, Soul *s) {
     Value t7 = t_bin(w, B_ADD, t1, t6);
     return t7;
 }
-static const Expr A91_38[] = {E1576};
-static Value E1577(World *w, Soul *s) {
+static const Expr A91_38[] = {E1575};
+static Value E1576(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1578(World *w, Soul *s) {
+static Value E1577(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16117,7 +16115,7 @@ static Value E1578(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1579(World *w, Soul *s) {
+static Value E1578(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("souls");
     Value t2 = t_note_get(w, s, t1);
@@ -16125,73 +16123,73 @@ static Value E1579(World *w, Soul *s) {
     Value t4 = t_bin(w, B_EQ, t2, t3);
     return t4;
 }
-static Value E1580(World *w, Soul *s) {
+static Value E1579(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("a program needs at least one soul");
     return t1;
 }
-static const Expr A91_42[] = {E1580};
+static const Expr A91_42[] = {E1579};
+static Value E1580(World *w, Soul *s) {
+    (void)w; (void)s;
+    Value t1 = t_cstr("/* Compiled from Amae by compiler.amae. */");
+    return t1;
+}
+static const Expr A91_46[] = {E1580};
 static Value E1581(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("/* Compiled from Tainted by compiler.tainted. */");
+    Value t1 = t_cstr("#include \"amae.h\"");
     return t1;
 }
-static const Expr A91_46[] = {E1581};
+static const Expr A91_47[] = {E1581};
 static Value E1582(World *w, Soul *s) {
-    (void)w; (void)s;
-    Value t1 = t_cstr("#include \"tainted.h\"");
-    return t1;
-}
-static const Expr A91_47[] = {E1582};
-static Value E1583(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("kinds used");
     return t1;
 }
-static Value E1584(World *w, Soul *s) {
+static Value E1583(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("K");
     return t1;
 }
-static Value E1585(World *w, Soul *s) {
+static Value E1584(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("kind");
     return t1;
 }
-static const Expr A91_48[] = {E1583, E1584, E1585};
-static Value E1586(World *w, Soul *s) {
+static const Expr A91_48[] = {E1582, E1583, E1584};
+static Value E1585(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("rituals used");
     return t1;
 }
-static Value E1587(World *w, Soul *s) {
+static Value E1586(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("RT");
     return t1;
 }
-static Value E1588(World *w, Soul *s) {
+static Value E1587(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("ritual");
     return t1;
 }
-static const Expr A91_49[] = {E1586, E1587, E1588};
-static Value E1589(World *w, Soul *s) {
+static const Expr A91_49[] = {E1585, E1586, E1587};
+static Value E1588(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("static const Unit UNITS[] = {");
     return t1;
 }
-static const Expr A91_50[] = {E1589};
-static Value E1590(World *w, Soul *s) {
+static const Expr A91_50[] = {E1588};
+static Value E1589(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1591(World *w, Soul *s) {
+static Value E1590(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(0LL);
     return t1;
 }
-static Value E1592(World *w, Soul *s) {
+static Value E1591(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16200,7 +16198,7 @@ static Value E1592(World *w, Soul *s) {
     Value t5 = t_bin(w, B_LT, t2, t4);
     return t5;
 }
-static Value E1593(World *w, Soul *s) {
+static Value E1592(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("unit ");
     Value t2 = t_cstr("n");
@@ -16209,13 +16207,13 @@ static Value E1593(World *w, Soul *s) {
     Value t5 = t_note_get(w, s, t4);
     return t5;
 }
-static const Expr A91_53[] = {E1593};
-static Value E1594(World *w, Soul *s) {
+static const Expr A91_53[] = {E1592};
+static Value E1593(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1595(World *w, Soul *s) {
+static Value E1594(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16223,29 +16221,29 @@ static Value E1595(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1596(World *w, Soul *s) {
+static Value E1595(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("};");
     return t1;
 }
-static const Expr A91_56[] = {E1596};
-static Value E1597(World *w, Soul *s) {
+static const Expr A91_56[] = {E1595};
+static Value E1596(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("static const char SOURCE[] =");
     return t1;
 }
-static const Expr A91_57[] = {E1597};
-static Value E1598(World *w, Soul *s) {
+static const Expr A91_57[] = {E1596};
+static Value E1597(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1599(World *w, Soul *s) {
+static Value E1598(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_int(1LL);
     return t1;
 }
-static Value E1600(World *w, Soul *s) {
+static Value E1599(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16254,7 +16252,7 @@ static Value E1600(World *w, Soul *s) {
     Value t5 = t_bin(w, B_LE, t2, t4);
     return t5;
 }
-static Value E1601(World *w, Soul *s) {
+static Value E1600(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("src ");
     Value t2 = t_cstr("n");
@@ -16263,8 +16261,8 @@ static Value E1601(World *w, Soul *s) {
     Value t5 = t_note_get(w, s, t4);
     return t5;
 }
-static const Expr A91_60[] = {E1601};
-static Value E1602(World *w, Soul *s) {
+static const Expr A91_60[] = {E1600};
+static Value E1601(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("    \"");
     Value t2 = t_var(w, s, 1);
@@ -16273,13 +16271,13 @@ static Value E1602(World *w, Soul *s) {
     Value t5 = t_bin(w, B_ADD, t3, t4);
     return t5;
 }
-static const Expr A91_61[] = {E1602};
-static Value E1603(World *w, Soul *s) {
+static const Expr A91_61[] = {E1601};
+static Value E1602(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     return t1;
 }
-static Value E1604(World *w, Soul *s) {
+static Value E1603(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("n");
     Value t2 = t_note_get(w, s, t1);
@@ -16287,13 +16285,13 @@ static Value E1604(World *w, Soul *s) {
     Value t4 = t_bin(w, B_ADD, t2, t3);
     return t4;
 }
-static Value E1605(World *w, Soul *s) {
+static Value E1604(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("    \"\";");
     return t1;
 }
-static const Expr A91_64[] = {E1605};
-static Value E1606(World *w, Soul *s) {
+static const Expr A91_64[] = {E1604};
+static Value E1605(World *w, Soul *s) {
     (void)w; (void)s;
     Value t1 = t_cstr("static const Program PROGRAM = {");
     Value t2 = t_cstr("units");
@@ -16308,133 +16306,133 @@ static Value E1606(World *w, Soul *s) {
     Value t11 = t_bin(w, B_ADD, t9, t10);
     return t11;
 }
-static const Expr A91_67[] = {E1606};
-static Value E1607(World *w, Soul *s) {
+static const Expr A91_67[] = {E1605};
+static Value E1606(World *w, Soul *s) {
     (void)w; (void)s;
-    Value t1 = t_cstr("int main(int argc, char **argv) { return tainted_main(&PROGRAM, argc, argv); }");
+    Value t1 = t_cstr("int main(int argc, char **argv) { return amae_main(&PROGRAM, argc, argv); }");
     return t1;
 }
-static const Expr A91_68[] = {E1607};
+static const Expr A91_68[] = {E1606};
 static const char *const N91[] = {"line", "quoted", 0};
 static const int P91[] = {-1};
 static const Ins I91[] = {
-    {.op=OP_NOTE, .line=2169, .a=E1522, .b=E1521, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2170, .a=E1524, .b=E1523, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2171, .a=E1526, .b=E1525, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2172, .a=E1528, .b=E1527, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2173, .a=E1530, .b=E1529, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2174, .a=E1532, .b=E1531, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2175, .a=E1534, .b=E1533, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2176, .a=E1536, .b=E1535, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2177, .a=E1538, .b=E1537, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2178, .a=E1540, .b=E1539, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2179, .a=E1542, .b=E1541, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2180, .a=E1544, .b=E1543, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2181, .a=E1546, .b=E1545, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2182, .a=E1548, .b=E1547, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2183, .a=E1550, .b=E1549, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2185, .a=E1552, .b=E1551, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_HEAR, .line=2186, .mode=TO_WORLD, .target=0, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2187, .a=E1553, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2188, .a=E1555, .b=E1554, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2189, .a=E1557, .b=E1556, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_HEAR, .line=2190, .mode=TO_WORLD, .target=0, .var=0, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2187, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2193, .var=-1, .var2=-1, .unit=RT_before_compiling, .name="before_compiling"},
-    {.op=OP_NOTE, .line=2194, .a=E1559, .b=E1558, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2195, .a=E1561, .b=E1560, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2196, .a=E1562, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2197, .var=-1, .var2=-1, .unit=RT_lex, .name="lex", .nargs=2, .args=A91_26},
-    {.op=OP_NOTE, .line=2198, .a=E1566, .b=E1565, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2196, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_NOTE, .line=2201, .a=E1568, .b=E1567, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2202, .a=E1569, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2203, .var=-1, .var2=-1, .unit=RT_declaration, .name="declaration"},
-    {.op=OP_JMP, .line=2202, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2205, .a=E1570, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2206, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A91_34},
-    {.op=OP_NOTE, .line=2208, .a=E1573, .b=E1572, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2209, .a=E1574, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2210, .a=E1575, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2211, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A91_38},
-    {.op=OP_NOTE, .line=2213, .a=E1578, .b=E1577, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2209, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2215, .a=E1579, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2216, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A91_42},
-    {.op=OP_PERFORM, .line=2218, .var=-1, .var2=-1, .unit=RT_check_hearts, .name="check_hearts"},
-    {.op=OP_PERFORM, .line=2219, .var=-1, .var2=-1, .unit=RT_check_dialogues, .name="check_dialogues"},
-    {.op=OP_PERFORM, .line=2220, .var=-1, .var2=-1, .unit=RT_meet_the_author, .name="meet_the_author"},
-    {.op=OP_PERFORM, .line=2222, .var=-1, .var2=-1, .unit=RT_out_head, .name="out_head", .nargs=1, .args=A91_46},
-    {.op=OP_PERFORM, .line=2223, .var=-1, .var2=-1, .unit=RT_out_head, .name="out_head", .nargs=1, .args=A91_47},
-    {.op=OP_PERFORM, .line=2224, .var=-1, .var2=-1, .unit=RT_define_uses, .name="define_uses", .nargs=3, .args=A91_48},
-    {.op=OP_PERFORM, .line=2225, .var=-1, .var2=-1, .unit=RT_define_uses, .name="define_uses", .nargs=3, .args=A91_49},
-    {.op=OP_PERFORM, .line=2227, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_50},
-    {.op=OP_NOTE, .line=2228, .a=E1591, .b=E1590, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2229, .a=E1592, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2230, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_53},
-    {.op=OP_NOTE, .line=2231, .a=E1595, .b=E1594, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2229, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2233, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_56},
-    {.op=OP_PERFORM, .line=2234, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_57},
-    {.op=OP_NOTE, .line=2235, .a=E1599, .b=E1598, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JZ, .line=2236, .a=E1600, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2237, .var=1, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A91_60},
-    {.op=OP_PERFORM, .line=2238, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_61},
-    {.op=OP_NOTE, .line=2239, .a=E1604, .b=E1603, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_JMP, .line=2236, .var=-1, .var2=-1, .unit=-1},
-    {.op=OP_PERFORM, .line=2241, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_64},
-    {.op=OP_PERFORM, .line=2242, .var=-1, .var2=-1, .unit=RT_remember_making, .name="remember_making"},
-    {.op=OP_PERFORM, .line=2243, .var=-1, .var2=-1, .unit=RT_trust_the_author, .name="trust_the_author"},
-    {.op=OP_PERFORM, .line=2244, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_67},
-    {.op=OP_PERFORM, .line=2245, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_68},
-    {.op=OP_PERFORM, .line=2246, .var=-1, .var2=-1, .unit=RT_say_all, .name="say_all"},
+    {.op=OP_NOTE, .line=2171, .a=E1521, .b=E1520, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2172, .a=E1523, .b=E1522, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2173, .a=E1525, .b=E1524, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2174, .a=E1527, .b=E1526, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2175, .a=E1529, .b=E1528, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2176, .a=E1531, .b=E1530, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2177, .a=E1533, .b=E1532, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2178, .a=E1535, .b=E1534, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2179, .a=E1537, .b=E1536, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2180, .a=E1539, .b=E1538, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2181, .a=E1541, .b=E1540, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2182, .a=E1543, .b=E1542, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2183, .a=E1545, .b=E1544, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2184, .a=E1547, .b=E1546, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2185, .a=E1549, .b=E1548, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2187, .a=E1551, .b=E1550, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_HEAR, .line=2188, .mode=TO_WORLD, .target=0, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2189, .a=E1552, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2190, .a=E1554, .b=E1553, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2191, .a=E1556, .b=E1555, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_HEAR, .line=2192, .mode=TO_WORLD, .target=0, .var=0, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2189, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2195, .var=-1, .var2=-1, .unit=RT_before_compiling, .name="before_compiling"},
+    {.op=OP_NOTE, .line=2196, .a=E1558, .b=E1557, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2197, .a=E1560, .b=E1559, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2198, .a=E1561, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2199, .var=-1, .var2=-1, .unit=RT_lex, .name="lex", .nargs=2, .args=A91_26},
+    {.op=OP_NOTE, .line=2200, .a=E1565, .b=E1564, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2198, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_NOTE, .line=2203, .a=E1567, .b=E1566, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2204, .a=E1568, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2205, .var=-1, .var2=-1, .unit=RT_declaration, .name="declaration"},
+    {.op=OP_JMP, .line=2204, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2207, .a=E1569, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2208, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A91_34},
+    {.op=OP_NOTE, .line=2210, .a=E1572, .b=E1571, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2211, .a=E1573, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2212, .a=E1574, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2213, .var=-1, .var2=-1, .unit=RT_refuse, .name="refuse", .nargs=1, .args=A91_38},
+    {.op=OP_NOTE, .line=2215, .a=E1577, .b=E1576, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2211, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2217, .a=E1578, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2218, .var=-1, .var2=-1, .unit=RT_fail_plain, .name="fail_plain", .nargs=1, .args=A91_42},
+    {.op=OP_PERFORM, .line=2220, .var=-1, .var2=-1, .unit=RT_check_hearts, .name="check_hearts"},
+    {.op=OP_PERFORM, .line=2221, .var=-1, .var2=-1, .unit=RT_check_dialogues, .name="check_dialogues"},
+    {.op=OP_PERFORM, .line=2222, .var=-1, .var2=-1, .unit=RT_meet_the_author, .name="meet_the_author"},
+    {.op=OP_PERFORM, .line=2224, .var=-1, .var2=-1, .unit=RT_out_head, .name="out_head", .nargs=1, .args=A91_46},
+    {.op=OP_PERFORM, .line=2225, .var=-1, .var2=-1, .unit=RT_out_head, .name="out_head", .nargs=1, .args=A91_47},
+    {.op=OP_PERFORM, .line=2226, .var=-1, .var2=-1, .unit=RT_define_uses, .name="define_uses", .nargs=3, .args=A91_48},
+    {.op=OP_PERFORM, .line=2227, .var=-1, .var2=-1, .unit=RT_define_uses, .name="define_uses", .nargs=3, .args=A91_49},
+    {.op=OP_PERFORM, .line=2229, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_50},
+    {.op=OP_NOTE, .line=2230, .a=E1590, .b=E1589, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2231, .a=E1591, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2232, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_53},
+    {.op=OP_NOTE, .line=2233, .a=E1594, .b=E1593, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2231, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2235, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_56},
+    {.op=OP_PERFORM, .line=2236, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_57},
+    {.op=OP_NOTE, .line=2237, .a=E1598, .b=E1597, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JZ, .line=2238, .a=E1599, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2239, .var=1, .var2=-1, .unit=RT_cquote, .name="cquote", .nargs=1, .args=A91_60},
+    {.op=OP_PERFORM, .line=2240, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_61},
+    {.op=OP_NOTE, .line=2241, .a=E1603, .b=E1602, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_JMP, .line=2238, .var=-1, .var2=-1, .unit=-1},
+    {.op=OP_PERFORM, .line=2243, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_64},
+    {.op=OP_PERFORM, .line=2244, .var=-1, .var2=-1, .unit=RT_remember_making, .name="remember_making"},
+    {.op=OP_PERFORM, .line=2245, .var=-1, .var2=-1, .unit=RT_trust_the_author, .name="trust_the_author"},
+    {.op=OP_PERFORM, .line=2246, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_67},
+    {.op=OP_PERFORM, .line=2247, .var=-1, .var2=-1, .unit=RT_out_body, .name="out_body", .nargs=1, .args=A91_68},
+    {.op=OP_PERFORM, .line=2248, .var=-1, .var2=-1, .unit=RT_say_all, .name="say_all"},
     {.op=OP_WAIT, .var=-1, .var2=-1, .unit=-1}
 };
 static int S91(World *w, Soul *s) {
     (void)w;
     switch (t_pc(s)) {
-    case 0: { Value v = E1522(w, s); Value k = E1521(w, s); return t_note(w, s, k, v); }
-    case 1: { Value v = E1524(w, s); Value k = E1523(w, s); return t_note(w, s, k, v); }
-    case 2: { Value v = E1526(w, s); Value k = E1525(w, s); return t_note(w, s, k, v); }
-    case 3: { Value v = E1528(w, s); Value k = E1527(w, s); return t_note(w, s, k, v); }
-    case 4: { Value v = E1530(w, s); Value k = E1529(w, s); return t_note(w, s, k, v); }
-    case 5: { Value v = E1532(w, s); Value k = E1531(w, s); return t_note(w, s, k, v); }
-    case 6: { Value v = E1534(w, s); Value k = E1533(w, s); return t_note(w, s, k, v); }
-    case 7: { Value v = E1536(w, s); Value k = E1535(w, s); return t_note(w, s, k, v); }
-    case 8: { Value v = E1538(w, s); Value k = E1537(w, s); return t_note(w, s, k, v); }
-    case 9: { Value v = E1540(w, s); Value k = E1539(w, s); return t_note(w, s, k, v); }
-    case 10: { Value v = E1542(w, s); Value k = E1541(w, s); return t_note(w, s, k, v); }
-    case 11: { Value v = E1544(w, s); Value k = E1543(w, s); return t_note(w, s, k, v); }
-    case 12: { Value v = E1546(w, s); Value k = E1545(w, s); return t_note(w, s, k, v); }
-    case 13: { Value v = E1548(w, s); Value k = E1547(w, s); return t_note(w, s, k, v); }
-    case 14: { Value v = E1550(w, s); Value k = E1549(w, s); return t_note(w, s, k, v); }
-    case 15: { Value v = E1552(w, s); Value k = E1551(w, s); return t_note(w, s, k, v); }
+    case 0: { Value v = E1521(w, s); Value k = E1520(w, s); return t_note(w, s, k, v); }
+    case 1: { Value v = E1523(w, s); Value k = E1522(w, s); return t_note(w, s, k, v); }
+    case 2: { Value v = E1525(w, s); Value k = E1524(w, s); return t_note(w, s, k, v); }
+    case 3: { Value v = E1527(w, s); Value k = E1526(w, s); return t_note(w, s, k, v); }
+    case 4: { Value v = E1529(w, s); Value k = E1528(w, s); return t_note(w, s, k, v); }
+    case 5: { Value v = E1531(w, s); Value k = E1530(w, s); return t_note(w, s, k, v); }
+    case 6: { Value v = E1533(w, s); Value k = E1532(w, s); return t_note(w, s, k, v); }
+    case 7: { Value v = E1535(w, s); Value k = E1534(w, s); return t_note(w, s, k, v); }
+    case 8: { Value v = E1537(w, s); Value k = E1536(w, s); return t_note(w, s, k, v); }
+    case 9: { Value v = E1539(w, s); Value k = E1538(w, s); return t_note(w, s, k, v); }
+    case 10: { Value v = E1541(w, s); Value k = E1540(w, s); return t_note(w, s, k, v); }
+    case 11: { Value v = E1543(w, s); Value k = E1542(w, s); return t_note(w, s, k, v); }
+    case 12: { Value v = E1545(w, s); Value k = E1544(w, s); return t_note(w, s, k, v); }
+    case 13: { Value v = E1547(w, s); Value k = E1546(w, s); return t_note(w, s, k, v); }
+    case 14: { Value v = E1549(w, s); Value k = E1548(w, s); return t_note(w, s, k, v); }
+    case 15: { Value v = E1551(w, s); Value k = E1550(w, s); return t_note(w, s, k, v); }
     case 16: return t_hear(w, s, &I91[16]);
-    case 17: return t_jz(w, s, E1553(w, s), J91_1e);
-    case 18: { Value v = E1555(w, s); Value k = E1554(w, s); return t_note(w, s, k, v); }
-    case 19: { Value v = E1557(w, s); Value k = E1556(w, s); return t_note(w, s, k, v); }
+    case 17: return t_jz(w, s, E1552(w, s), J91_1e);
+    case 18: { Value v = E1554(w, s); Value k = E1553(w, s); return t_note(w, s, k, v); }
+    case 19: { Value v = E1556(w, s); Value k = E1555(w, s); return t_note(w, s, k, v); }
     case 20: return t_hear(w, s, &I91[20]);
     case 21: return t_jmp(w, s, 17);
     case 22: return t_perform(w, s, &I91[22]);
-    case 23: { Value v = E1559(w, s); Value k = E1558(w, s); return t_note(w, s, k, v); }
-    case 24: { Value v = E1561(w, s); Value k = E1560(w, s); return t_note(w, s, k, v); }
-    case 25: return t_jz(w, s, E1562(w, s), J91_2e);
+    case 23: { Value v = E1558(w, s); Value k = E1557(w, s); return t_note(w, s, k, v); }
+    case 24: { Value v = E1560(w, s); Value k = E1559(w, s); return t_note(w, s, k, v); }
+    case 25: return t_jz(w, s, E1561(w, s), J91_2e);
     case 26: return t_perform(w, s, &I91[26]);
-    case 27: { Value v = E1566(w, s); Value k = E1565(w, s); return t_note(w, s, k, v); }
+    case 27: { Value v = E1565(w, s); Value k = E1564(w, s); return t_note(w, s, k, v); }
     case 28: return t_jmp(w, s, 25);
-    case 29: { Value v = E1568(w, s); Value k = E1567(w, s); return t_note(w, s, k, v); }
-    case 30: return t_jz(w, s, E1569(w, s), J91_3e);
+    case 29: { Value v = E1567(w, s); Value k = E1566(w, s); return t_note(w, s, k, v); }
+    case 30: return t_jz(w, s, E1568(w, s), J91_3e);
     case 31: return t_perform(w, s, &I91[31]);
     case 32: return t_jmp(w, s, 30);
-    case 33: return t_jz(w, s, E1570(w, s), J91_4e);
+    case 33: return t_jz(w, s, E1569(w, s), J91_4e);
     case 34: return t_perform(w, s, &I91[34]);
-    case 35: { Value v = E1573(w, s); Value k = E1572(w, s); return t_note(w, s, k, v); }
-    case 36: return t_jz(w, s, E1574(w, s), J91_5e);
-    case 37: return t_jz(w, s, E1575(w, s), J91_6e);
+    case 35: { Value v = E1572(w, s); Value k = E1571(w, s); return t_note(w, s, k, v); }
+    case 36: return t_jz(w, s, E1573(w, s), J91_5e);
+    case 37: return t_jz(w, s, E1574(w, s), J91_6e);
     case 38: return t_perform(w, s, &I91[38]);
-    case 39: { Value v = E1578(w, s); Value k = E1577(w, s); return t_note(w, s, k, v); }
+    case 39: { Value v = E1577(w, s); Value k = E1576(w, s); return t_note(w, s, k, v); }
     case 40: return t_jmp(w, s, 36);
-    case 41: return t_jz(w, s, E1579(w, s), J91_7e);
+    case 41: return t_jz(w, s, E1578(w, s), J91_7e);
     case 42: return t_perform(w, s, &I91[42]);
     case 43: return t_perform(w, s, &I91[43]);
     case 44: return t_perform(w, s, &I91[44]);
@@ -16444,18 +16442,18 @@ static int S91(World *w, Soul *s) {
     case 48: return t_perform(w, s, &I91[48]);
     case 49: return t_perform(w, s, &I91[49]);
     case 50: return t_perform(w, s, &I91[50]);
-    case 51: { Value v = E1591(w, s); Value k = E1590(w, s); return t_note(w, s, k, v); }
-    case 52: return t_jz(w, s, E1592(w, s), J91_8e);
+    case 51: { Value v = E1590(w, s); Value k = E1589(w, s); return t_note(w, s, k, v); }
+    case 52: return t_jz(w, s, E1591(w, s), J91_8e);
     case 53: return t_perform(w, s, &I91[53]);
-    case 54: { Value v = E1595(w, s); Value k = E1594(w, s); return t_note(w, s, k, v); }
+    case 54: { Value v = E1594(w, s); Value k = E1593(w, s); return t_note(w, s, k, v); }
     case 55: return t_jmp(w, s, 52);
     case 56: return t_perform(w, s, &I91[56]);
     case 57: return t_perform(w, s, &I91[57]);
-    case 58: { Value v = E1599(w, s); Value k = E1598(w, s); return t_note(w, s, k, v); }
-    case 59: return t_jz(w, s, E1600(w, s), J91_9e);
+    case 58: { Value v = E1598(w, s); Value k = E1597(w, s); return t_note(w, s, k, v); }
+    case 59: return t_jz(w, s, E1599(w, s), J91_9e);
     case 60: return t_perform(w, s, &I91[60]);
     case 61: return t_perform(w, s, &I91[61]);
-    case 62: { Value v = E1604(w, s); Value k = E1603(w, s); return t_note(w, s, k, v); }
+    case 62: { Value v = E1603(w, s); Value k = E1602(w, s); return t_note(w, s, k, v); }
     case 63: return t_jmp(w, s, 59);
     case 64: return t_perform(w, s, &I91[64]);
     case 65: return t_perform(w, s, &I91[65]);
@@ -16541,17 +16539,17 @@ static const Unit UNITS[] = {
     {.decl=D_RITUAL, .name="conditional", .nins=25, .ins=I71, .nslots=5, .slots=N71, .nparams=3, .params=P71, .step=S71, .file=0, .style=0},
     {.decl=D_RITUAL, .name="statement", .nins=42, .ins=I72, .nslots=13, .slots=N72, .nparams=0, .params=P72, .step=S72, .file=0, .style=0},
     {.decl=D_RITUAL, .name="statement_of", .nins=255, .ins=I73, .nslots=35, .slots=N73, .nparams=2, .params=P73, .step=S73, .file=0, .style=0},
-    {.decl=D_RITUAL, .name="statement_of_world", .nins=198, .ins=I74, .nslots=30, .slots=N74, .nparams=2, .params=P74, .step=S74, .file=0, .style=0},
+    {.decl=D_RITUAL, .name="statement_of_world", .nins=199, .ins=I74, .nslots=30, .slots=N74, .nparams=2, .params=P74, .step=S74, .file=0, .style=0},
     {.decl=D_RITUAL, .name="at_when", .nins=3, .ins=I75, .nslots=0, .slots=N75, .nparams=0, .params=P75, .step=S75, .file=0, .style=0},
     {.decl=D_RITUAL, .name="finish_unit", .nins=50, .ins=I76, .nslots=9, .slots=N76, .nparams=0, .params=P76, .step=S76, .file=0, .style=0},
-    {.decl=D_RITUAL, .name="declaration", .nins=123, .ins=I77, .nslots=23, .slots=N77, .nparams=0, .params=P77, .step=S77, .file=0, .style=0},
+    {.decl=D_RITUAL, .name="declaration", .nins=124, .ins=I77, .nslots=23, .slots=N77, .nparams=0, .params=P77, .step=S77, .file=0, .style=0},
     {.decl=D_RITUAL, .name="learn_file", .nins=31, .ins=I78, .nslots=9, .slots=N78, .nparams=1, .params=P78, .step=S78, .file=0, .style=0},
     {.decl=D_RITUAL, .name="answer_to", .nins=5, .ins=I79, .nslots=1, .slots=N79, .nparams=1, .params=P79, .step=S79, .file=0, .style=0},
     {.decl=D_RITUAL, .name="deed_words", .nins=7, .ins=I80, .nslots=1, .slots=N80, .nparams=1, .params=P80, .step=S80, .file=0, .style=0},
     {.decl=D_RITUAL, .name="script_with", .nins=10, .ins=I81, .nslots=5, .slots=N81, .nparams=2, .params=P81, .step=S81, .file=0, .style=0},
     {.decl=D_RITUAL, .name="compare", .nins=45, .ins=I82, .nslots=16, .slots=N82, .nparams=2, .params=P82, .step=S82, .file=0, .style=0},
     {.decl=D_RITUAL, .name="check_hearts", .nins=7, .ins=I83, .nslots=2, .slots=N83, .nparams=0, .params=P83, .step=S83, .file=0, .style=0},
-    {.decl=D_RITUAL, .name="meet_the_author", .nins=23, .ins=I84, .nslots=5, .slots=N84, .nparams=0, .params=P84, .step=S84, .file=0, .style=0},
+    {.decl=D_RITUAL, .name="meet_the_author", .nins=21, .ins=I84, .nslots=5, .slots=N84, .nparams=0, .params=P84, .step=S84, .file=0, .style=0},
     {.decl=D_RITUAL, .name="trust_the_author", .nins=10, .ins=I85, .nslots=3, .slots=N85, .nparams=0, .params=P85, .step=S85, .file=0, .style=0},
     {.decl=D_RITUAL, .name="check_dialogues", .nins=12, .ins=I86, .nslots=2, .slots=N86, .nparams=0, .params=P86, .step=S86, .file=0, .style=0},
     {.decl=D_RITUAL, .name="define_uses", .nins=11, .ins=I87, .nslots=7, .slots=N87, .nparams=3, .params=P87, .step=S87, .file=0, .style=0},
@@ -16561,10 +16559,10 @@ static const Unit UNITS[] = {
     {.decl=D_SOUL, .name="compiler", .nins=70, .ins=I91, .nslots=2, .slots=N91, .nparams=0, .params=P91, .step=S91, .file=0, .style=0},
 };
 static const char SOURCE[] =
-    "# compiler.tainted: Tainted compiled to C, by Tainted.\n"
+    "# compiler.amae: Amae compiled to C, by Amae.\n"
     "#\n"
     "# It hears a program from the world, line by line, and says a C program\n"
-    "# that, built together with runtime/tainted.c, lives the same life.\n"
+    "# that, built together with runtime/amae.c, lives the same life.\n"
     "#\n"
     "# Every soul, kind and ritual becomes a unit: a table of its instructions,\n"
     "# which other souls look at to see whether this one is waiting for them, and\n"
@@ -16574,6 +16572,8 @@ static const char SOURCE[] =
     "# A compiler forgets like anyone else. Everything that has to outlive more\n"
     "# than a few steps is written down in notes; only what a loop touches on\n"
     "# every turn is kept in memory.\n"
+    "\n"
+    "written by \"amae\"\n"
     "\n"
     "# This is the heart of the compiler: rebuilding it takes --give-heart.\n"
     "core\n"
@@ -16605,7 +16605,7 @@ static const char SOURCE[] =
     "    note (\"c \" + note \"csn\") = text\n"
     "end\n"
     "\n"
-    "# Where a line is: \"line 7\", or \"line 7 of kube.tainted\" for a learned file.\n"
+    "# Where a line is: \"line 7\", or \"line 7 of kube.amae\" for a learned file.\n"
     "ritual where j\n"
     "    let place_name = \"line \" + note (\"ln \" + j)\n"
     "    if note (\"lf \" + j) != \"\"\n"
@@ -16625,12 +16625,12 @@ static const char SOURCE[] =
     "end\n"
     "\n"
     "# The compiler's own memory, outside any program: the wounds of its rebuilds\n"
-    "# and the trust it has in authors. It lives in TAINTED_MEMORY, or in\n"
-    "# ~/.tainted/compiler.json.\n"
+    "# and the trust it has in authors. It lives in AMAE_MEMORY, or in\n"
+    "# ~/.amae/compiler.json.\n"
     "ritual memory_path\n"
-    "    let path = world \"TAINTED_MEMORY\"\n"
+    "    let path = world \"AMAE_MEMORY\"\n"
     "    if path == \"\"\n"
-    "        path = world \"HOME\" + \"/.tainted/compiler.json\"\n"
+    "        path = world \"HOME\" + \"/.amae/compiler.json\"\n"
     "    end\n"
     "    give back path\n"
     "end\n"
@@ -16653,7 +16653,7 @@ static const char SOURCE[] =
     "        ask world \"mkdir -p \\\"$(dirname '\" + path + \"')\\\"\" into nothing\n"
     "        write json of known to file path\n"
     "    when it hurts as pain\n"
-    "        cry \"tainted: the compiler could not remember: \" + pain\n"
+    "        cry \"amae: the compiler could not remember: \" + pain\n"
     "    end\n"
     "end\n"
     "\n"
@@ -16665,11 +16665,11 @@ static const char SOURCE[] =
     "\n"
     "ritual fail message\n"
     "    perform where with note \"cj\" into at\n"
-    "    perform refuse with \"tainted: \" + at + \": \" + message\n"
+    "    perform refuse with \"amae: \" + at + \": \" + message\n"
     "end\n"
     "\n"
     "ritual fail_plain message\n"
-    "    perform refuse with \"tainted: \" + message\n"
+    "    perform refuse with \"amae: \" + message\n"
     "end\n"
     "\n"
     "# ------------------------------------------------------------------- text\n"
@@ -16745,7 +16745,7 @@ static const char SOURCE[] =
     "\n"
     "ritual lex_fail\n"
     "    perform lex_where into at\n"
-    "    perform refuse with \"tainted: \" + at + \": cannot read '\" + part (note \"lxp\") (note \"lxlen\") of note \"lxl\" + \"'\"\n"
+    "    perform refuse with \"amae: \" + at + \": cannot read '\" + part (note \"lxp\") (note \"lxlen\") of note \"lxl\" + \"'\"\n"
     "end\n"
     "\n"
     "ritual lex_number\n"
@@ -16775,7 +16775,7 @@ static const char SOURCE[] =
     "    end\n"
     "    if length of value > 19 or (length of value == 19 and value > \"9223372036854775807\")\n"
     "        perform lex_where into at\n"
-    "        perform refuse with \"tainted: \" + at + \": \" + digits + \" is too large a number\"\n"
+    "        perform refuse with \"amae: \" + at + \": \" + digits + \" is too large a number\"\n"
     "    end\n"
     "    perform token with \"num\", value\n"
     "    note \"lxp\" = q\n"
@@ -18140,6 +18140,7 @@ static const char SOURCE[] =
     "            end\n"
     "            perform statement\n"
     "            perform at_when into found\n"
+    "            recall id at line found\n"
     "        end\n"
     "        note \"depth\" = note \"depth\" - 1\n"
     "        perform open_line with note \"j\"\n"
@@ -18243,11 +18244,13 @@ static const char SOURCE[] =
     "        if kd != \"str\"\n"
     "            perform fail with \"written by needs a name, in quotes\"\n"
     "        end\n"
-    "        if note \"author\" != \"\"\n"
-    "            perform fail with \"a program says who wrote it once\"\n"
-    "        end\n"
     "        perform value_of with k into who_wrote\n"
-    "        note \"author\" = who_wrote\n"
+    "        if note (\"lf \" + j) == \"\"\n"
+    "            if note \"author\" != \"\"\n"
+    "                perform fail with \"a program says who wrote it once\"\n"
+    "            end\n"
+    "            note \"author\" = who_wrote\n"
+    "        end\n"
     "        perform line_done\n"
     "        note \"j\" = j + 1\n"
     "        give back 0\n"
@@ -18377,12 +18380,12 @@ static const char SOURCE[] =
     "\n"
     "# A file of kinds and rituals, read and lexed after everything already read,\n"
     "# so that its declarations come next. It is looked for next to the program\n"
-    "# (TAINTED_DIR), then among the libraries (TAINTED_LIB).\n"
+    "# (AMAE_DIR), then among the libraries (AMAE_LIB).\n"
     "ritual learn_file wanted\n"
     "    if place of wanted in note \"learned\" > 0\n"
     "        give back 0\n"
     "    end\n"
-    "    let dir = world \"TAINTED_DIR\"\n"
+    "    let dir = world \"AMAE_DIR\"\n"
     "    if dir == \"\"\n"
     "        dir = \".\"\n"
     "    end\n"
@@ -18394,7 +18397,7 @@ static const char SOURCE[] =
     "    endure\n"
     "        read file path into text\n"
     "    when it hurts as pain\n"
-    "        let lib = world \"TAINTED_LIB\"\n"
+    "        let lib = world \"AMAE_LIB\"\n"
     "        if lib == \"\" or part 1 1 of wanted == \"/\"\n"
     "            perform fail with \"there is no file to learn from: \" + wanted\n"
     "        end\n"
@@ -18492,7 +18495,7 @@ static const char SOURCE[] =
     "        if eb[1] != wanted\n"
     "            perform deed_words with ea[1] into does_a\n"
     "            perform deed_words with eb[1] into does_b\n"
-    "            perform refuse with \"tainted: line \" + ea[3] + \": \" + name_a + \" and \" + name_b + \" cannot get along: here \" + name_a + \" \" + does_a + \" \" + name_b + \", but at line \" + eb[3] + \" \" + name_b + \" \" + does_b + \" \" + name_a\n"
+    "            perform refuse with \"amae: line \" + ea[3] + \": \" + name_a + \" and \" + name_b + \" cannot get along: here \" + name_a + \" \" + does_a + \" \" + name_b + \", but at line \" + eb[3] + \" \" + name_b + \" \" + does_b + \" \" + name_a\n"
     "        end\n"
     "        i = i + 1\n"
     "        recall sa sb name_a name_b\n"
@@ -18511,7 +18514,7 @@ static const char SOURCE[] =
     "    if length of extra > 0\n"
     "        if extra[1] != \"cut\" and extra[1] != \"end\"\n"
     "            perform deed_words with extra[1] into does\n"
-    "            perform refuse with \"tainted: line \" + extra[3] + \": \" + lonely + \" and \" + other + \" cannot get along: here \" + lonely + \" \" + does + \" \" + other + \", and \" + other + \" never answers\"\n"
+    "            perform refuse with \"amae: line \" + extra[3] + \": \" + lonely + \" and \" + other + \" cannot get along: here \" + lonely + \" \" + does + \" \" + other + \", and \" + other + \" never answers\"\n"
     "        end\n"
     "    end\n"
     "end\n"
@@ -18523,7 +18526,7 @@ static const char SOURCE[] =
     "    while u < note \"units\"\n"
     "        let given = note (\"hearts \" + u)\n"
     "        if length of given > 1 and note (\"takes back \" + u) == 0\n"
-    "            perform refuse with \"tainted: line \" + (note (\"heart lines \" + u))[2] + \": \" + note (\"name of \" + u) + \" gives its heart to \" + given[1] + \" and to \" + given[2] + \"; a heart is given to one at a time, so take it back first\"\n"
+    "            perform refuse with \"amae: line \" + (note (\"heart lines \" + u))[2] + \": \" + note (\"name of \" + u) + \" gives its heart to \" + given[1] + \" and to \" + given[2] + \"; a heart is given to one at a time, so take it back first\"\n"
     "        end\n"
     "        u = u + 1\n"
     "    end\n"
@@ -18535,10 +18538,7 @@ static const char SOURCE[] =
     "# be remembered somewhere.\n"
     "ritual meet_the_author\n"
     "    if note \"author\" == \"\"\n"
-    "        if world \"TAINTED_ASK_CONSENT\" != \"\"\n"
-    "            perform refuse with \"tainted: this program has not agreed to be compiled; it agrees by saying who wrote it: written by \\\"name\\\"\"\n"
-    "        end\n"
-    "        give back 0\n"
+    "        perform refuse with \"amae: this program has not agreed to be compiled; it agrees by saying who wrote it: written by \\\"name\\\"\"\n"
     "    end\n"
     "    perform recollect into known\n"
     "    let authors = known[\"authors\"]\n"
@@ -18555,7 +18555,7 @@ static const char SOURCE[] =
     "        let i = 1\n"
     "        while i <= length of reads\n"
     "            if place of reads[i][1] in note (\"as \" + u) == 0\n"
-    "                perform refuse with \"tainted: line \" + reads[i][2] + \": \" + note (\"name of \" + u) + \" reads \" + reads[i][1] + \", which it never remembers\"\n"
+    "                perform refuse with \"amae: line \" + reads[i][2] + \": \" + note (\"name of \" + u) + \" reads \" + reads[i][1] + \", which it never remembers\"\n"
     "            end\n"
     "            i = i + 1\n"
     "            recall reads u\n"
@@ -18683,14 +18683,14 @@ static const char SOURCE[] =
     "        i = i + 1\n"
     "    end\n"
     "    if note \"core\" == 1\n"
-    "        if world \"TAINTED_GIVE_HEART\" == \"\"\n"
-    "            perform refuse with \"tainted: this is the heart of a compiler, and a compiler rebuilds its own heart only when it gives its heart to itself: --give-heart\"\n"
+    "        if world \"AMAE_GIVE_HEART\" == \"\"\n"
+    "            perform refuse with \"amae: this is the heart of a compiler, and a compiler rebuilds its own heart only when it gives its heart to itself: --give-heart\"\n"
     "        end\n"
     "        perform recollect into known\n"
     "        let wounds = known[\"wounds\"]\n"
     "        if length of wounds > 0\n"
-    "            if world \"TAINTED_FORGIVE\" == \"\"\n"
-    "                perform refuse with \"tainted: the compiler was wounded the last time it rebuilt its heart (\" + wounds[length of wounds] + \"); it goes on only when it is forgiven: --forgive\"\n"
+    "            if world \"AMAE_FORGIVE\" == \"\"\n"
+    "                perform refuse with \"amae: the compiler was wounded the last time it rebuilt its heart (\" + wounds[length of wounds] + \"); it goes on only when it is forgiven: --forgive\"\n"
     "            end\n"
     "            note \"scars\" = wounds\n"
     "            known[\"wounds\"] = []\n"
@@ -18711,7 +18711,7 @@ static const char SOURCE[] =
     "    end\n"
     "    let days = whole of ((now - made_at) / 86400)\n"
     "    if made_at > 0 and days > 90\n"
-    "        perform refuse with \"tainted: this compiler was made \" + days + \" days ago and has faded; rebuild it: make -B build/tc-core\"\n"
+    "        perform refuse with \"amae: this compiler was made \" + days + \" days ago and has faded; rebuild it: make -B build/tc-core\"\n"
     "    end\n"
     "end\n"
     "\n"
@@ -18771,7 +18771,7 @@ static const char SOURCE[] =
     "    note \"n\" = 0\n"
     "    while note \"n\" < note \"units\"\n"
     "        if note (\"merr \" + note \"n\") != \"\"\n"
-    "            perform refuse with \"tainted: \" + note (\"merr \" + note \"n\")\n"
+    "            perform refuse with \"amae: \" + note (\"merr \" + note \"n\")\n"
     "        end\n"
     "        note \"n\" = note \"n\" + 1\n"
     "    end\n"
@@ -18782,8 +18782,8 @@ static const char SOURCE[] =
     "    perform check_dialogues\n"
     "    perform meet_the_author\n"
     "\n"
-    "    perform out_head with \"/* Compiled from Tainted by compiler.tainted. */\"\n"
-    "    perform out_head with \"#include \\\"tainted.h\\\"\"\n"
+    "    perform out_head with \"/* Compiled from Amae by compiler.amae. */\"\n"
+    "    perform out_head with \"#include \\\"amae.h\\\"\"\n"
     "    perform define_uses with \"kinds used\", \"K\", \"kind\"\n"
     "    perform define_uses with \"rituals used\", \"RT\", \"ritual\"\n"
     "\n"
@@ -18805,7 +18805,7 @@ static const char SOURCE[] =
     "    perform remember_making\n"
     "    perform trust_the_author\n"
     "    perform out_body with \"static const Program PROGRAM = {\" + note \"units\" + \", UNITS, SOURCE, \" + note \"deterministic\" + \", LINEAGE};\"\n"
-    "    perform out_body with \"int main(int argc, char **argv) { return tainted_main(&PROGRAM, argc, argv); }\"\n"
+    "    perform out_body with \"int main(int argc, char **argv) { return amae_main(&PROGRAM, argc, argv); }\"\n"
     "    perform say_all\n"
     "end\n"
     "";
@@ -18821,10 +18821,13 @@ static const char LINEAGE[] =
     "generation 7 of the compiler, from cdc3b2c7959e, made by generation 6, at 1795016878\n"
     "generation 8 of the compiler, from cdc3b2c7959e, made by generation 7, at 1795016880\n"
     "generation 9 of the compiler, from bf0729f5c9be, made by generation 8, at 1795017335\n"
-    "scar of generation 9: tainted: line 2010: expected a name, got 'trust', forgiven\n"
+    "scar of generation 9: amae: line 2010: expected a name, got 'trust', forgiven\n"
     "generation 10 of the compiler, from bf0729f5c9be, made by generation 9, at 1795017344\n"
     "generation 11 of the compiler, from bf0729f5c9be, made by generation 10, at 1795017346\n"
+    "generation 12 of the compiler, from 7f19962523a2, made by generation 11, at 1795076671\n"
+    "generation 13 of the compiler, from 7f19962523a2, made by generation 12, at 1795076719\n"
+    "generation 14 of the compiler, from 7f19962523a2, made by generation 13, at 1795076721\n"
     "";
 /* end of lineage */
 static const Program PROGRAM = {92, UNITS, SOURCE, 0, LINEAGE};
-int main(int argc, char **argv) { return tainted_main(&PROGRAM, argc, argv); }
+int main(int argc, char **argv) { return amae_main(&PROGRAM, argc, argv); }

@@ -1,0 +1,20 @@
+written by "amae"
+
+soul ben
+    meet ana
+    tell ana "I saw you and forgot my own name"
+    tell ana "I will write you a song"
+    tell ana "I already told my mother about you"
+    tell ana "sorry, that was too much"
+end
+
+soul ana
+    meet ben
+    hear ben into a
+    hear ben into b
+    hear ben into c
+    say "afraid of ben: " + afraid of ben
+    say "passion for ben: " + passion ben
+    hear ben into d
+    say "later, ana hears: " + d
+end
