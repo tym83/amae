@@ -28,6 +28,16 @@
 #   (amaenetes.io/likes), fits there, and the node has a seat for it.
 # The scheduler then finds the workload's next pod a better home.
 #
+# Attachment (amaenetes.io/attachment) also decides how pods handle a node
+# whose Ready condition is not True, independently of COUNSEL_DIVORCE:
+# secure (also the fallback) leaves after COUNSEL_SECURE_AFTER (60s), anxious
+# after COUNSEL_ANXIOUS_AFTER (15s), with a Normal/Warning Separated Event.
+# Only owned, non-terminating pods leave; refused evictions retry next look.
+# Avoidant stays, but reunion after more than COUNSEL_AVOIDANT_AFTER (15s)
+# adds one carried scar and a history line. Secure reunion adds no scar.
+# Separation times live in notes by pod UID and reset on counsel restart.
+# Kubernetes' own taint eviction still applies.
+#
 # Probe bids have three answers: passed (towards), failed (away), and killed
 # for failed liveness (against). Attempts are estimated from elapsed time and
 # probe periods. Their counts fade like moments, independently of contempt.
@@ -165,9 +175,66 @@ ritual bids_of p
     give back a
 end
 
+# Each look rebuilds the separation map: reunited and vanished pods drop out.
+# Return the avoidant reunion's history line, if this separation left a scar.
+ritual separation_of p, node_ready
+    perform field with p["metadata"], "uid", "" into uid
+    if uid == ""
+        give back ""
+    end
+    perform annotation with p, "amaenetes.io/attachment" into style_
+    if style_ != "anxious" and style_ != "avoidant"
+        style_ = "secure"
+    end
+    let previous = note "separations"
+    let began = note "look time"
+    if place of uid in previous > 0
+        began = previous[uid]
+    end
+    let elapsed = note "look time" - began
+    let node = p["spec"]["nodeName"]
+    if node_ready
+        if place of uid in previous > 0 and style_ == "avoidant" and elapsed > note "avoidant after"
+            give back p["metadata"]["name"] + " kept its distance: " + node + " went silent for " + whole of elapsed + "s"
+        end
+        give back ""
+    end
+    let current = note "current separations"
+    current[uid] = began
+    note "current separations" = current
+    if style_ == "avoidant"
+        give back ""
+    end
+    let limit = note "secure after"
+    let event_type = "Normal"
+    if style_ == "anxious"
+        limit = note "anxious after"
+        event_type = "Warning"
+    end
+    perform field with p["metadata"], "ownerReferences", [] into owners
+    perform field with p["metadata"], "deletionTimestamp", "" into going
+    if elapsed >= limit and length of owners > 0 and going == ""
+        let message = style_ + ": " + node + " out of touch for " + whole of elapsed + "s"
+        if style_ == "secure"
+            message = message + ", moving on"
+        end
+        note "separated pod" = p
+        note "separated message" = message
+        note "separated type" = event_type
+        endure
+            perform evict with p["metadata"]["namespace"] + "/" + p["metadata"]["name"]
+            perform tell_event with note "separated pod", note "separated type", "Separated", note "separated message", "counsel"
+        when it hurts as pain
+            cry "counsel: " + pain
+        end
+    end
+    give back ""
+end
+
 # What happened between one pod and its node in this look, added to what
 # happened between its partner and the node.
 ritual observe p, node_ready, known
+    perform separation_of with p, node_ready into reunion
     perform partner_of with p into partner
     let ns = p["metadata"]["namespace"]
     let node = p["spec"]["nodeName"]
@@ -175,9 +242,13 @@ ritual observe p, node_ready, known
     let name = kind_ + "-" + partner["name"] + "." + node
     let key_ = ns + "/" + name
     let seen = note "seen"
-    let o = {"namespace": ns, "name": name, "partner": partner, "node": node, "positive": 0, "criticism": 0, "contempt": 0, "defensiveness": 0, "stonewalling": 0, "pods": {}, "told": [], "bids": 0, "towards": 0, "away": 0, "against": 0}
+    let o = {"namespace": ns, "name": name, "partner": partner, "node": node, "positive": 0, "criticism": 0, "contempt": 0, "defensiveness": 0, "stonewalling": 0, "distance scars": 0, "pods": {}, "told": [], "bids": 0, "towards": 0, "away": 0, "against": 0}
     if place of key_ in seen > 0
         o = seen[key_]
+    end
+    if reunion != ""
+        o["distance scars"] = o["distance scars"] + 1
+        o["told"] = o["told"] + [reunion]
     end
     let earlier_pods = {}
     if place of key_ in known > 0
@@ -290,7 +361,10 @@ ritual relate o, known, looks
         i = i + 1
     end
     perform field with old, "scars", 0 into carried
-    st["scars"] = carried + o["criticism"] + o["contempt"] + o["defensiveness"]
+    st["scars"] = carried + o["criticism"] + o["contempt"] + o["defensiveness"] + o["distance scars"]
+    if o["distance scars"] > 0
+        fresh = 1
+    end
     perform health_of with st["positive"], negative into health
     names = ["bids", "towards", "away", "against"]
     i = 1
@@ -375,6 +449,7 @@ end
 ritual counsel_once
     note "look time" = now
     note "current pod looks" = {}
+    note "current separations" = {}
     perform bid_events
     perform get_all with "nodes" into all_nodes
     perform get_all with "pods -A" into all_pods
@@ -407,6 +482,7 @@ ritual counsel_once
         i = i + 1
     end
     note "pod looks" = note "current pod looks"
+    note "separations" = note "current separations"
     let seen = note "seen"
     let keys_ = keys of seen
     i = 1
@@ -585,6 +661,19 @@ soul counsel
     note "event counts" = {}
     note "event baseline ready" = 0
     note "pod looks" = {}
+    note "separations" = {}
+    note "secure after" = 60
+    note "anxious after" = 15
+    note "avoidant after" = 15
+    if world "COUNSEL_SECURE_AFTER" != ""
+        note "secure after" = number of world "COUNSEL_SECURE_AFTER"
+    end
+    if world "COUNSEL_ANXIOUS_AFTER" != ""
+        note "anxious after" = number of world "COUNSEL_ANXIOUS_AFTER"
+    end
+    if world "COUNSEL_AVOIDANT_AFTER" != ""
+        note "avoidant after" = number of world "COUNSEL_AVOIDANT_AFTER"
+    end
     note "divorce every" = 6
     if world "COUNSEL_DIVORCE_EVERY" != ""
         note "divorce every" = number of world "COUNSEL_DIVORCE_EVERY"
