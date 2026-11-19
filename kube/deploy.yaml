@@ -1,5 +1,6 @@
-# Taintednetes inside the cluster it schedules: the scheduler and the parting
-# operator, compiled from Tainted into ghcr.io/tym83/tainted, run as pods.
+# Taintednetes inside the cluster it schedules: the scheduler, the parting
+# operator and counsel, compiled from Tainted into ghcr.io/tym83/tainted,
+# run as pods.
 #
 #   kubectl --context <ctx> create namespace taintednetes
 #   kubectl --context <ctx> apply -f kube/deploy.yaml
@@ -184,6 +185,122 @@ spec:
             - {name: KUBECONFIG, value: /etc/taintednetes/config}
             - {name: KUBE_CONTEXT, value: in-cluster}
             - {name: PARTING_INTERVAL, value: "5"}
+            - {name: HOME, value: /tmp}
+          volumeMounts:
+            - {name: kubeconfig, mountPath: /etc/taintednetes}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+      volumes:
+        - name: kubeconfig
+          configMap: {name: taintednetes-kubeconfig}
+---
+# What a workload and a node have lived through together, kept by counsel.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: relationships.tainted.io
+spec:
+  group: tainted.io
+  scope: Namespaced
+  names: {plural: relationships, singular: relationship, kind: Relationship, shortNames: [rel]}
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      additionalPrinterColumns:
+        - {name: Partner, type: string, jsonPath: .spec.partner.name}
+        - {name: Node, type: string, jsonPath: .spec.node}
+        - {name: Health, type: string, jsonPath: .status.health}
+        - {name: Ratio, type: string, jsonPath: .status.ratio}
+        - {name: Scars, type: integer, jsonPath: .status.scars}
+        - {name: Seen, type: date, jsonPath: .status.lastSeen}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [partner, node]
+              properties:
+                partner:
+                  type: object
+                  properties:
+                    kind: {type: string}
+                    name: {type: string}
+                node: {type: string}
+            status:
+              type: object
+              properties:
+                positive: {type: number}
+                criticism: {type: number}
+                contempt: {type: number}
+                defensiveness: {type: number}
+                stonewalling: {type: number}
+                scars: {type: integer}
+                ratio: {type: string}
+                health: {type: string, enum: [stable, at risk, failing]}
+                lastSeen: {type: string, format: date-time}
+                history:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      at: {type: string}
+                      what: {type: string}
+                pods:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: counsel
+  namespace: taintednetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: taintednetes-counsel
+rules:
+  - apiGroups: [""]
+    resources: [pods, nodes]
+    verbs: [get, list]
+  - apiGroups: [tainted.io]
+    resources: [relationships]
+    verbs: [get, list, create, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: taintednetes-counsel
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-counsel}
+subjects:
+  - {kind: ServiceAccount, name: counsel, namespace: taintednetes}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counsel
+  namespace: taintednetes
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: taintednetes-counsel}
+  template:
+    metadata:
+      labels: {app: taintednetes-counsel}
+    spec:
+      serviceAccountName: counsel
+      containers:
+        - name: counsel
+          image: ghcr.io/tym83/tainted:latest
+          imagePullPolicy: Always
+          command: [/opt/tainted/bin/counsel, --patience=0]
+          env:
+            - {name: KUBECONFIG, value: /etc/taintednetes/config}
+            - {name: KUBE_CONTEXT, value: in-cluster}
+            - {name: COUNSEL_INTERVAL, value: "10"}
             - {name: HOME, value: /tmp}
           volumeMounts:
             - {name: kubeconfig, mountPath: /etc/taintednetes}

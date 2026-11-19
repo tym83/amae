@@ -7,6 +7,7 @@ COPY . .
 RUN make && mkdir -p /out \
  && bin/tc taintednetes.tainted -o /out/taintednetes \
  && bin/tc kube/parting.tainted -o /out/parting \
+ && bin/tc kube/counsel.tainted -o /out/counsel \
  && cp build/tc-core /out/tc-core
 
 FROM alpine/k8s:1.35.9

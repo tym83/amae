@@ -1324,6 +1324,122 @@ else:
 '''
 
 
+COUNSEL_KUBECTL = r'''#!/usr/bin/env python3
+"""A kubectl for an imagined cluster that keeps Relationship objects."""
+import json, os, sys
+state_file = os.environ["FAKE_STATE"]
+args = sys.argv[1:]
+assert args[:2] == ["--context", "imagined"], args
+args = args[2:]
+with open(state_file) as f:
+    state = json.load(f)
+def save():
+    with open(state_file, "w") as f:
+        json.dump(state, f)
+if args[:2] == ["get", "nodes"]:
+    print(json.dumps({"items": state["nodes"]}))
+elif args[:2] == ["get", "pods"]:
+    print(json.dumps({"items": state["pods"]}))
+elif args[:2] == ["get", "relationships.tainted.io"]:
+    print(json.dumps({"items": list(state["relationships"].values())}))
+elif args[:2] == ["create", "--raw"]:
+    body = json.load(sys.stdin)
+    key = body["metadata"]["namespace"] + "/" + body["metadata"]["name"]
+    if key in state["relationships"]:
+        sys.exit("AlreadyExists")
+    body["metadata"]["resourceVersion"] = "1"
+    state["relationships"][key] = body
+    save()
+elif args[:2] == ["replace", "--raw"]:
+    body = json.load(sys.stdin)
+    key = body["metadata"]["namespace"] + "/" + body["metadata"]["name"]
+    old = state["relationships"][key]
+    if old["metadata"]["resourceVersion"] != body["metadata"]["resourceVersion"]:
+        sys.exit("Conflict")
+    body["metadata"]["resourceVersion"] = str(int(old["metadata"]["resourceVersion"]) + 1)
+    state["relationships"][key] = body
+    save()
+else:
+    sys.exit("fake kubectl cannot " + " ".join(args))
+'''
+
+
+def counselled_pod(name, node, restarts=0, oom=False, ready=True, phase="Running", reason=None,
+                   owner=("ReplicaSet", "web-5d9f"), hash_="5d9f"):
+    status = {"phase": phase, "conditions": [{"type": "Ready", "status": "True" if ready else "False"}],
+              "containerStatuses": [{"restartCount": restarts,
+                                     "lastState": {"terminated": {"reason": "OOMKilled"}} if oom else {}}]}
+    if reason:
+        status["reason"] = reason
+    meta = {"name": name, "namespace": "shop", "labels": {"pod-template-hash": hash_}}
+    if owner:
+        meta["ownerReferences"] = [{"kind": owner[0], "name": owner[1], "controller": True}]
+    return {"metadata": meta, "spec": {"schedulerName": "taintednetes", "nodeName": node}, "status": status}
+
+
+class LiveCounsel(unittest.TestCase):
+    """counsel keeping Relationship objects, through a kubectl that only imagines a cluster."""
+
+    def counsel(self, d, looks=1):
+        with open(os.path.join(ROOT, "kube", "counsel.tainted")) as f:
+            source = f.read()
+        fake = os.path.join(d, "kubectl")
+        with open(fake, "w") as f:
+            f.write(COUNSEL_KUBECTL)
+        os.chmod(fake, 0o755)
+        return run(source, flags=("--patience=0",),
+                   env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": os.path.join(d, "state.json"),
+                        "COUNSEL_INTERVAL": "0", "COUNSEL_LOOKS": str(looks)})
+
+    def state(self, d, **set_):
+        path = os.path.join(d, "state.json")
+        if set_:
+            old = {"nodes": [imagined_node("n1")], "pods": [], "relationships": {}}
+            if os.path.exists(path):
+                with open(path) as f:
+                    old = json.load(f)
+            old.update(set_)
+            with open(path, "w") as f:
+                json.dump(old, f)
+        with open(path) as f:
+            return json.load(f)
+
+    def test_a_relationship_is_kept_and_remembered_across_restarts(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[counselled_pod("web-5d9f-a", "n1")])
+            life = self.counsel(d, looks=7)
+            self.assertEqual(life.code, 0, life.err)
+            rel = self.state(d)["relationships"]["shop/deployment-web.n1"]
+            self.assertEqual(rel["spec"], {"partner": {"kind": "Deployment", "name": "web"}, "node": "n1"})
+            self.assertEqual(rel["status"]["health"], "stable")
+            # Written when it began and every sixth look after.
+            self.assertGreater(rel["status"]["positive"], 6.5)
+            # A new counsel, the same story: what it knew is in the API.
+            self.state(d, pods=[counselled_pod("web-5d9f-a", "n1", restarts=2, oom=True)])
+            life = self.counsel(d)
+            rel = self.state(d)["relationships"]["shop/deployment-web.n1"]
+            self.assertEqual(rel["status"]["scars"], 2)
+            self.assertEqual(rel["status"]["contempt"], 2)
+            self.assertIn("contempt: web-5d9f-a was killed for memory",
+                          [h["what"] for h in rel["status"]["history"]])
+            self.assertEqual(rel["status"]["health"], "at risk")
+            self.assertIn("shop/deployment-web.n1 is at risk", " ".join(life.lines))
+            life = self.counsel(d)
+            self.assertEqual(self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]["scars"], 2)
+
+    def test_gottman_ratio(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[counselled_pod("web-5d9f-a", "n1", ready=False),
+                                counselled_pod("solo", "n1", owner=None, phase="Failed", reason="OutOfcpu")])
+            life = self.counsel(d, looks=2)
+            self.assertEqual(life.code, 0, life.err)
+            rels = self.state(d)["relationships"]
+            self.assertEqual(rels["shop/deployment-web.n1"]["status"]["health"], "failing")
+            self.assertGreater(rels["shop/deployment-web.n1"]["status"]["stonewalling"], 1.9)
+            solo = rels["shop/pod-solo.n1"]["status"]
+            self.assertEqual((solo["defensiveness"] > 0.9, solo["scars"]), (True, 1))
+
+
 def imagined_node(name, leaving=False):
     return {"metadata": {"name": name, "annotations": {"taintednetes.io/leaving": "true"} if leaving else {}},
             "spec": {}, "status": {"conditions": [{"type": "Ready", "status": "True"}]}}
