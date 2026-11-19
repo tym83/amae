@@ -27,6 +27,10 @@ INLINE = {
     "rule-leaving-is-final": "written by \"tests\"\nsoul a\n meet b\n knowingly leave b\n meet b\nend\nsoul b\n meet a\nend\n",
     "rule-forgiveness": ("written by \"tests\"\nsoul a\n meet b\n knowingly wound b\n hear b into x\n say x\nend\n"
                          "soul b\n meet a\n forgive a\n tell a \"still here\"\n say scars of a\nend\n"),
+    "long-endure": ("written by \"tests\"\nsoul s\n let n = 0\n endure\n"
+                    + "".join("  n = n + 1\n" for _ in range(60))
+                    + "  endure\n   cry \"inner\"\n  when it hurts as again\n   say \"held \" + again\n  end\n"
+                    + "  say n\n when it hurts as pain\n  say pain\n end\nend\n"),
     "rule-no-timeout": "written by \"tests\"\nsoul a\n meet b\nend\nsoul b\n goodbye\nend\n",
     "rule-passion-cools": ("written by \"tests\"\nsoul a\n meet b\n let i = 0\n while i < 60\n  i = i + 1\n end\n"
                            " say passion b\nend\nsoul b\n meet a\nend\n"),

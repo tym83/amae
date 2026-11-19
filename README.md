@@ -311,9 +311,17 @@ the `pods/binding` subresource. A pod likes only the nodes it fits on, decided
 the way kube-scheduler decides it: resources counted the way the kubelet counts
 them (init containers, sidecars, overhead, pod-level resources), extended
 resources such as `nvidia.com/gpu`, node selector, required node affinity,
-taints it tolerates and free host ports. A node offers as many seats as it can
-hold of the largest pod that wants it. The nodes are souls that live as long as
-the scheduler does; the pods of every look are souls of that look.
+taints it tolerates and free host ports (a port on one address does not clash
+with the same port on another). A node offers as many seats as it can hold of
+the largest pod that wants it. The nodes are souls that live as long as the
+scheduler does; the pods of every look are souls of that look.
+
+Like kube-scheduler, it leaves an Event on every pod it places (`Scheduled`)
+and on every pod it finds no home for (`FailedScheduling`), saying how many
+nodes turned it away and why: `0/3 nodes are available: 2 not enough cpu, 1
+taint role.` With `TAINTEDNETES_LEASE=namespace/name`, several copies can run
+at once: the one holding that Lease binds and renews it every look, the others
+wait and take it over once it has not been renewed for three looks.
 
 | Annotation | On | Meaning |
 |---|---|---|
@@ -358,7 +366,8 @@ The scheduler spends about 50m of CPU between looks.
 
 `kube/deploy.yaml` runs the scheduler and the parting operator as pods of the
 cluster they look after, each with a service account that may do no more than
-its job: the scheduler reads pods and nodes and creates bindings, the operator
+its job: the scheduler reads pods and nodes, creates bindings and events and
+holds its lease (two copies run, one leads), the operator
 reads them, patches nodes and evicts pods. Both are compiled from Tainted into
 the image `ghcr.io/tym83/tainted`, which CI builds from every commit to main:
 

@@ -6,6 +6,6 @@ shop/tune has nowhere to live
 shop/web lives on east
 shop/api lives on west
 shop/train lives on lab
-shop/tune has nowhere to live
-shop/big has nowhere to live
+shop/tune has nowhere to live: 0/4 nodes are available: 1 not enough cpu, 2 no nvidia.com/gpu, 1 no seat left.
+shop/big has nowhere to live: 0/4 nodes are available: 4 not enough cpu.
 the cluster is at rest

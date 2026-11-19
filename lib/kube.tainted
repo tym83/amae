@@ -263,7 +263,12 @@ ritual host_ports pod
             perform field with ports[j], "hostPort", 0 into hp
             if hp != 0
                 perform field with ports[j], "protocol", "TCP" into proto
-                taken = taken + " " + proto + "/" + hp
+                perform field with ports[j], "hostIP", "" into address
+                let port = proto + "/" + hp
+                if address != "" and address != "0.0.0.0"
+                    port = port + "@" + address
+                end
+                taken = taken + " " + port
             end
             recall containers ports taken i
             j = j + 1
@@ -461,13 +466,46 @@ ritual unfit pod, node, wants, left, ports
     perform host_ports with pod into mine
     i = 1
     while i <= words of mine
-        if place of word i of mine in ports > 0
+        perform port_clash with word i of mine, ports into clash
+        if clash != ""
             give back "host port " + word i of mine
         end
         recall mine ports
         i = i + 1
     end
     give back ""
+end
+
+# A host port is written PROTOCOL/NUMBER, with @ADDRESS when it listens on
+# one address only. The port among `taken` that `port` cannot share a node
+# with, or "": the same protocol and number, on the same address or with
+# one of the two listening on every address.
+ritual port_clash port, taken
+    perform port_base with port into mine
+    let i = 1
+    while i <= words of taken
+        let other = word i of taken
+        perform port_base with other into theirs
+        if theirs == mine
+            if other == port or other == theirs or port == mine
+                give back other
+            end
+        end
+        recall port taken mine
+        i = i + 1
+    end
+    give back ""
+end
+
+ritual port_base port
+    let i = 1
+    while i <= length of port
+        if port[i] == "@"
+            give back part 1 (i - 1) of port
+        end
+        i = i + 1
+    end
+    give back port
 end
 
 # ----------------------------------------------------------------- order
@@ -562,19 +600,144 @@ ritual each_with line, tail
     give back made
 end
 
-# Evicting a pod, "ns/name", through the eviction subresource: a disruption
-# budget may refuse it.
-ritual evict pod
+# "namespace/name" as [namespace, name].
+ritual namespaced full
     let i = 1
-    let ns = ""
-    while i <= length of pod and ns == ""
-        if pod[i] == "/"
-            ns = part 1 (i - 1) of pod
+    while i <= length of full
+        if full[i] == "/"
+            give back [part 1 (i - 1) of full, part (i + 1) (length of full) of full]
         end
         i = i + 1
     end
-    let name = part i (length of pod) of pod
+    give back ["", full]
+end
+
+# Evicting a pod, "ns/name", through the eviction subresource: a disruption
+# budget may refuse it.
+ritual evict pod
+    perform namespaced with pod into both
+    let ns = both[1]
+    let name = both[2]
     let body = {"apiVersion": "policy/v1", "kind": "Eviction", "metadata": {"name": name, "namespace": ns}}
     perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/pods/" + name + "/eviction -f -", json of body into said
     give back said
+end
+
+# ------------------------------------------------------------------ time
+
+# A time as the API writes it, 2026-11-18T10:20:30Z (a fraction of a second
+# may follow), in whole seconds since 1970.
+ritual seconds_of stamp
+    let y = number of (part 1 4 of stamp)
+    let m = number of (part 6 7 of stamp)
+    let d = number of (part 9 10 of stamp)
+    if m <= 2
+        y = y - 1
+    end
+    let era = y / 400
+    let yoe = y - era * 400
+    let shift = 9
+    if m > 2
+        shift = 0 - 3
+    end
+    let doy = (153 * (m + shift) + 2) / 5 + d - 1
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
+    let days = era * 146097 + doe - 719468
+    let hours = number of (part 12 13 of stamp)
+    let minutes = number of (part 15 16 of stamp)
+    let rest = number of (part 18 19 of stamp)
+    give back days * 86400 + hours * 3600 + minutes * 60 + rest
+end
+
+# Seconds since 1970 as the API writes a time.
+ritual stamp_of at
+    let s = whole of at
+    let z = s / 86400
+    let rest = s - z * 86400
+    z = z + 719468
+    let era = z / 146097
+    let doe = z - era * 146097
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365
+    let y = yoe + era * 400
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100)
+    let mp = (5 * doy + 2) / 153
+    let d = doy - (153 * mp + 2) / 5 + 1
+    let m = mp + 3
+    if mp >= 10
+        m = mp - 9
+    end
+    if m <= 2
+        y = y + 1
+    end
+    perform two_digits with m into mm
+    perform two_digits with d into dd
+    perform two_digits with rest / 3600 into hh
+    perform two_digits with rest % 3600 / 60 into mi
+    perform two_digits with rest % 60 into ss
+    give back "" + y + "-" + mm + "-" + dd + "T" + hh + ":" + mi + ":" + ss + "Z"
+end
+
+ritual two_digits n
+    if n < 10
+        give back "0" + n
+    end
+    give back "" + n
+end
+
+# ---------------------------------------------------- events and leases
+
+# Telling what happened to a pod as an Event, where kubectl describe and
+# kubectl get events show it. `kind_` is "Normal" or "Warning".
+ritual tell_event pod, kind_, reason, message, component
+    let at = now
+    perform stamp_of with at into stamp
+    let ns = pod["metadata"]["namespace"]
+    let name = pod["metadata"]["name"]
+    perform field with pod["metadata"], "uid", "" into uid
+    let involved = {"apiVersion": "v1", "kind": "Pod", "namespace": ns, "name": name, "uid": uid}
+    let body = {"apiVersion": "v1", "kind": "Event", "metadata": {"name": name + "." + whole of (at * 1000000), "namespace": ns}, "involvedObject": involved, "reason": reason, "message": message, "type": kind_, "source": {"component": component}, "reportingComponent": component, "firstTimestamp": stamp, "lastTimestamp": stamp, "count": 1}
+    perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/events -f -", json of body into said
+    give back said
+end
+
+# The lease `name` in namespace `ns`, held the way the controllers of a
+# cluster agree which of them leads: the one named in it leads while it
+# keeps renewing it, and anyone may take it once nobody has renewed it for
+# as many seconds as it says. `who` renews it or takes it if it can, and
+# learns who holds it now: itself, someone else, or nobody ("") when the
+# cluster could not be asked. Two who try at once cannot both win: the
+# lease is written back with the version that was read.
+ritual hold_lease ns, name, who, span
+    let at = whole of now
+    perform stamp_of with at into stamp
+    let micro = part 1 19 of stamp + ".000000Z"
+    let where = "/apis/coordination.k8s.io/v1/namespaces/" + ns + "/leases"
+    perform kubectl with "-n " + ns + " get leases.coordination.k8s.io " + name + " --ignore-not-found -o json" into said
+    if words of said == 0
+        let made = {"apiVersion": "coordination.k8s.io/v1", "kind": "Lease", "metadata": {"name": name, "namespace": ns}, "spec": {"holderIdentity": who, "leaseDurationSeconds": span, "acquireTime": micro, "renewTime": micro, "leaseTransitions": 0}}
+        perform kubectl_telling with "create --raw " + where + " -f -", json of made into done
+        give back who
+    end
+    let lease = meaning of said
+    let spec = lease["spec"]
+    perform field with spec, "holderIdentity", "" into holder
+    perform field with spec, "renewTime", "" into renewed
+    perform field with spec, "leaseDurationSeconds", span into lasts
+    if holder != who and holder != "" and renewed != ""
+        perform seconds_of with renewed into last
+        if last + lasts >= at
+            give back holder
+        end
+    end
+    if holder != who
+        perform field with spec, "leaseTransitions", 0 into transitions
+        spec["leaseTransitions"] = transitions + 1
+        spec["acquireTime"] = micro
+    end
+    spec["holderIdentity"] = who
+    spec["renewTime"] = micro
+    spec["leaseDurationSeconds"] = span
+    lease["spec"] = spec
+    perform kubectl_telling with "replace --raw " + where + "/" + name + " -f -", json of lease into done
+    give back who
 end

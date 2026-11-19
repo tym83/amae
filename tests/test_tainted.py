@@ -829,10 +829,16 @@ def fake_node(name, seats=None, likes=None, taint=False, labels=None, extra=None
 
 
 def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z", requests=None,
-             affinity=None, host_port=None, tolerations=None, scheduler="taintednetes"):
+             affinity=None, host_port=None, tolerations=None, scheduler="taintednetes",
+             host_ip=None, protocol=None):
     container = {"resources": {"requests": requests or {"cpu": "100m", "memory": "16Mi"}}}
     if host_port:
-        container["ports"] = [{"containerPort": host_port, "hostPort": host_port}]
+        port = {"containerPort": host_port, "hostPort": host_port}
+        if host_ip:
+            port["hostIP"] = host_ip
+        if protocol:
+            port["protocol"] = protocol
+        container["ports"] = [port]
     spec = {"schedulerName": scheduler, "nodeName": node, "containers": [container]}
     if affinity:
         spec["affinity"] = affinity
@@ -859,7 +865,7 @@ def place(nodes, pods):
         words = line.split()
         if words[1:3] == ["lives", "on"]:
             placed[words[0]] = words[3]
-        elif words[1:4] == ["has", "nowhere", "to"] and len(words) == 5:
+        elif words[1:5] == ["has", "nowhere", "to", "live:"]:
             placed.setdefault(words[0], None)
     return life, placed
 
@@ -925,6 +931,28 @@ class Scheduler(unittest.TestCase):
         self.assertTrue(any("waits for the next look: host port TCP/80 on a is taken" in line
                             for line in life.lines), life.lines)
 
+    def test_host_ports_on_different_addresses_or_protocols_share_a_node(self):
+        """As in the conformance test: 54321 on 127.0.0.1/TCP, 127.0.0.2/TCP and
+        127.0.0.2/UDP all live on one node; on every address it clashes."""
+        nodes = [fake_node("a")]
+        pods = [fake_pod("p1", host_port=54321, host_ip="127.0.0.1"),
+                fake_pod("p2", host_port=54321, host_ip="127.0.0.2"),
+                fake_pod("p3", host_port=54321, host_ip="127.0.0.2", protocol="UDP")]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/p1": "a", "ns/p2": "a", "ns/p3": "a"})
+        pods = [fake_pod("there", node="a", host_port=54321, host_ip="0.0.0.0"),
+                fake_pod("here", host_port=54321, host_ip="127.0.0.1")]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/here": None})
+
+    def test_it_says_why_a_pod_has_nowhere_to_live(self):
+        nodes = [fake_node("a", taint=True), fake_node("b", seats=0),
+                 fake_node("c", extra={"cpu": "50m"})]
+        life, placed = place(nodes, [fake_pod("web")])
+        self.assertEqual(placed, {"ns/web": None})
+        self.assertIn("ns/web has nowhere to live: 0/3 nodes are available: "
+                      "1 taint role, 1 not enough cpu, 1 no seat left.", life.lines)
+
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
             c = {"resources": {"requests": {"cpu": cpu}}}
@@ -960,8 +988,11 @@ class Scheduler(unittest.TestCase):
 class LiveScheduler(unittest.TestCase):
     """The scheduler of a cluster, talking to a kubectl that only imagines one."""
 
-    def live(self, nodes, pods, looks):
+    def live(self, nodes, pods, looks, lease=None, env=None):
         with tempfile.TemporaryDirectory() as d:
+            if lease is not None:
+                with open(os.path.join(d, "lease.json"), "w") as f:
+                    json.dump(lease, f)
             with open(os.path.join(d, "nodes.json"), "w") as f:
                 json.dump({"items": nodes}, f)
             with open(os.path.join(d, "pods.json"), "w") as f:
@@ -971,16 +1002,30 @@ class LiveScheduler(unittest.TestCase):
                 f.write('#!/bin/sh\n'
                         '[ "$1 $2" = "--context imagined" ] || { echo "no context" >&2; exit 1; }\n'
                         'shift 2\n'
-                        'case "$1 $2" in\n'
-                        f'  "get nodes") cat {d}/nodes.json ;;\n'
-                        f'  "get pods") cat {d}/pods.json ;;\n'
-                        f'  "create --raw") echo "$3 $(cat)" >> {d}/asked ;;\n'
+                        '[ "$1" = "-n" ] && shift 2\n'
+                        'case "$1 $2 $3" in\n'
+                        f'  "get nodes "*) cat {d}/nodes.json ;;\n'
+                        f'  "get pods "*) cat {d}/pods.json ;;\n'
+                        f'  "get leases.coordination.k8s.io "*) cat {d}/lease.json 2>/dev/null; true ;;\n'
+                        f'  "create --raw "*/events) echo "$(cat)" >> {d}/events ;;\n'
+                        f'  "create --raw "*/leases) cat > {d}/lease.json ;;\n'
+                        f'  "replace --raw "*/leases/*) cat > {d}/lease.json ;;\n'
+                        f'  "create --raw "*) echo "$3 $(cat)" >> {d}/asked ;;\n'
                         '  *) exit 1 ;;\n'
                         'esac\n')
             os.chmod(fake, 0o755)
             life = run(scheduler_source(), flags=("--patience=0",),
                        env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined",
-                            "TAINTEDNETES_LOOKS": str(looks), "TAINTEDNETES_INTERVAL": "0"})
+                            "TAINTEDNETES_LOOKS": str(looks), "TAINTEDNETES_INTERVAL": "0",
+                            **(env or {})})
+            self.events = []
+            if os.path.exists(os.path.join(d, "events")):
+                with open(os.path.join(d, "events")) as f:
+                    self.events = [json.loads(line) for line in f]
+            self.lease = None
+            if os.path.exists(os.path.join(d, "lease.json")):
+                with open(os.path.join(d, "lease.json")) as f:
+                    self.lease = json.load(f)
             asked = []
             if os.path.exists(os.path.join(d, "asked")):
                 with open(os.path.join(d, "asked")) as f:
@@ -1005,7 +1050,8 @@ class LiveScheduler(unittest.TestCase):
         life, asked = self.live([fake_node("a", taint=True)], [fake_pod("web")], looks=3)
         self.assertEqual(life.code, 0, life.err)
         self.assertEqual(asked, [])
-        self.assertEqual(life.lines.count("ns/web has nowhere to live"), 2)
+        self.assertEqual(life.lines.count(
+            "ns/web has nowhere to live: 0/1 nodes are available: 1 taint role."), 1)
 
     def test_nodes_live_between_looks(self):
         """Every look brings new pod souls, but the nodes are the same souls."""
@@ -1013,6 +1059,56 @@ class LiveScheduler(unittest.TestCase):
                                 [fake_pod("web"), fake_pod("db")], looks=2)
         self.assertEqual(life.code, 0, life.err)
         self.assertEqual(len(asked), 4)
+
+    def test_every_pod_gets_an_event(self):
+        life, asked = self.live([fake_node("a", seats=1)], [fake_pod("web"), fake_pod("db")], looks=1)
+        self.assertEqual(life.code, 0, life.err)
+        told = {(e["involvedObject"]["name"], e["reason"], e["type"]): e["message"] for e in self.events}
+        bound = asked[0][1]["metadata"]["name"]
+        waiting = ({"web", "db"} - {bound}).pop()
+        self.assertEqual(told[(bound, "Scheduled", "Normal")], f"Successfully assigned ns/{bound} to a")
+        self.assertEqual(told[(waiting, "FailedScheduling", "Warning")],
+                         "0/1 nodes are available: 1 no seat left.")
+        for e in self.events:
+            self.assertEqual(e["source"]["component"], "taintednetes")
+            self.assertRegex(e["firstTimestamp"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+
+    LEASE_ENV = {"TAINTEDNETES_LEASE": "taintednetes/taintednetes", "HOSTNAME": "me"}
+
+    def lease_of(self, holder, renewed):
+        return {"apiVersion": "coordination.k8s.io/v1", "kind": "Lease",
+                "metadata": {"name": "taintednetes", "namespace": "taintednetes", "resourceVersion": "7"},
+                "spec": {"holderIdentity": holder, "leaseDurationSeconds": 15,
+                         "renewTime": renewed, "leaseTransitions": 2}}
+
+    def test_the_first_takes_the_lease_and_leads(self):
+        life, asked = self.live([fake_node("a")], [fake_pod("web")], looks=1, env=self.LEASE_ENV)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertIn("me leads", life.lines)
+        self.assertEqual(len(asked), 1)
+        self.assertEqual(self.lease["spec"]["holderIdentity"], "me")
+        self.assertEqual(self.lease["spec"]["leaseDurationSeconds"], 15)
+        self.assertRegex(self.lease["spec"]["renewTime"], r"\.000000Z$")
+
+    def test_one_who_does_not_lead_waits(self):
+        fresh = time.strftime("%Y-%m-%dT%H:%M:%S.000000Z", time.gmtime())
+        life, asked = self.live([fake_node("a")], [fake_pod("web")], looks=2,
+                                lease=self.lease_of("other", fresh), env=self.LEASE_ENV)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertIn("me waits: other leads", life.lines)
+        self.assertEqual(asked, [])
+        self.assertEqual(self.lease["spec"]["holderIdentity"], "other")
+
+    def test_a_lease_nobody_renews_is_taken(self):
+        life, asked = self.live([fake_node("a")], [fake_pod("web")], looks=1,
+                                lease=self.lease_of("other", "2026-01-01T00:00:00.000000Z"),
+                                env=self.LEASE_ENV)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertIn("me leads", life.lines)
+        self.assertEqual(len(asked), 1)
+        self.assertEqual(self.lease["spec"]["holderIdentity"], "me")
+        self.assertEqual(self.lease["spec"]["leaseTransitions"], 3)
+        self.assertEqual(self.lease["metadata"]["resourceVersion"], "7")
 
 
 FAKE_KUBECTL = r'''#!/usr/bin/env python3
