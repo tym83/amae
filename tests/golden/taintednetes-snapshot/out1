@@ -1,4 +1,5 @@
 shop/big has nowhere to live
+shop/urgent has nowhere to live
 shop/web settles on east
 shop/api settles on west
 shop/train settles on lab
@@ -8,4 +9,6 @@ shop/api lives on west
 shop/train lives on lab
 shop/tune has nowhere to live: 0/4 nodes are available: 1 not enough cpu, 2 no nvidia.com/gpu, 1 no seat left.
 shop/big has nowhere to live: 0/4 nodes are available: 4 not enough cpu.
+shop/urgent has nowhere to live: 0/4 nodes are available: 1 not enough cpu, 3 node selector.
+shop/urgent asks east to let go of shop/db-0
 the cluster is at rest

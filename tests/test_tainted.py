@@ -830,7 +830,7 @@ def fake_node(name, seats=None, likes=None, taint=False, labels=None, extra=None
 
 def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z", requests=None,
              affinity=None, host_port=None, tolerations=None, scheduler="taintednetes",
-             host_ip=None, protocol=None):
+             host_ip=None, protocol=None, priority=None, policy=None):
     container = {"resources": {"requests": requests or {"cpu": "100m", "memory": "16Mi"}}}
     if host_port:
         port = {"containerPort": host_port, "hostPort": host_port}
@@ -844,6 +844,10 @@ def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z", reques
         spec["affinity"] = affinity
     if tolerations:
         spec["tolerations"] = tolerations
+    if priority is not None:
+        spec["priority"] = priority
+    if policy:
+        spec["preemptionPolicy"] = policy
     return {"metadata": {"name": name, "namespace": "ns", "creationTimestamp": created,
                          "annotations": {LIKES: likes} if likes else {}},
             "spec": spec,
@@ -953,6 +957,44 @@ class Scheduler(unittest.TestCase):
         self.assertIn("ns/web has nowhere to live: 0/3 nodes are available: "
                       "1 taint role, 1 not enough cpu, 1 no seat left.", life.lines)
 
+    def test_a_pod_that_matters_more_asks_the_fewest_to_go(self):
+        """Of the pods of lower priority, only those whose going makes room
+        go; the most important are kept first."""
+        nodes = [fake_node("a")]
+        cpu = lambda q: {"cpu": q}
+        pods = [fake_pod("low1", node="a", requests=cpu("2"), created="2026-11-17T00:00:01Z"),
+                fake_pod("low2", node="a", requests=cpu("1500m"), created="2026-11-17T00:00:02Z"),
+                fake_pod("mid", node="a", requests=cpu("400m"), priority=5),
+                fake_pod("high", requests=cpu("2"), priority=10)]
+        life, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/high": None})
+        self.assertIn("ns/high asks a to let go of ns/low1", life.lines)
+
+    def test_preemption_picks_the_node_with_the_least_important_victims(self):
+        nodes = [fake_node("a", extra={"cpu": "1"}), fake_node("b", extra={"cpu": "1"})]
+        pods = [fake_pod("on-a", node="a", requests={"cpu": "1"}, priority=3),
+                fake_pod("on-b", node="b", requests={"cpu": "1"}, priority=1),
+                fake_pod("high", requests={"cpu": "1"}, priority=10)]
+        life, _ = place(nodes, pods)
+        self.assertIn("ns/high asks b to let go of ns/on-b", life.lines)
+
+    def test_no_preemption_for_pods_that_never_preempt_or_equals(self):
+        nodes = [fake_node("a", extra={"cpu": "1"})]
+        pods = [fake_pod("there", node="a", requests={"cpu": "1"}, priority=10),
+                fake_pod("same", requests={"cpu": "1"}, priority=10),
+                fake_pod("polite", requests={"cpu": "1"}, priority=20, policy="Never")]
+        life, _ = place(nodes, pods)
+        self.assertFalse(any("let go" in line for line in life.lines), life.lines)
+
+    def test_no_preemption_where_there_is_room_already(self):
+        """A pod that lost its seat to an equal finds room by the next look;
+        nobody has to go for it."""
+        nodes = [fake_node("a", seats=1)]
+        pods = [fake_pod("low", node="a", scheduler="default-scheduler"),
+                fake_pod("one", priority=10), fake_pod("two", priority=10)]
+        life, _ = place(nodes, pods)
+        self.assertFalse(any("let go" in line for line in life.lines), life.lines)
+
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
             c = {"resources": {"requests": {"cpu": cpu}}}
@@ -1010,6 +1052,7 @@ class LiveScheduler(unittest.TestCase):
                         f'  "create --raw "*/events) echo "$(cat)" >> {d}/events ;;\n'
                         f'  "create --raw "*/leases) cat > {d}/lease.json ;;\n'
                         f'  "replace --raw "*/leases/*) cat > {d}/lease.json ;;\n'
+                        f'  "patch pod "*) echo "$3 $(cat)" >> {d}/patched ;;\n'
                         f'  "create --raw "*) echo "$3 $(cat)" >> {d}/asked ;;\n'
                         '  *) exit 1 ;;\n'
                         'esac\n')
@@ -1022,6 +1065,10 @@ class LiveScheduler(unittest.TestCase):
             if os.path.exists(os.path.join(d, "events")):
                 with open(os.path.join(d, "events")) as f:
                     self.events = [json.loads(line) for line in f]
+            self.patched = []
+            if os.path.exists(os.path.join(d, "patched")):
+                with open(os.path.join(d, "patched")) as f:
+                    self.patched = [line.split(" ", 1) for line in f]
             self.lease = None
             if os.path.exists(os.path.join(d, "lease.json")):
                 with open(os.path.join(d, "lease.json")) as f:
@@ -1072,6 +1119,30 @@ class LiveScheduler(unittest.TestCase):
         for e in self.events:
             self.assertEqual(e["source"]["component"], "taintednetes")
             self.assertRegex(e["firstTimestamp"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+
+    def test_preemption_evicts_and_promises_the_node(self):
+        pods = [fake_pod("low", node="a", requests={"cpu": "1"}),
+                fake_pod("high", requests={"cpu": "1"}, priority=10)]
+        life, asked = self.live([fake_node("a", extra={"cpu": "1"})], pods, looks=1)
+        self.assertEqual(life.code, 0, life.err)
+        (path, body), = asked
+        self.assertEqual(path, "/api/v1/namespaces/ns/pods/low/eviction")
+        self.assertIn("ns/low lets go of a for ns/high", life.lines)
+        (name, patch), = self.patched
+        self.assertEqual((name, json.loads(patch)), ("high", {"status": {"nominatedNodeName": "a"}}))
+        told = {(e["involvedObject"]["name"], e["reason"]): e["message"] for e in self.events}
+        self.assertEqual(told[("low", "Preempted")], "Preempted by ns/high on node a")
+
+    def test_a_promised_pod_waits_while_the_displaced_leave(self):
+        low = fake_pod("low", node="a", requests={"cpu": "1"})
+        low["metadata"]["deletionTimestamp"] = "2026-11-19T00:00:00Z"
+        other = fake_pod("other", node="a", requests={"cpu": "1"})
+        high = fake_pod("high", requests={"cpu": "1"}, priority=10)
+        high["status"]["nominatedNodeName"] = "a"
+        life, asked = self.live([fake_node("a", extra={"cpu": "2"})], [low, other, high], looks=1)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(asked, [])
+        self.assertIn("ns/high waits for room on a", life.lines)
 
     LEASE_ENV = {"TAINTEDNETES_LEASE": "taintednetes/taintednetes", "HOSTNAME": "me"}
 
