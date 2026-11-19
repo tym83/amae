@@ -32,15 +32,11 @@ end
 # Keep untouched metadata for managers, annotations and Events alongside the
 # protected value tree. Raw JSON leaf fragments are decoded only on restore.
 ritual read_objects resource
-    let tool = world "KUBECTL"
-    if tool == ""
-        tool = "kubectl"
-    end
-    perform quoted with world "KUBE_CONTEXT" into context
-    # Both macOS sh and the image's ash support pipefail: even a failed
-    # kubectl that printed valid JSON must not become a successful empty look.
+    # kubectl and jq are asked apart, so a failed list is a failure of its
+    # own (no pipefail: /bin/sh may be dash) and never an empty look.
+    perform kubectl with "get " + resource + " -A --show-managed-fields -o json" into listed
     let filter_ = "def protect: walk(if type == \"boolean\" or type == \"null\" then \"amae-json:\" + tojson elif type == \"string\" and startswith(\"amae-json:\") then \"amae-json:\" + . else . end); .items |= map({object: {apiVersion, kind, metadata}, values: protect})"
-    ask world "set -o pipefail; " + tool + " --context " + context + " get " + resource + " -A --show-managed-fields -o json | jq -ce '" + filter_ + "'" into text
+    ask world "jq -ce '" + filter_ + "'" telling listed into text
     give back (meaning of text)["items"]
 end
 
