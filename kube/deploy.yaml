@@ -49,12 +49,39 @@ rules:
   - apiGroups: [""]
     resources: [bindings, pods/binding]
     verbs: [create]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: taintednetes-scheduler
 roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: taintednetes-scheduler}
+subjects:
+  - {kind: ServiceAccount, name: scheduler, namespace: taintednetes}
+---
+# The lease through which the copies of the scheduler agree who binds.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: taintednetes-scheduler-lease
+  namespace: taintednetes
+rules:
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [create]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    resourceNames: [taintednetes]
+    verbs: [get, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: taintednetes-scheduler-lease
+  namespace: taintednetes
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: taintednetes-scheduler-lease}
 subjects:
   - {kind: ServiceAccount, name: scheduler, namespace: taintednetes}
 ---
@@ -87,8 +114,8 @@ metadata:
   name: scheduler
   namespace: taintednetes
 spec:
-  replicas: 1
-  strategy: {type: Recreate}
+  # Two copies: the one holding the lease binds, the other waits to take over.
+  replicas: 2
   selector:
     matchLabels: {app: taintednetes-scheduler}
   template:
@@ -96,6 +123,14 @@ spec:
       labels: {app: taintednetes-scheduler}
     spec:
       serviceAccountName: scheduler
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels: {app: taintednetes-scheduler}
       containers:
         - name: scheduler
           image: ghcr.io/tym83/tainted:latest
@@ -106,6 +141,9 @@ spec:
             - {name: KUBECONFIG, value: /etc/taintednetes/config}
             - {name: KUBE_CONTEXT, value: in-cluster}
             - {name: TAINTEDNETES_INTERVAL, value: "5"}
+            - {name: TAINTEDNETES_LEASE, value: taintednetes/taintednetes}
+            - name: HOSTNAME
+              valueFrom: {fieldRef: {fieldPath: metadata.name}}
             - {name: HOME, value: /tmp}
           volumeMounts:
             - {name: kubeconfig, mountPath: /etc/taintednetes}

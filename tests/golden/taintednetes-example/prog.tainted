@@ -6,7 +6,10 @@
 # settled on, and looks again. Pods choose it with schedulerName:
 # taintednetes (or TAINTEDNETES_NAME). It looks every TAINTEDNETES_INTERVAL
 # seconds (5 if not set) and, if TAINTEDNETES_LOOKS is set, rests after
-# that many looks.
+# that many looks. With TAINTEDNETES_LEASE set to namespace/name, several
+# copies may run and only the one holding that lease binds; the others
+# wait for it to stop renewing. Every pod it binds, and every pod it finds
+# nowhere to live for, gets an Event, as kube-scheduler gives them.
 #
 # Without it, the world tells it about a cluster on standard input, either
 # as the cluster itself (two lines: `kubectl get nodes -o json` and
@@ -329,13 +332,16 @@ ritual describe all_nodes, all_pods, scheduler
             perform unfit with p, up_nodes[j], r, free[nn], ports[nn] into reason
             fits[pn + " " + nn] = reason == ""
             if reason != ""
-                reasons[reason] = 1
+                if place of reason in reasons == 0
+                    reasons[reason] = 0
+                end
+                reasons[reason] = reasons[reason] + 1
             end
-            recall p pn r reasons i pending up_nodes free ports ours pods objects wants fits why
+            recall p pn r reasons i pending up_nodes free ports ours pods objects wants fits why all_nodes
             j = j + 1
         end
-        why[pn] = keys of reasons
-        recall pending up_nodes free ports ours pods objects wants fits why
+        why[pn] = reasons
+        recall pending up_nodes free ports ours pods objects wants fits why all_nodes
         i = i + 1
     end
 
@@ -360,7 +366,7 @@ ritual describe all_nodes, all_pods, scheduler
                 put nn into candidates
                 put [rank, 0 - lean, 0 - cores / 1000, hash of ("pod:" + pn + " node:" + nn)] into order
             end
-            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants
+            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes
             j = j + 1
         end
         perform sorted with candidates, order into best
@@ -368,11 +374,11 @@ ritual describe all_nodes, all_pods, scheduler
         j = 1
         while j <= length of best
             line = line + " " + best[j]
-            recall best line pn i pods objects up_nodes free fits likes ours wants
+            recall best line pn i pods objects up_nodes free fits likes ours wants why all_nodes
             j = j + 1
         end
         likes[pn] = line
-        recall pods objects up_nodes free fits likes
+        recall pods objects up_nodes free fits likes why all_nodes
         i = i + 1
     end
 
@@ -399,7 +405,7 @@ ritual describe all_nodes, all_pods, scheduler
                 put pn into suitors
                 put [rank, 0 - priority, objects[pn]["metadata"]["creationTimestamp"], pn] into order
             end
-            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes
+            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
             j = j + 1
         end
         perform sorted with suitors, order into best
@@ -425,10 +431,10 @@ ritual describe all_nodes, all_pods, scheduler
                         room = has / r[names[k]]
                     end
                 end
-                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes
+                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
                 k = k + 1
             end
-            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes
+            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
             j = j + 1
         end
         if room < 0
@@ -436,10 +442,10 @@ ritual describe all_nodes, all_pods, scheduler
         end
         likes[nn] = line
         seats[nn] = room
-        recall up_nodes pods objects wants fits free ours nodes seats likes
+        recall up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
         i = i + 1
     end
-    give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why}
+    give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why, "count": length of all_nodes, "down": length of all_nodes - length of up_nodes}
 end
 
 # A look made into the notes `match` reads. The pods of the look are named
@@ -487,6 +493,41 @@ ritual hear_preferences first_line
     end
 end
 
+# Why a pod has nowhere to live, the way kube-scheduler says it: how many
+# nodes there are, and how many of them turned it away for each reason.
+# Nodes it fits on but which chose others had no seat left for it.
+ritual unavailable look, pn
+    let reasons = look["why"][pn]
+    let names = keys of reasons
+    let told = ""
+    let i = 1
+    while i <= length of names
+        if told != ""
+            told = told + ", "
+        end
+        told = told + reasons[names[i]] + " " + names[i]
+        recall reasons names told look pn
+        i = i + 1
+    end
+    let full = words of look["likes"][pn]
+    if full > 0
+        if told != ""
+            told = told + ", "
+        end
+        told = told + full + " no seat left"
+    end
+    if look["down"] > 0
+        if told != ""
+            told = told + ", "
+        end
+        told = told + look["down"] + " not ready"
+    end
+    if told == ""
+        give back "0/" + look["count"] + " nodes are available."
+    end
+    give back "0/" + look["count"] + " nodes are available: " + told + "."
+end
+
 # Where everyone lives, told; with `binding`, made so in the cluster too.
 # Two pods of one look that want the same host port on the same node cannot
 # both live there: the second waits for the next look, which will see the
@@ -507,9 +548,11 @@ ritual tell_homes look, tail, binding
             end
             let k = 1
             while k <= words of mine
-                if place of word k of mine in taken[home] > 0
+                perform port_clash with word k of mine, taken[home] into other
+                if other != ""
                     clash = word k of mine
                 end
+                recall mine taken home look tail binding bound pn
                 k = k + 1
             end
             if clash == ""
@@ -517,7 +560,15 @@ ritual tell_homes look, tail, binding
             end
         end
         if home == "nowhere"
-            say pn + " has nowhere to live"
+            perform unavailable with look, pn into why
+            say pn + " has nowhere to live: " + why
+            if binding
+                endure
+                    perform tell_event with look["objects"][pn], "Warning", "FailedScheduling", why, note "scheduler"
+                when it hurts as pain
+                    cry "taintednetes: no event for " + pn + ": " + pain
+                end
+            end
         else
             if clash != ""
                 say pn + " waits for the next look: host port " + clash + " on " + home + " is taken"
@@ -529,6 +580,13 @@ ritual tell_homes look, tail, binding
                         perform bind with pod["metadata"]["namespace"], pod["metadata"]["name"], home into said
                         say pn + " lives on " + home
                         bound = bound + 1
+                        note "bound pod" = pod
+                        note "bound home" = home
+                        endure
+                            perform tell_event with note "bound pod", "Normal", "Scheduled", "Successfully assigned " + pn + " to " + note "bound home", note "scheduler"
+                        when it hurts as pain
+                            cry "taintednetes: no event for " + pn + ": " + pain
+                        end
                     when it hurts as pain
                         cry "taintednetes: " + pn + " could not live on " + home + ": " + pain
                     end
@@ -591,8 +649,62 @@ soul cluster
     if note "every" == ""
         note "every" = 5
     end
+    note "lease" = world "TAINTEDNETES_LEASE"
+    note "who" = world "HOSTNAME"
+    if note "who" == ""
+        note "who" = note "scheduler"
+    end
+    note "leader" = ""
     say "taintednetes schedules the pods that choose " + note "scheduler"
     mark looking
+    if note "lease" != ""
+        perform lead
+    end
+    if note "lease" == "" or note "leader" == note "who"
+        perform look_once
+    end
+    note "times" = note "times" + 1
+    if world "TAINTEDNETES_LOOKS" != ""
+        if note "times" >= number of world "TAINTEDNETES_LOOKS"
+            perform farewell
+            goodbye
+        end
+    end
+    wait number of ("" + note "every") seconds
+    return to looking
+end
+
+# Leading, or waiting for the one who leads: only one scheduler of a name
+# binds at a time. Every look renews the lease; one that has not been
+# renewed for three looks may be taken.
+ritual lead
+    perform namespaced with note "lease" into both
+    let span = 3 * number of ("" + note "every")
+    if span < 15
+        span = 15
+    end
+    endure
+        perform hold_lease with both[1], both[2], note "who", span into holder
+        note "holder" = holder
+    when it hurts as pain
+        cry "taintednetes: the lease " + note "lease" + ": " + pain
+        note "holder" = ""
+    end
+    if note "holder" != note "leader"
+        if note "holder" == note "who"
+            say note "who" + " leads"
+        else
+            if note "holder" != ""
+                say note "who" + " waits: " + note "holder" + " leads"
+            end
+            note "story" = ""
+        end
+        note "leader" = note "holder"
+    end
+end
+
+# One look at the cluster, told if it has something new to tell.
+ritual look_once
     endure
         perform get_all with "nodes" into all_nodes
         perform get_all with "pods -A" into all_pods
@@ -618,13 +730,4 @@ soul cluster
             end
         end
     end
-    note "times" = note "times" + 1
-    if world "TAINTEDNETES_LOOKS" != ""
-        if note "times" >= number of world "TAINTEDNETES_LOOKS"
-            perform farewell
-            goodbye
-        end
-    end
-    wait number of ("" + note "every") seconds
-    return to looking
 end

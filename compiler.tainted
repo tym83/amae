@@ -1579,6 +1579,7 @@ ritual statement_of_world head, j
             end
             perform statement
             perform at_when into found
+            recall id at line found
         end
         note "depth" = note "depth" - 1
         perform open_line with note "j"
