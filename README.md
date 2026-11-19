@@ -297,6 +297,48 @@ is retried next look. Separation starts at the first observed loss of readiness;
 its time is kept by pod UID in notes, cleared on reunion, pruned for vanished
 pods, and reset when counsel restarts.
 
+#### Phases
+
+Helen Fisher's phases describe each pod's life with its node. Pending is
+**lust**: it wants a home, but is not yet living there, so counsel skips its
+node relationship. A running pod is in **attraction** until it has been Ready
+continuously for `COUNSEL_ATTACHMENT_AFTER` seconds (default **300**), then in
+**attachment**. Counsel keeps the Ready clock by pod UID in notes, seeds it
+from `Ready.lastTransitionTime` on first sight (or the current look if absent),
+and resets it on lost readiness or a restart. Vanished UIDs are pruned.
+These phases are independent of the secure/anxious/avoidant reconnect policy.
+
+Relationship status `phase`, shown in the **Phase** column, comes from the
+partner's youngest pod on that node, by creation time. During attraction every
+positive moment and each of the four horsemen weighs **×2**; attachment weighs
+**×1**. Scars and probe bids retain their original counts. Divorce skips pods
+in attraction and records once per pod: `<pod> is still in attraction; divorce
+can wait`. Separation on an unavailable node still follows the reconnect policy.
+
+#### Love languages
+
+`amaenetes.io/love-language` selects Gary Chapman's language of care for a pod.
+Its own language's positive signals count **×3**, and signals from the other
+four count **×0.5**, before the phase multiplier. Without the annotation (or
+with an unknown value), the original positive rule remains: one moment for a
+Ready pod on a Ready node. The language changes positives, not probe bids.
+
+| Value | Signal per look |
+|---|---|
+| `words` | Ready: one word of affirmation. |
+| `time` | No restart since the previous look: one, plus one per full hour of uninterrupted uptime. |
+| `gifts` | Free allocatable CPU **and** memory, after all active pods' requests, can cover this pod's own requests: one. |
+| `service` | Each new `Started` Event occurrence or successful `Pulled` occurrence under 10 seconds: one. A successful pull over 60 seconds adds criticism. |
+| `touch` | Another pod of the same partner, or selected by this pod's required/preferred (anti)affinity terms: one on the same node, otherwise half in the same `topology.kubernetes.io/zone`. At most one closeness signal per look. |
+
+Service Event counts use UID baselines and growth, like bids: the first look
+counts nothing, later looks count only new occurrences. Slow-pull criticism applies regardless of language. Uptime starts from `status.startTime` on first
+sight (or the current look), advanced to the latest container `startedAt`, then resets on an observed restart or node change.
+Touch respects namespaces and namespace selectors; counsel also reads namespace
+labels. Relationship status `language` comes from the youngest pod; history
+records `<partner> speaks <language>` once for each language first seen, without
+repeating it every look. Both phase and language changes are written immediately.
+
 With `COUNSEL_DIVORCE=1` counsel is also a descheduler. It divorces a pod from
 its node by eviction, at most once a minute and only a pod whose workload
 brings it back, in two cases: when their relationship is failing (with three
@@ -445,7 +487,13 @@ where the going of pods of lower priority would make room to let go of the
 fewest and least important of them (every pod it can keep is kept), evicts
 them, so a disruption budget may still refuse, and is promised that node in
 `status.nominatedNodeName` until they have left. `preemptionPolicy: Never`
-pods only wait.
+pods only wait. Among equal-priority residents it keeps attached pods first,
+then uses the existing creation-time/name order. The scheduler reads the pod's
+Ready `lastTransitionTime` directly: attachment starts after 300 seconds,
+overridden by `COUNSEL_ATTACHMENT_AFTER` and then `AMAENETES_ATTACHMENT_AFTER`.
+Missing or false Ready conditions are not attached. When candidate nodes tie
+on highest and summed victim priority, fewer attached victims wins before
+the total victim count and node name.
 
 #### Node consent
 
@@ -469,6 +517,7 @@ be asked again, even if the intervening looks had nothing new to report.
 | `amaenetes.io/likes: "node-a node-b"` | pod | nodes it wants first |
 | `amaenetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
 | `amaenetes.io/attachment: "secure"` | pod | reconnect policy: secure (default), anxious, avoidant |
+| `amaenetes.io/love-language: "words"` | pod | care: words, time, gifts, service, touch; unset keeps the original positives |
 | `amaenetes.io/seats: "N"` | node | at most N pods of this scheduler |
 
 Then pods prefer the nodes their preferred node affinity leans to, then the
