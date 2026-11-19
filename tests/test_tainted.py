@@ -1487,6 +1487,16 @@ class LiveCounsel(unittest.TestCase):
             (event,) = st["events"]
             self.assertEqual((event["reason"], event["source"]["component"]), ("Divorced", "counsel"))
 
+    def test_no_divorce_to_a_node_it_has_failed_with_before(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, nodes=[self.roomy("n1"), self.roomy("n2")],
+                       pods=[counselled_pod("web-5d9f-a", "n1")],
+                       relationships={"shop/deployment-web.n1": self.failing("n1"),
+                                      "shop/deployment-web.n2": self.failing("n2")})
+            life = self.counsel(d, divorce=True)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("evicted", self.state(d))
+
     def test_no_divorce_without_somewhere_better_or_without_an_owner(self):
         with tempfile.TemporaryDirectory() as d:
             self.state(d, nodes=[self.roomy("n1")],
