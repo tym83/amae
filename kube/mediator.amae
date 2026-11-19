@@ -1,0 +1,471 @@
+# mediator: a long-lived soul settling controller quarrels through consent,
+# yielding to the first observed owner, or explicitly parting after three scars.
+# Each look reads managedFields through kube.amae. Only observed owner AND
+# value changes count; successful restores are remembered separately.
+# Notes hold observations until objects disappear or the process restarts.
+# Relationship objects keep the public resolution and the last ten history lines.
+# Associative list entries (k:/v:) are skipped: merge patches cannot safely
+# address those leaves. Shared leaves with ambiguous owners are skipped too.
+written by "amae"
+deterministic
+learn "kube.amae"
+
+# Shell quoting is needed even for field-manager names supplied by the API.
+ritual quoted text
+    let result = "'"
+    let i = 1
+    while i <= length of text
+        let c = part i i of text
+        if c == "'"
+            result = result + "'\"'\"'"
+        else
+            result = result + c
+        end
+        recall text result
+        i = i + 1
+    end
+    give back result + "'"
+end
+
+# jq protects boolean/null values before Amae's JSON reader can coerce them.
+# Escape original strings with the same prefix too, so tags cannot collide.
+# Keep untouched metadata for managers, annotations and Events alongside the
+# protected value tree. Raw JSON leaf fragments are decoded only on restore.
+ritual read_objects resource
+    let tool = world "KUBECTL"
+    if tool == ""
+        tool = "kubectl"
+    end
+    perform quoted with world "KUBE_CONTEXT" into context
+    # Both macOS sh and the image's ash support pipefail: even a failed
+    # kubectl that printed valid JSON must not become a successful empty look.
+    let filter_ = "def protect: walk(if type == \"boolean\" or type == \"null\" then \"amae-json:\" + tojson elif type == \"string\" and startswith(\"amae-json:\") then \"amae-json:\" + . else . end); .items |= map({object: {apiVersion, kind, metadata}, values: protect})"
+    ask world "set -o pipefail; " + tool + " --context " + context + " get " + resource + " -A --show-managed-fields -o json | jq -ce '" + filter_ + "'" into text
+    give back (meaning of text)["items"]
+end
+
+# Walk a fieldsV1 trie iteratively, carrying the corresponding object value.
+# Pop visited frames instead of accumulating subtrees for the entire walk.
+# Each child is visited once; the stack holds only the unvisited frontier.
+# Actual keys remain a list, so dots and slashes in label keys are preserved.
+ritual leaves tree, object
+    let stack = [{"tree": tree, "value": object, "parts": [], "path": ""}]
+    let result = {}
+    while length of stack > 0
+        let item = stack[length of stack]
+        remove length of stack from stack
+        let names = keys of item["tree"]
+        let j = 1
+        while j <= length of names
+            let k = names[j]
+            let key_ = part 3 (length of k) of k
+            let parts_ = item["parts"] + [key_]
+            let path_ = item["path"]
+            if path_ != ""
+                path_ = path_ + "."
+            end
+            path_ = path_ + key_
+            let allowed = part 1 2 of k == "f:"
+            if length of parts_ == 1
+                allowed = allowed and (key_ == "spec" or key_ == "data" or key_ == "metadata")
+            end
+            if length of parts_ == 2 and parts_[1] == "metadata"
+                allowed = allowed and (key_ == "labels" or key_ == "annotations")
+            end
+            if length of parts_ == 3 and parts_[1] == "metadata" and parts_[2] == "annotations"
+                if part 1 13 of key_ == "amaenetes.io/" or key_ == "kubectl.kubernetes.io/last-applied-configuration" or part 1 25 of key_ == "deployment.kubernetes.io/"
+                    allowed = 0
+                end
+            end
+            if allowed and place of key_ in item["value"] > 0
+                let child = item["tree"][k]
+                let value_ = item["value"][key_]
+                if length of keys of child == 0
+                    if parts_[1] != "metadata" or length of parts_ >= 2
+                        let raw = json of value_
+                        result[path_] = {"parts": parts_, "value": raw}
+                    end
+                else
+                    put {"tree": child, "value": value_, "parts": parts_, "path": path_} into stack
+                end
+            end
+            recall stack result item names
+            j = j + 1
+        end
+        recall stack result
+    end
+    give back result
+end
+
+ritual owners_of object, values_
+    perform field with object["metadata"], "managedFields", [] into entries
+    let result = {}
+    let i = 1
+    while i <= length of entries
+        let e = entries[i]
+        perform field with e, "subresource", "" into sub
+        perform field with e, "manager", "" into manager
+        if sub != "status" and manager != ""
+            perform field with e, "fieldsV1", {} into tree
+            perform leaves with tree, values_ into found
+            let names = keys of found
+            let j = 1
+            while j <= length of names
+                let path_ = names[j]
+                let item = found[path_]
+                item["manager"] = manager
+                if place of path_ in result > 0
+                    if result[path_]["manager"] != manager
+                        item["manager"] = ""
+                    end
+                end
+                result[path_] = item
+                recall entries object values_ i manager found names result
+                j = j + 1
+            end
+        end
+        recall entries object values_ result
+        i = i + 1
+    end
+    give back result
+end
+
+ritual record_line st, message
+    perform stamp_of with now into stamp
+    let history = st["history"] + [{"at": stamp, "what": message}]
+    let kept = []
+    let i = 1
+    while i <= length of history
+        if i > length of history - 10
+            put history[i] into kept
+        end
+        recall st history kept
+        i = i + 1
+    end
+    st["history"] = kept
+    give back st
+end
+
+ritual announce st, object, type_, reason, message
+    perform record_line with st, message into st
+    endure
+        perform tell_event with object, type_, reason, message, "mediator"
+    when it hurts as pain
+        cry "mediator: " + pain
+    end
+    give back st
+end
+
+ritual agreement_of object, path_, pair_
+    perform annotation with object, "amaenetes.io/agreement" into text
+    let rows = lines of text
+    let i = 1
+    while i <= length of rows
+        let j = 1
+        while j <= length of pair_
+            if rows[i] == path_ + "=" + pair_[j]
+                give back pair_[j]
+            end
+            recall rows i path_ pair_
+            j = j + 1
+        end
+        recall rows path_ pair_
+        i = i + 1
+    end
+    give back ""
+end
+
+# One pair's rolling swaps. Intervening third managers never count for it.
+ritual swaps_for swaps_, a, b
+    let recent = []
+    let count_ = 0
+    let i = 1
+    while i <= length of swaps_
+        let s = swaps_[i]
+        if s["look"] > note "look" - note "patience" * 3
+            put s into recent
+            if (s["a"] == a and s["b"] == b) or (s["a"] == b and s["b"] == a)
+                count_ = count_ + 1
+            end
+        end
+        recall swaps_ a b recent count_
+        i = i + 1
+    end
+    give back {"recent": recent, "count": count_}
+end
+
+ritual restore_field st, object, resource, item
+    let chosen = st["owner"]
+    let values_ = st["values"]
+    if item["manager"] == "mediator" or item["manager"] == chosen or place of chosen in values_ == 0
+        give back st
+    end
+    let patch_ = values_[chosen]
+    let parts_ = item["parts"]
+    let i = length of parts_
+    while i > 0
+        patch_ = "{" + json of parts_[i] + ":" + patch_ + "}"
+        recall st object resource item chosen values_ parts_
+        i = i - 1
+    end
+    perform quoted with resource into r
+    perform quoted with object["metadata"]["namespace"] into ns
+    perform quoted with object["metadata"]["name"] into name
+    perform quoted with chosen into manager
+    endure
+        ask world "jq -c 'walk(if type == \"string\" and startswith(\"amae-json:\") then .[10:] | if . == \"true\" or . == \"false\" or . == \"null\" then fromjson else . end else . end)'" telling patch_ into raw
+        perform kubectl_telling with "patch " + r + " " + name + " -n " + ns + " --type=merge --field-manager=" + manager + " --patch-file=/dev/stdin", raw
+        st["restore"] = {"manager": chosen, "value": values_[chosen]}
+        perform announce with st, object, "Normal", "Restored", "Restored " + st["path"] + " to " + chosen into st
+    when it hurts as pain
+        cry "mediator: " + pain
+    end
+    give back st
+end
+
+ritual resolve_field st, object, resource, item, changed
+    let pair_ = st["between"]
+    let path_ = st["path"]
+    perform agreement_of with object, path_, pair_ into agreed
+    perform annotation with object, "amaenetes.io/parted" into loser
+    if agreed != ""
+        if st["resolution"] != "consent" or st["owner"] != agreed
+            st["resolution"] = "consent"
+            st["owner"] = agreed
+            perform announce with st, object, "Normal", "Agreed", agreed + " keeps " + path_ + " by agreement" into st
+        end
+    else
+        if st["resolution"] == "yielded" and changed and item["manager"] == st["latecomer"]
+            st["scars"] = st["scars"] + 1
+        end
+        if loser == pair_[1] or loser == pair_[2] or (st["resolution"] == "yielded" and st["scars"] >= 3)
+            if loser != pair_[1] and loser != pair_[2]
+                loser = st["latecomer"]
+            end
+            let message = pair_[1] + " and " + pair_[2] + " cannot share " + path_ + "; " + loser + " must stop managing it"
+            if st["resolution"] != "parted"
+                st["resolution"] = "parted"
+                st["owner"] = pair_[1]
+                if loser == pair_[1]
+                    st["owner"] = pair_[2]
+                end
+                perform announce with st, object, "Warning", "Parted", message into st
+            end
+        end
+        if st["resolution"] == "parted"
+            perform record_line with st, pair_[1] + " and " + pair_[2] + " remain parted over " + path_ into st
+        end
+        if st["resolution"] == "open" and note "look" - st["began"] >= note "patience"
+            st["resolution"] = "yielded"
+            st["owner"] = st["elder"]
+            perform announce with st, object, "Normal", "Yielded", st["latecomer"] + " yields " + path_ + " to " + st["elder"] into st
+        end
+    end
+    if st["resolution"] == "consent" or st["resolution"] == "yielded"
+        perform restore_field with st, object, resource, item into st
+    end
+    give back st
+end
+
+ritual publish_quarrel st, object, resource, key_
+    let name = "quarrel-" + part 1 24 of hash of key_
+    let ns = object["metadata"]["namespace"]
+    let body = {"apiVersion": "amae.io/v1", "kind": "Relationship", "metadata": {"name": name, "namespace": ns}, "spec": {"kind": "quarrel", "between": st["between"], "over": resource + " " + ns + "/" + object["metadata"]["name"] + " " + st["path"]}, "status": {"resolution": st["resolution"], "swaps": st["count"], "scars": st["scars"], "owner": st["owner"], "history": st["history"]}}
+    let where = "/apis/amae.io/v1/namespaces/" + ns + "/relationships"
+    if place of (ns + "/" + name) in (note "relationships") > 0
+        let meta = body["metadata"]
+        meta["resourceVersion"] = (note "relationships")[ns + "/" + name]["metadata"]["resourceVersion"]
+        body["metadata"] = meta
+        perform kubectl_telling with "replace --raw " + where + "/" + name + " -f -", json of body
+    else
+        perform kubectl_telling with "create --raw " + where + " -f -", json of body
+    end
+end
+
+ritual observe_field object, resource, path_, item, object_key, st
+    let key_ = object_key + "/" + json of item["parts"]
+    let manager = item["manager"]
+    if length of keys of st == 0
+        st = {"object": object_key, "path": path_, "manager": manager, "value": item["value"], "elder": manager, "values": {}, "swaps": [], "count": 0, "resolution": "", "owner": "", "between": [], "scars": 0, "history": [], "restore": {}}
+    end
+    let restored = st["restore"]
+    let own_restore = 0
+    if length of keys of restored > 0
+        own_restore = manager == restored["manager"] and item["value"] == restored["value"]
+    end
+    let changed = (manager != st["manager"] or item["value"] != st["value"]) and not own_restore
+    # A controller returning to exactly the pre-restore value still overwrote
+    # our successful patch, even if no intermediate look saw the restored value.
+    if length of keys of restored > 0 and not own_restore
+        changed = 1
+    end
+    let swaps_ = st["swaps"]
+    if manager != st["manager"] and item["value"] != st["value"] and not own_restore
+        put {"a": st["manager"], "b": manager, "look": note "look"} into swaps_
+        if st["resolution"] != ""
+            let pair_ = st["between"]
+            if (st["manager"] == pair_[1] and manager == pair_[2]) or (st["manager"] == pair_[2] and manager == pair_[1])
+                st["count"] = st["count"] + 1
+            end
+        end
+    end
+    perform swaps_for with swaps_, st["manager"], manager into counted
+    st["swaps"] = counted["recent"]
+    recall object resource path_ item object_key key_ manager changed
+    let values_ = st["values"]
+    if not own_restore
+        values_[manager] = item["value"]
+    end
+    st["values"] = values_
+    if st["resolution"] == "" and counted["count"] >= note "threshold"
+        st["between"] = [st["manager"], manager]
+        st["count"] = counted["count"]
+        st["resolution"] = "open"
+        st["began"] = note "look"
+        st["latecomer"] = manager
+        if manager == st["elder"]
+            st["latecomer"] = st["manager"]
+        end
+        perform announce with st, object, "Warning", "Conflict", st["manager"] + " and " + manager + " keep overwriting " + path_ into st
+    end
+    recall object resource item key_ changed
+    st["manager"] = manager
+    st["value"] = item["value"]
+    st["restore"] = {}
+    if st["resolution"] != ""
+        perform resolve_field with st, object, resource, item, changed into st
+    end
+    if st["resolution"] != ""
+        endure
+            perform publish_quarrel with st, object, resource, key_
+        when it hurts as pain
+            cry "mediator: " + pain
+        end
+    end
+    give back st
+end
+
+# Field decisions and Events need only identity and the two control annotations.
+# Do not copy managedFields, labels or last-applied blobs into every field call.
+ritual mediation_target object
+    perform annotation with object, "amaenetes.io/agreement" into agreed
+    perform annotation with object, "amaenetes.io/parted" into loser
+    perform field with object["metadata"], "uid", "" into uid
+    give back {"apiVersion": object["apiVersion"], "kind": object["kind"], "metadata": {"namespace": object["metadata"]["namespace"], "name": object["metadata"]["name"], "uid": uid, "annotations": {"amaenetes.io/agreement": agreed, "amaenetes.io/parted": loser}}}
+end
+
+# Copy the state table once per look, and each object's paths once per object.
+# Assigning a field mutates its local map; notes must never copy the growing
+# cluster-wide table for each field. Retain unobserved paths of listed objects.
+ritual mediator_once
+    perform get_all with "relationships.amae.io -A" into relationships
+    let known = {}
+    let i = 1
+    while i <= length of relationships
+        let rel = relationships[i]
+        known[rel["metadata"]["namespace"] + "/" + rel["metadata"]["name"]] = rel
+        recall known relationships
+        i = i + 1
+    end
+    note "relationships" = known
+    let states = note "states"
+    let next_states = {}
+    let resources = note "resources"
+    i = 1
+    endure
+        while i <= length of resources
+            let resource = resources[i]
+            perform quoted with resource into r
+            perform read_objects with r into objects
+            let j = 1
+            while j <= length of objects
+                let object = objects[j]["object"]
+                let object_key = resource + "/" + object["metadata"]["namespace"] + "/" + object["metadata"]["name"]
+                let paths_state = {}
+                if place of object_key in states > 0
+                    paths_state = states[object_key]
+                end
+                perform owners_of with object, objects[j]["values"] into owners
+                perform mediation_target with object into object
+                let paths = keys of owners
+                let k = 1
+                while k <= length of paths
+                    if owners[paths[k]]["manager"] != ""
+                        let key_ = json of owners[paths[k]]["parts"]
+                        let st = {}
+                        if place of key_ in paths_state > 0
+                            st = paths_state[key_]
+                        end
+                        perform observe_field with object, resource, paths[k], owners[paths[k]], object_key, st into st
+                        paths_state[key_] = st
+                    end
+                    recall resources i resource objects j object object_key owners paths paths_state states next_states
+                    k = k + 1
+                end
+                states[object_key] = paths_state
+                next_states[object_key] = paths_state
+                recall resources i resource objects states next_states
+                j = j + 1
+            end
+            recall resources states next_states
+            i = i + 1
+        end
+    when it hurts as pain
+        # Preserve completed objects and restores if a later list is refused.
+        note "states" = states
+        cry "mediator: " + pain
+        give back 0
+    end
+    # Rebuilding once prunes vanished objects without scanning all prior paths
+    # for every object, or repeatedly removing keys from a large map.
+    note "states" = next_states
+end
+
+soul mediator
+    note "states" = {}
+    note "look" = 0
+    note "patience" = 6
+    note "threshold" = 3
+    note "every" = 10
+    if world "MEDIATOR_PATIENCE" != ""
+        note "patience" = number of world "MEDIATOR_PATIENCE"
+    end
+    if world "MEDIATOR_SWAPS" != ""
+        note "threshold" = number of world "MEDIATOR_SWAPS"
+    end
+    if world "MEDIATOR_INTERVAL" != ""
+        note "every" = number of world "MEDIATOR_INTERVAL"
+    end
+    let text = world "MEDIATOR_RESOURCES"
+    if text == ""
+        text = "deployments.apps,statefulsets.apps,daemonsets.apps,services,configmaps"
+    end
+    let resources = []
+    let piece = ""
+    let i = 1
+    while i <= length of text
+        let c = part i i of text
+        if c == ","
+            put piece into resources
+            piece = ""
+        else
+            piece = piece + c
+        end
+        recall text resources piece
+        i = i + 1
+    end
+    put piece into resources
+    note "resources" = resources
+    mark looking
+    endure
+        perform mediator_once
+    when it hurts as pain
+        cry "mediator: " + pain
+    end
+    note "look" = note "look" + 1
+    if world "MEDIATOR_LOOKS" != "" and note "look" >= number of world "MEDIATOR_LOOKS"
+        goodbye
+    end
+    wait note "every" seconds
+    return to looking
+end

@@ -2146,5 +2146,409 @@ class Golden(unittest.TestCase):
         self.assertEqual(res.returncode, 0, res.stdout[-3000:])
 
 
+
+
+MEDIATOR_FAKE_KUBECTL = r'''#!/usr/bin/env python3
+"""Mutable cluster snapshots; None lets the previous patch survive a look."""
+import json, os, sys
+path = os.environ["FAKE_STATE"]
+args = sys.argv[1:]
+assert args[:2] == ["--context", "imagined"], args
+args = args[2:]
+with open(path) as f:
+    state = json.load(f)
+def save():
+    with open(path + ".new", "w") as f:
+        json.dump(state, f)
+    os.replace(path + ".new", path)
+if args[:2] == ["get", "relationships.amae.io"]:
+    print(json.dumps({"items": list(state["relationships"].values())}))
+elif args[0] == "get":
+    assert args == ["get", "deployments.apps", "-A", "--show-managed-fields", "-o", "json"], args
+    look = state.get("looks", 0)
+    state["looks"] = look + 1
+    snapshots = state["snapshots"]
+    snapshot = snapshots[min(look, len(snapshots) - 1)]
+    if snapshot is not None:
+        state["objects"] = snapshot
+    save()
+    print(json.dumps({"items": state["objects"]}))
+elif args[0] == "patch":
+    body = json.load(sys.stdin)
+    state.setdefault("attempts", []).append({"args": args, "body": body, "look": state["looks"]})
+    if state.get("refuse", 0):
+        state["refuse"] -= 1
+        save()
+        sys.exit("patch refused")
+    state.setdefault("patches", []).append(state["attempts"][-1])
+    assert "--type=merge" in args and "--patch-file=/dev/stdin" in args, args
+    manager = next(a.split("=", 1)[1] for a in args if a.startswith("--field-manager="))
+    obj = next(o for o in state["objects"] if o["metadata"]["name"] == args[2])
+    def merge(dst, src):
+        for k, v in src.items():
+            if isinstance(v, dict):
+                merge(dst.setdefault(k, {}), v)
+            else:
+                dst[k] = v
+    merge(obj, body)
+    def fields(src):
+        return {"f:" + k: fields(v) if isinstance(v, dict) else {} for k, v in src.items()}
+    obj["metadata"]["managedFields"] = [{"manager": manager, "fieldsV1": fields(body)}]
+    save()
+elif args[:2] == ["create", "--raw"] and args[2].endswith("/events"):
+    state.setdefault("events", []).append(json.load(sys.stdin))
+    save()
+elif args[0] in ("create", "replace") and args[1] == "--raw":
+    body = json.load(sys.stdin)
+    assert body["kind"] == "Relationship", body
+    key = body["metadata"]["namespace"] + "/" + body["metadata"]["name"]
+    old = state["relationships"].get(key)
+    if args[0] == "create":
+        assert old is None, "AlreadyExists"
+    else:
+        assert old["metadata"]["resourceVersion"] == body["metadata"]["resourceVersion"], "Conflict"
+    body["metadata"]["resourceVersion"] = str(int(old["metadata"]["resourceVersion"]) + 1 if old else 1)
+    state["relationships"][key] = body
+    state.setdefault("written", []).append(body)
+    save()
+else:
+    sys.exit("fake kubectl cannot " + " ".join(args))
+'''
+
+
+class LiveMediator(unittest.TestCase):
+    """Compile the actual mediator and observe its API requests over many looks."""
+
+    def obj(self, manager="hpa", value=2, agreement=None, parted=None):
+        annotations = {}
+        if agreement is not None:
+            annotations["amaenetes.io/agreement"] = agreement
+        if parted is not None:
+            annotations["amaenetes.io/parted"] = parted
+        return {"apiVersion": "apps/v1", "kind": "Deployment",
+                "metadata": {"namespace": "demo", "name": "web", "uid": "web-uid",
+                             "annotations": annotations, "managedFields": [
+                                 {"manager": manager, "fieldsV1": {"f:spec": {"f:replicas": {}}}}]},
+                "spec": {"replicas": value}}
+
+    def swaps(self, **kwargs):
+        return [[self.obj(m, v, **kwargs)] for m, v in
+                [("hpa", 2), ("gitops", 5), ("hpa", 2), ("gitops", 5)]]
+
+    def mediate(self, snapshots, patience=6, refuse=0):
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write(MEDIATOR_FAKE_KUBECTL)
+            os.chmod(fake, 0o755)
+            state_path = os.path.join(d, "state.json")
+            with open(state_path, "w") as f:
+                json.dump({"snapshots": snapshots, "objects": [], "relationships": {}, "refuse": refuse}, f)
+            with open(os.path.join(ROOT, "kube", "mediator.amae")) as f:
+                source = f.read()
+            life = run(source, flags=("--patience=0",),
+                       env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": state_path,
+                            "MEDIATOR_INTERVAL": "0.001", "MEDIATOR_RESOURCES": "deployments.apps",
+                            "MEDIATOR_PATIENCE": str(patience), "MEDIATOR_LOOKS": str(len(snapshots))})
+            self.assertEqual(life.code, 0, life.err)
+            if refuse:
+                self.assertIn("patch refused", life.err)
+            else:
+                self.assertEqual(life.err, "")
+            with open(state_path) as f:
+                return json.load(f)
+
+    def reasons(self, state):
+        return [e["reason"] for e in state.get("events", [])]
+
+    def relationship(self, state):
+        rel, = state["relationships"].values()
+        return rel
+
+    def test_three_swaps_open_quarrel(self):
+        state = self.mediate(self.swaps())
+        self.assertEqual(self.reasons(state), ["Conflict"])
+        rel = self.relationship(state)
+        self.assertEqual(rel["spec"]["kind"], "quarrel")
+        self.assertEqual(set(rel["spec"]["between"]), {"hpa", "gitops"})
+        self.assertEqual(rel["spec"]["over"], "deployments.apps demo/web spec.replicas")
+        self.assertEqual(rel["status"]["resolution"], "open")
+        self.assertEqual(rel["status"]["swaps"], 3)
+        event, = state["events"]
+        self.assertEqual(event["message"], "hpa and gitops keep overwriting spec.replicas")
+        self.assertEqual((event["type"], event["source"]["component"]), ("Warning", "mediator"))
+        self.assertEqual((event["involvedObject"]["kind"], event["involvedObject"]["apiVersion"]),
+                         ("Deployment", "apps/v1"))
+
+    def test_agreement_restores_chosen_value(self):
+        state = self.mediate(self.swaps(agreement="spec.replicas=hpa") +
+                             [None, [self.obj("gitops", 8, agreement="spec.replicas=hpa")]])
+        self.assertEqual(self.reasons(state).count("Agreed"), 1)
+        self.assertEqual(self.reasons(state).count("Restored"), 2)
+        self.assertEqual(self.relationship(state)["status"]["resolution"], "consent")
+        self.assertEqual(self.relationship(state)["status"]["owner"], "hpa")
+        for patch in state["patches"]:
+            self.assertIn("--field-manager=hpa", patch["args"])
+            self.assertEqual(patch["body"], {"spec": {"replicas": 2}})
+
+    def test_yields_after_patience(self):
+        state = self.mediate(self.swaps() + [None] * 6)
+        self.assertIn("Yielded", self.reasons(state))
+        self.assertEqual(state["patches"][0]["look"], 10)
+        self.assertEqual(state["patches"][0]["body"], {"spec": {"replicas": 2}})
+        self.assertEqual(self.relationship(state)["status"]["resolution"], "yielded")
+        yielded = next(e for e in state["events"] if e["reason"] == "Yielded")
+        self.assertEqual(yielded["message"], "gitops yields spec.replicas to hpa")
+
+    def test_three_scars_part_and_stop_patching(self):
+        state = self.mediate(self.swaps() + [None] * 2 + [[self.obj("gitops", 5)]] * 5, patience=2)
+        self.assertEqual(self.reasons(state).count("Parted"), 1)
+        self.assertEqual(len(state["patches"]), 3)
+        self.assertEqual(self.relationship(state)["status"]["resolution"], "parted")
+        self.assertEqual(self.relationship(state)["status"]["scars"], 3)
+        self.assertIn("remain parted", self.relationship(state)["status"]["history"][-1]["what"])
+
+    def test_restore_is_not_a_swap_or_scar(self):
+        state = self.mediate(self.swaps() + [None] * 5, patience=2)
+        self.assertEqual(len(state["patches"]), 1)
+        self.assertEqual(self.relationship(state)["status"]["swaps"], 3)
+        self.assertEqual(self.relationship(state)["status"]["scars"], 0)
+        self.assertEqual(self.reasons(state).count("Conflict"), 1)
+
+    def test_status_only_never_quarrels(self):
+        snapshots = self.swaps() * 2
+        for snapshot in snapshots:
+            obj = snapshot[0]
+            obj["metadata"]["managedFields"][0]["subresource"] = "status"
+        state = self.mediate(snapshots)
+        self.assertEqual(state["relationships"], {})
+        self.assertEqual(self.reasons(state), [])
+
+    def test_parting_annotation_then_agreement(self):
+        snapshots = self.swaps(parted="hpa") + [None, [self.obj("gitops", 9, agreement="spec.replicas=hpa")]]
+        state = self.mediate(snapshots)
+        self.assertEqual(self.reasons(state).count("Parted"), 1)
+        self.assertEqual(len(state["patches"]), 1)
+        self.assertEqual(state["patches"][0]["look"], 6)
+        self.assertEqual(self.relationship(state)["status"]["resolution"], "consent")
+
+    def test_refused_patch_retries_next_look(self):
+        state = self.mediate(self.swaps(agreement="spec.replicas=hpa") + [None], refuse=1)
+        self.assertEqual(len(state["attempts"]), 2)
+        self.assertEqual(len(state["patches"]), 1)
+        self.assertEqual(self.reasons(state).count("Restored"), 1)
+
+    def test_disappeared_object_is_forgotten(self):
+        state = self.mediate(self.swaps()[:3] + [[]] + self.swaps()[:2])
+        self.assertEqual(state["relationships"], {})
+
+    def test_expired_swaps_do_not_quarrel(self):
+        state = self.mediate(self.swaps()[:2] + [None] * 7 + self.swaps()[2:], patience=2)
+        self.assertEqual(state["relationships"], {})
+
+    def test_nested_leaves_and_literal_label_keys_survive_long_walks(self):
+        snapshots = []
+        for manager, value in [("hpa", "elder"), ("gitops", "late"), ("hpa", "elder"), ("gitops", "late")]:
+            objects = []
+            for n in range(3):
+                obj = self.obj(manager)
+                obj["metadata"]["name"] = "web-" + str(n)
+                labels = {"example.io/key." + str(i): value for i in range(12)}
+                obj["metadata"]["labels"] = labels
+                obj["spec"] = {"template": {"spec": {"nodeSelector": {"zone": value}}}}
+                obj["metadata"]["annotations"] = {
+                    "amaenetes.io/agreement": "\n".join("metadata.labels." + k + "=hpa" for k in labels)}
+                obj["metadata"]["managedFields"] = [{"manager": manager, "fieldsV1": {
+                    "f:metadata": {"f:labels": {"f:" + k: {} for k in labels}},
+                    "f:spec": {"f:template": {"f:spec": {"f:nodeSelector": {"f:zone": {}}}}}}}]
+                objects.append(obj)
+            snapshots.append(objects)
+        state = self.mediate(snapshots)
+        self.assertEqual(len(state["relationships"]), 39)
+        self.assertEqual(len(state["patches"]), 36)
+        for patch in state["patches"]:
+            label, = patch["body"]["metadata"]["labels"].items()
+            self.assertTrue(label[0].startswith("example.io/key."))
+            self.assertEqual(label[1], "elder")
+        self.assertEqual(self.reasons(state).count("Conflict"), 39)
+
+    def test_ignored_annotations_and_associative_lists(self):
+        snapshots = self.swaps() * 2
+        for snapshot in snapshots:
+            obj = snapshot[0]
+            val = str(obj["spec"]["replicas"])
+            keys = ["amaenetes.io/anything", "kubectl.kubernetes.io/last-applied-configuration",
+                    "deployment.kubernetes.io/revision"]
+            obj["metadata"]["annotations"] = {k: val for k in keys}
+            obj["spec"]["containers"] = [{"name": "web", "image": val}]
+            obj["metadata"]["managedFields"][0]["fieldsV1"] = {
+                "f:metadata": {"f:annotations": {"f:" + k: {} for k in keys}},
+                "f:spec": {"f:containers": {'k:{"name":"web"}': {"f:image": {}}}},
+                "f:status": {"f:replicas": {}}}
+            obj["status"] = {"replicas": val}
+        state = self.mediate(snapshots)
+        self.assertEqual(state["relationships"], {})
+
+    def test_owner_only_or_value_only_changes_are_not_swaps(self):
+        for snapshots in ([[self.obj(m, 2)] for m in ["hpa", "gitops"] * 4],
+                          [[self.obj("hpa", v)] for v in [2, 5] * 4]):
+            state = self.mediate(snapshots)
+            self.assertEqual(state["relationships"], {})
+
+    def test_different_pairs_are_not_one_quarrel(self):
+        snapshots = [[self.obj(m, i)] for i, m in enumerate(["hpa", "gitops", "operator", "hpa"])]
+        state = self.mediate(snapshots)
+        self.assertEqual(state["relationships"], {})
+
+    def test_ambiguous_ownership_is_skipped(self):
+        snapshots = self.swaps() * 2
+        for snapshot in snapshots:
+            snapshot[0]["metadata"]["managedFields"].append(
+                {"manager": "shared", "fieldsV1": {"f:spec": {"f:replicas": {}}}})
+        state = self.mediate(snapshots)
+        self.assertEqual(state["relationships"], {})
+
+    def test_mediator_owner_is_never_patched(self):
+        snapshots = [[self.obj(m, v, agreement="spec.replicas=hpa")] for m, v in
+                     [("hpa", 2), ("mediator", 5), ("hpa", 2), ("mediator", 5)]]
+        state = self.mediate(snapshots)
+        self.assertEqual(self.relationship(state)["status"]["resolution"], "consent")
+        self.assertEqual(state.get("patches", []), [])
+
+    def test_scheduler_keeps_node_relationships_beside_quarrels(self):
+        quarrel = {"metadata": {"namespace": "ns", "name": "quarrel-test"},
+                   "spec": {"kind": "quarrel", "between": ["hpa", "gitops"]},
+                   "status": {"resolution": "parted", "scars": 3}}
+        bond = {"metadata": {"namespace": "ns", "name": "pod-web.a"},
+                "spec": {"partner": {"kind": "Pod", "name": "web"}, "node": "a"},
+                "status": {"health": "failing", "scars": 3}}
+        life, placed = place([fake_node("a"), fake_node("b")],
+                             [fake_pod("web", likes="a b")], [quarrel, bond])
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(placed, {})
+        self.assertIn("ns/web is refused by a: it has been failing with Pod/web: 3 scars", life.lines)
+
+    def test_counsel_ignores_quarrel_relationships(self):
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write(MEDIATOR_FAKE_KUBECTL)
+            os.chmod(fake, 0o755)
+            path = os.path.join(d, "state.json")
+            with open(path, "w") as f:
+                json.dump({"relationships": {"demo/quarrel": {
+                    "metadata": {"namespace": "demo", "name": "quarrel"},
+                    "spec": {"kind": "quarrel"}}}}, f)
+            with open(os.path.join(ROOT, "kube", "counsel.amae")) as f:
+                source = f.read().split("soul counsel\n")[0]
+            source += 'soul check_\n    perform known_relationships into known\n    say json of known\nend\n'
+            life = run(source, env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": path})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(life.lines, ["{}"])
+
+    def test_restores_boolean_null_and_string_values_without_coercion(self):
+        for elder, late in [(True, False), (None, ""), ("amae-json:true", "amae-json:null"),
+                            ({"amae-json:": True, "value": "amae-json:false"}, {"value": None}), ("true", 'false\\"null'),
+                            ({"enabled": True, "optional": None}, {"enabled": False, "optional": ""})]:
+            snapshots = [[self.obj(m, v, agreement="spec.replicas=hpa")] for m, v in
+                         [("hpa", elder), ("gitops", late), ("hpa", elder), ("gitops", late)]]
+            state = self.mediate(snapshots)
+            self.assertEqual(self.reasons(state).count("Conflict"), 1)
+            restored = state["patches"][0]["body"]["spec"]["replicas"]
+            self.assertEqual(restored, elder)
+            self.assertIs(type(restored), type(elder))
+
+
+    def large_objects(self, count=120):
+        objects = []
+        for i in range(count):
+            obj = self.obj()
+            obj["metadata"]["name"] = f"web-{i}"
+            obj["metadata"]["labels"] = {f"example.io/label-{k}": str(k) for k in range(20)}
+            obj["spec"].update({"paused": False, "optional": None,
+                                "template": {"spec": {"nodeSelector": {"zone": "east"}}}})
+            obj["data"] = {"payload": 'actual config: true false null \\\"\n' * 80}
+            obj["metadata"]["managedFields"][0]["fieldsV1"].update({
+                "f:data": {"f:payload": {}},
+                "f:metadata": {"f:labels": {f"f:{k}": {} for k in obj["metadata"]["labels"]}},
+                "f:spec": {"f:replicas": {}, "f:paused": {}, "f:optional": {},
+                           "f:template": {"f:spec": {"f:nodeSelector": {"f:zone": {}}}}}})
+            objects.append(obj)
+        return objects
+
+    def test_large_cluster_looks_finish_within_budget(self):
+        # Time execution, not compilation. Check both a cold and a warm look:
+        # a populated state table used to be copied once for every field.
+        payload = json.dumps({"items": self.large_objects()})
+        self.assertGreater(len(payload.encode()), 500_000)
+        self.assertLess(len(payload.encode()), 600_000)
+        with open(os.path.join(ROOT, "kube", "mediator.amae")) as f:
+            source = f.read()
+        source = source.replace('        perform mediator_once', '''        note "benchmark start" = now
+        perform mediator_once
+        note "benchmark elapsed" = now - note "benchmark start"
+        let states_ = note "states"
+        let names_ = keys of states_
+        let count_ = 0
+        let i_ = 1
+        while i_ <= length of names_
+            count_ = count_ + length of keys of states_[names_[i_]]
+            recall states_ names_ count_
+            i_ = i_ + 1
+        end
+        say json of {"elapsed": note "benchmark elapsed", "objects": length of names_, "fields": count_}''')
+        program, error = compile_source(source)
+        self.assertIsNone(error, error)
+        with tempfile.TemporaryDirectory() as d:
+            input_path = os.path.join(d, "input.json")
+            with open(input_path, "w") as f:
+                f.write(payload)
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write('''#!/bin/sh
+case "$*" in
+ *relationships.amae.io*) echo '{"items":[]}' ;;
+ *) cat "$LARGE_INPUT" ;;
+esac
+''')
+            os.chmod(fake, 0o755)
+            started = time.perf_counter()
+            result = subprocess.run([program, "--patience=0"], capture_output=True, text=True, timeout=12,
+                                    env=dict(os.environ, KUBECTL=fake, KUBE_CONTEXT="imagined",
+                                             LARGE_INPUT=input_path, AMAE_HISTORY=os.path.join(d, "history.json"),
+                                             MEDIATOR_RESOURCES="deployments.apps", MEDIATOR_INTERVAL="0",
+                                             MEDIATOR_LOOKS="2"))
+            elapsed = time.perf_counter() - started
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stderr, "")
+            looks = [json.loads(line) for line in result.stdout.splitlines()]
+            self.assertEqual(len(looks), 2)
+            for look in looks:
+                self.assertEqual((look["objects"], look["fields"]), (120, 3000))
+                self.assertLess(look["elapsed"], 5, look)
+            self.assertLess(elapsed, 10)
+            print(f"Mediator {len(payload.encode())} bytes: cold {looks[0]['elapsed']:.3f}s, "
+                  f"warm {looks[1]['elapsed']:.3f}s; process {elapsed:.3f}s")
+
+    def test_failed_list_is_not_hidden_by_jq(self):
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write('''#!/bin/sh
+echo '{"items":[]}'
+case "$*" in
+ *relationships.amae.io*) exit 0 ;;
+ *) echo 'list refused' >&2; exit 23 ;;
+esac
+''')
+            os.chmod(fake, 0o755)
+            with open(os.path.join(ROOT, "kube", "mediator.amae")) as f:
+                source = f.read()
+            life = run(source, env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined",
+                                    "MEDIATOR_RESOURCES": "deployments.apps", "MEDIATOR_LOOKS": "1"})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertIn("list refused", life.err)
+
+
 if __name__ == "__main__":
     unittest.main()

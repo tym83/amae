@@ -742,7 +742,9 @@ ritual tell_event pod, kind_, reason, message, component
     let ns = pod["metadata"]["namespace"]
     let name = pod["metadata"]["name"]
     perform field with pod["metadata"], "uid", "" into uid
-    let involved = {"apiVersion": "v1", "kind": "Pod", "namespace": ns, "name": name, "uid": uid}
+    perform field with pod, "apiVersion", "v1" into version
+    perform field with pod, "kind", "Pod" into object_kind
+    let involved = {"apiVersion": version, "kind": object_kind, "namespace": ns, "name": name, "uid": uid}
     let body = {"apiVersion": "v1", "kind": "Event", "metadata": {"name": name + "." + whole of (at * 1000000), "namespace": ns}, "involvedObject": involved, "reason": reason, "message": message, "type": kind_, "source": {"component": component}, "reportingComponent": component, "firstTimestamp": stamp, "lastTimestamp": stamp, "count": 1}
     perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/events -f -", json of body into said
     give back said
