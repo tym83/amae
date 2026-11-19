@@ -216,6 +216,7 @@ spec:
         - {name: Node, type: string, jsonPath: .spec.node}
         - {name: Health, type: string, jsonPath: .status.health}
         - {name: Ratio, type: string, jsonPath: .status.ratio}
+        - {name: Towards, type: integer, jsonPath: .status.turning}
         - {name: Scars, type: integer, jsonPath: .status.scars}
         - {name: Seen, type: date, jsonPath: .status.lastSeen}
       schema:
@@ -240,6 +241,11 @@ spec:
                 contempt: {type: number}
                 defensiveness: {type: number}
                 stonewalling: {type: number}
+                bids: {type: number}
+                towards: {type: number}
+                away: {type: number}
+                against: {type: number}
+                turning: {type: integer}
                 scars: {type: integer}
                 ratio: {type: string}
                 health: {type: string, enum: [stable, at risk, failing]}
@@ -269,6 +275,9 @@ rules:
   - apiGroups: [""]
     resources: [pods, nodes]
     verbs: [get, list]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [list]
   - apiGroups: [amae.io]
     resources: [relationships]
     verbs: [get, list, create, update]

@@ -249,8 +249,27 @@ stonewalling. Moments fade, 1 in 100 every look, so what counts is the recent
 life of the two. With five positive moments or more for every negative one the
 relationship is stable, with fewer it is at risk, and with more negative than
 positive ones it is failing. Scars, every restart and every refusal, never
-fade. All counsel knows is in the objects, so a counsel that restarts goes on
-where it was.
+fade. Relationship totals survive counsel restarts in the objects.
+
+Liveness and readiness probes are bids for attention: a passed probe turns
+**towards**, a failed probe turns **away**, and a container killed for a failed
+liveness probe turns **against**. Attempts are estimated per container from
+elapsed seconds / `periodSeconds` (default 10); a newly seen pod starts at
+`status.startTime`, capped to one look interval. Startup probes are not counted.
+Two Event lists per look supply the growth of `Unhealthy` and `Killing` counts;
+only liveness/readiness failures and liveness kills count. Look times and Event
+baselines live in notes, reset on restart, and discard vanished pods/Events;
+the first look only records Event baselines, counting no away or against.
+After that, a newly seen Event contributes its full count.
+
+Status fields `bids`, `towards`, `away`, and `against` fade by ×0.99 per look,
+rounded to two decimals like moments. `towards` is the estimated attempts minus
+away and against, floored at zero. `turning` is the integer percentage turned
+towards (absent without bids), shown in the **Towards** column. Once the faded
+`bids` total reaches 20, below 33% means failing and below 86% means at best at
+risk; otherwise the 5:1 ratio decides. These reflect Gottman's roughly 86% for
+couples who stay together and 33% for those who split. Away and against appear
+in history; against adds no contempt or scars.
 
 ```
 kubectl --context <ctx> get relationships -A
