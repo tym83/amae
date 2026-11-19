@@ -29,7 +29,9 @@
 # Preferences:
 #   pod annotation  taintednetes.io/likes: "node-a node-b"   nodes it wants first
 #   node annotation taintednetes.io/likes: "ns/pod ns/pod"   pods it wants first
-# then the nodes its preferred node affinity leans to, then the nodes with
+# then the nodes its preferred node affinity leans to, then the nodes its
+# workload trusts more (fewer scars, a healthier relationship, as counsel
+# keeps them; twice as much for a pod with priority), then the nodes with
 # more free whole cores; where the nodes are equal every pod has its own
 # lasting taste, so a crowd of identical pods spreads out. Nodes prefer pods
 # with higher priority, then the ones waiting longest.
@@ -264,9 +266,54 @@ ritual match
     end
 end
 
+# The relationships counsel keeps (tainted.io/v1), by namespace, partner
+# and node.
+ritual bonds_of all
+    let bonds = {}
+    let i = 1
+    while i <= length of all
+        let r = all[i]
+        perform field with r, "status", {} into st
+        let partner = r["spec"]["partner"]
+        bonds[r["metadata"]["namespace"] + " " + partner["kind"] + "/" + partner["name"] + " " + r["spec"]["node"]] = st
+        recall all bonds
+        i = i + 1
+    end
+    give back bonds
+end
+
+# How little a pod's workload should trust a node, from what they have
+# lived through: every scar counts, an at-risk relationship counts three
+# more and a failing one ten. A pod that matters (priority above zero)
+# counts it twice: where a pod has fallen, less of what matters goes.
+ritual distrust pod, nn, bonds
+    if length of bonds == 0
+        give back 0
+    end
+    perform partner_of with pod into partner
+    let key_ = pod["metadata"]["namespace"] + " " + partner["kind"] + "/" + partner["name"] + " " + nn
+    if place of key_ in bonds == 0
+        give back 0
+    end
+    let st = bonds[key_]
+    perform field with st, "scars", 0 into wary
+    perform field with st, "health", "" into health
+    if health == "at risk"
+        wary = wary + 3
+    end
+    if health == "failing"
+        wary = wary + 10
+    end
+    perform field with pod["spec"], "priority", 0 into priority
+    if priority > 0
+        wary = wary * 2
+    end
+    give back wary
+end
+
 # The cluster as kubectl tells it, made into a look: who may meet whom, in
 # what order, and how many seats every node has. Pods are named ns/name.
-ritual describe all_nodes, all_pods, scheduler, spaces
+ritual describe all_nodes, all_pods, scheduler, spaces, bonds
     let free = {}
     let ports = {}
     let ours = {}
@@ -290,7 +337,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces
             machines[name] = all_nodes[i]
             dying[name] = 0
         end
-        recall all_nodes all_pods scheduler free ports ours up_nodes residents machines dying placed guarded spaces
+        recall all_nodes all_pods scheduler free ports ours up_nodes residents machines dying placed guarded spaces bonds
         i = i + 1
     end
 
@@ -325,7 +372,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces
         if where == "" and stage == "Pending" and going == "" and chosen == scheduler
             put p into pending
         end
-        recall all_nodes all_pods scheduler free ports ours up_nodes pending residents machines dying placed guarded spaces
+        recall all_nodes all_pods scheduler free ports ours up_nodes pending residents machines dying placed guarded spaces bonds
         i = i + 1
     end
 
@@ -360,11 +407,11 @@ ritual describe all_nodes, all_pods, scheduler, spaces
                 end
                 reasons[reason] = reasons[reason] + 1
             end
-            recall p pn r reasons social i pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying placed guarded spaces around
+            recall p pn r reasons social i pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying placed guarded spaces around bonds
             j = j + 1
         end
         why[pn] = reasons
-        recall pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying placed guarded spaces around
+        recall pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying placed guarded spaces around bonds
         i = i + 1
     end
 
@@ -391,10 +438,11 @@ ritual describe all_nodes, all_pods, scheduler, spaces
                     lean = lean + pull
                 end
                 perform field with free[nn], "cpu", 0 into cores
+                perform distrust with objects[pn], nn, bonds into wary
                 put nn into candidates
-                put [rank, 0 - lean, 0 - cores / 1000, hash of ("pod:" + pn + " node:" + nn)] into order
+                put [rank, 0 - lean, wary, 0 - cores / 1000, hash of ("pod:" + pn + " node:" + nn)] into order
             end
-            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around
+            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         perform sorted with candidates, order into best
@@ -402,11 +450,11 @@ ritual describe all_nodes, all_pods, scheduler, spaces
         j = 1
         while j <= length of best
             line = line + " " + best[j]
-            recall best line pn i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around
+            recall best line pn i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         likes[pn] = line
-        recall pods objects up_nodes free fits likes why all_nodes residents machines dying ports placed guarded spaces around
+        recall pods objects up_nodes free fits likes why all_nodes residents machines dying ports placed guarded spaces around bonds
         i = i + 1
     end
 
@@ -433,7 +481,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces
                 put pn into suitors
                 put [rank, 0 - priority, objects[pn]["metadata"]["creationTimestamp"], pn] into order
             end
-            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around
+            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         perform sorted with suitors, order into best
@@ -459,10 +507,10 @@ ritual describe all_nodes, all_pods, scheduler, spaces
                         room = has / r[names[k]]
                     end
                 end
-                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around
+                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
                 k = k + 1
             end
-            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around
+            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         if room < 0
@@ -470,7 +518,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces
         end
         likes[nn] = line
         seats[nn] = room
-        recall up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around
+        recall up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
         i = i + 1
     end
     give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why, "count": length of all_nodes, "down": length of all_nodes - length of up_nodes, "wants": wants, "free": free, "ports": ports, "residents": residents, "machines": machines, "dying": dying, "around": around}
@@ -846,7 +894,12 @@ soul cluster
             let all_nodes = (meaning of line)["items"]
             hear world into more
             let all_pods = (meaning of more)["items"]
-            perform describe with all_nodes, all_pods, note "scheduler", {} into look
+            hear world into history
+            let bonds = {}
+            if history != 0
+                perform bonds_of with (meaning of history)["items"] into bonds
+            end
+            perform describe with all_nodes, all_pods, note "scheduler", {}, bonds into look
             perform prepare with look, ""
             perform match
             perform tell_homes with look, "", 0 into bound
@@ -947,7 +1000,15 @@ ritual look_once
             recall all_spaces spaces all_nodes all_pods
             i = i + 1
         end
-        perform describe with all_nodes, all_pods, note "scheduler", spaces into look
+        note "bonds" = {}
+        endure
+            perform get_all with "relationships.tainted.io -A" into all_bonds
+            perform bonds_of with all_bonds into bonds
+            note "bonds" = bonds
+        when it hurts as pain
+            note "bonds" = {}
+        end
+        perform describe with all_nodes, all_pods, note "scheduler", spaces, note "bonds" into look
         note "look" = look
     when it hurts as pain
         cry "taintednetes: " + pain
