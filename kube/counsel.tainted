@@ -197,8 +197,10 @@ ritual relate o, known, looks
     st["history"] = history
     st["pods"] = o["pods"]
     body["status"] = st
-    kept[key_] = st
-    note "kept" = kept
+    # Read again: a list kept across the loops above would have faded.
+    let remembered = note "kept"
+    remembered[key_] = st
+    note "kept" = remembered
     if place of "resourceVersion" in body["metadata"] == 0
         fresh = 1
     end

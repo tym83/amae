@@ -1473,8 +1473,11 @@ class LiveCounsel(unittest.TestCase):
 
     def test_a_failing_relationship_ends_in_divorce(self):
         with tempfile.TemporaryDirectory() as d:
+            # Another workload counselled in the same look must not make
+            # counsel forget this one.
             self.state(d, nodes=[self.roomy("n1"), self.roomy("n2")],
-                       pods=[counselled_pod("web-5d9f-a", "n1")],
+                       pods=[counselled_pod("web-5d9f-a", "n1"),
+                             counselled_pod("api-77a-b", "n1", owner=("ReplicaSet", "api-77a"), hash_="77a")],
                        relationships={"shop/deployment-web.n1": self.failing("n1")})
             life = self.counsel(d, divorce=True)
             self.assertEqual(life.code, 0, life.err)
