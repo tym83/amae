@@ -273,6 +273,23 @@ ritual counsel_once
     end
 end
 
+# How the relationship `key_` is doing: as counted in this look, else as
+# the API keeps it (the partner may not live on that node now), else "".
+ritual health_with key_
+    let kept = note "kept"
+    if place of key_ in kept > 0
+        perform field with kept[key_], "health", "" into health
+        give back health
+    end
+    let known = note "known"
+    if place of key_ in known > 0
+        perform field with known[key_], "status", {} into st
+        perform field with st, "health", "" into health
+        give back health
+    end
+    give back ""
+end
+
 # Whether two who live together should part, and where the pod would go.
 ritual divorce_once all_nodes, all_pods
     let free = {}
@@ -341,10 +358,7 @@ ritual divorce_once all_nodes, all_pods
             let j = 1
             while j <= length of nodes and target == ""
                 let m = nodes[j]
-                let theirs = ""
-                if place of (stem + m) in kept > 0
-                    perform field with kept[stem + m], "health", "" into theirs
-                end
+                perform health_with with stem + m into theirs
                 if m != here and theirs != "failing"
                     perform unfit with p, machines[m], r, free[m], ports[m] into no
                     if no == ""
