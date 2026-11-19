@@ -311,8 +311,13 @@ the `pods/binding` subresource. A pod likes only the nodes it fits on, decided
 the way kube-scheduler decides it: resources counted the way the kubelet counts
 them (init containers, sidecars, overhead, pod-level resources), extended
 resources such as `nvidia.com/gpu`, node selector, required node affinity,
-taints it tolerates and free host ports (a port on one address does not clash
-with the same port on another). A node offers as many seats as it can hold of
+taints it tolerates, free host ports (a port on one address does not clash
+with the same port on another), and the pods around it: required pod affinity
+and anti-affinity (its own, and that of the pods already there) and topology
+spread with `DoNotSchedule`. Preferred pod affinity and anti-affinity and
+`ScheduleAnyway` spread make it lean. Two pods of one look that would break
+these rules for each other do not both move in: the second waits for the next
+look. A node offers as many seats as it can hold of
 the largest pod that wants it. The nodes are souls that live as long as the
 scheduler does; the pods of every look are souls of that look.
 

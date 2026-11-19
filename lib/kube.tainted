@@ -749,3 +749,343 @@ ritual nominate pod, node
     perform kubectl_telling with "-n " + pod["metadata"]["namespace"] + " patch pod " + pod["metadata"]["name"] + " --subresource=status --type=merge --patch-file=/dev/stdin", json of body into said
     give back said
 end
+
+# ------------------------------------------------------ pods among pods
+#
+# Where a pod may live can depend on who already lives near it: pod
+# affinity (it wants to be near pods of some kind), pod anti-affinity (it
+# wants to be far from them, or they from it) and topology spread (pods of
+# a kind spread over zones, nodes, racks). Who lives where is `around`:
+#   {"placed": [{"pod": pod, "node": name}, ...],
+#    "machines": {name: node}, "spaces": {namespace: labels}}
+# "Near" is the topology domain: nodes with the same value of the term's
+# topologyKey label.
+
+# Whether a label selector selects these labels. No selector selects
+# nothing; an empty one selects everything.
+ritual selects selector, labels
+    if selector == ""
+        give back 0
+    end
+    perform field with selector, "matchLabels", {} into wanted
+    let names = keys of wanted
+    let i = 1
+    while i <= length of names
+        if place of names[i] in labels == 0
+            give back 0
+        end
+        if labels[names[i]] != wanted[names[i]]
+            give back 0
+        end
+        recall selector labels wanted names
+        i = i + 1
+    end
+    perform field with selector, "matchExpressions", [] into asked
+    i = 1
+    while i <= length of asked
+        perform meets with labels, asked[i] into ok
+        if not ok
+            give back 0
+        end
+        recall labels asked
+        i = i + 1
+    end
+    give back 1
+end
+
+# Whether a term written in namespace `home` looks at pods of namespace
+# `ns`: its own namespace unless it names others or selects them.
+ritual covers term, home, ns, spaces
+    perform field with term, "namespaces", [] into listed
+    let chooser = ""
+    if place of "namespaceSelector" in term > 0
+        chooser = term["namespaceSelector"]
+    end
+    if length of listed == 0 and chooser == ""
+        give back ns == home
+    end
+    if place of ns in listed > 0
+        give back 1
+    end
+    if chooser == ""
+        give back 0
+    end
+    let labels = {"kubernetes.io/metadata.name": ns}
+    if place of ns in spaces > 0
+        labels = spaces[ns]
+    end
+    perform selects with chooser, labels into ok
+    give back ok
+end
+
+# Whether the term of a pod in namespace `home` is about pod `q`.
+ritual about term, home, q, spaces
+    perform covers with term, home, q["metadata"]["namespace"], spaces into near
+    if not near
+        give back 0
+    end
+    let chooser = ""
+    if place of "labelSelector" in term > 0
+        chooser = term["labelSelector"]
+    end
+    perform labels_of with q into labels
+    perform selects with chooser, labels into ok
+    give back ok
+end
+
+# The value of label `k` on a node, or "" if it has none.
+ritual domain_of node, k
+    perform labels_of with node into labels
+    if place of k in labels == 0
+        give back ""
+    end
+    give back labels[k]
+end
+
+# The pod affinity or anti-affinity terms of a pod: `which` is
+# "podAffinity" or "podAntiAffinity", `how` "required" or "preferred".
+ritual pod_terms pod, which, how
+    perform field with pod["spec"], "affinity", {} into affinity
+    perform field with affinity, which, {} into side
+    perform field with side, how + "DuringSchedulingIgnoredDuringExecution", [] into terms
+    give back terms
+end
+
+# How many pods of `around` the term is about, in the domain `d` of its
+# topology key (or anywhere, if `d` is "*").
+ritual near_count term, home, d, around
+    let placed = around["placed"]
+    let k = term["topologyKey"]
+    let n = 0
+    let i = 1
+    while i <= length of placed
+        perform domain_of with around["machines"][placed[i]["node"]], k into theirs
+        if theirs != "" and (d == "*" or theirs == d)
+            perform about with term, home, placed[i]["pod"], around["spaces"] into ok
+            if ok
+                n = n + 1
+            end
+        end
+        recall placed k n term home d around
+        i = i + 1
+    end
+    give back n
+end
+
+# Why `pod` may not live on `node` because of the pods around it, or "".
+ritual crowded pod, node, around
+    let home = pod["metadata"]["namespace"]
+    perform labels_of with pod into mine
+    perform pod_terms with pod, "podAffinity", "required" into wanted
+    let i = 1
+    while i <= length of wanted
+        let term = wanted[i]
+        perform domain_of with node, term["topologyKey"] into d
+        if d == ""
+            give back "pod affinity"
+        end
+        perform near_count with term, home, d, around into here
+        if here == 0
+            # The first of a kind may live anywhere its own term is about it.
+            perform near_count with term, home, "*", around into anywhere
+            perform about with term, home, pod, around["spaces"] into itself
+            if anywhere > 0 or not itself
+                give back "pod affinity"
+            end
+        end
+        recall wanted home mine node around pod
+        i = i + 1
+    end
+    perform pod_terms with pod, "podAntiAffinity", "required" into shunned
+    i = 1
+    while i <= length of shunned
+        let term = shunned[i]
+        perform domain_of with node, term["topologyKey"] into d
+        if d != ""
+            perform near_count with term, home, d, around into here
+            if here > 0
+                give back "pod anti-affinity"
+            end
+        end
+        recall shunned home mine node around pod
+        i = i + 1
+    end
+    # Those already there who do not want this pod near them.
+    let placed = around["placed"]
+    i = 1
+    while i <= length of placed
+        let q = placed[i]["pod"]
+        perform pod_terms with q, "podAntiAffinity", "required" into theirs
+        let j = 1
+        while j <= length of theirs
+            let term = theirs[j]
+            perform domain_of with node, term["topologyKey"] into d
+            perform domain_of with around["machines"][placed[i]["node"]], term["topologyKey"] into qd
+            if d != "" and d == qd
+                perform about with term, q["metadata"]["namespace"], pod, around["spaces"] into ok
+                if ok
+                    give back "pod anti-affinity of " + q["metadata"]["namespace"] + "/" + q["metadata"]["name"]
+                end
+            end
+            recall theirs placed q i home node around pod
+            j = j + 1
+        end
+        recall placed home node around pod
+        i = i + 1
+    end
+    perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
+    i = 1
+    while i <= length of spreads
+        let c = spreads[i]
+        perform field with c, "whenUnsatisfiable", "DoNotSchedule" into hard
+        if hard == "DoNotSchedule"
+            perform skew with pod, node, c, around into over
+            if over > c["maxSkew"]
+                give back "topology spread"
+            end
+        end
+        recall spreads node around pod
+        i = i + 1
+    end
+    give back ""
+end
+
+# How uneven the pods a spread constraint is about would be if `pod` lived
+# on `node`: the pods in the node's domain, with this one, less the fewest
+# in any domain. Domains are those of the nodes that carry the key and that
+# the pod's node selector and required node affinity allow; a node without
+# the key cannot take the pod at all (a skew too large to bear).
+ritual skew pod, node, c, around
+    let k = c["topologyKey"]
+    perform domain_of with node, k into d
+    if d == ""
+        give back c["maxSkew"] + 1
+    end
+    let chooser = ""
+    if place of "labelSelector" in c > 0
+        chooser = c["labelSelector"]
+    end
+    let home = pod["metadata"]["namespace"]
+    let counts = {}
+    let names = keys of around["machines"]
+    let i = 1
+    while i <= length of names
+        let m = around["machines"][names[i]]
+        perform domain_of with m, k into md
+        perform allows with pod, m into ok
+        if md != "" and ok
+            counts[md] = 0
+        end
+        recall names counts k around pod home chooser d
+        i = i + 1
+    end
+    if place of d in counts == 0
+        counts[d] = 0
+    end
+    let placed = around["placed"]
+    i = 1
+    while i <= length of placed
+        let q = placed[i]["pod"]
+        if q["metadata"]["namespace"] == home
+            perform domain_of with around["machines"][placed[i]["node"]], k into qd
+            if place of qd in counts > 0
+                perform labels_of with q into ql
+                perform selects with chooser, ql into ok
+                if ok
+                    counts[qd] = counts[qd] + 1
+                end
+            end
+        end
+        recall placed counts k around pod home chooser d
+        i = i + 1
+    end
+    let doms = keys of counts
+    let fewest = counts[doms[1]]
+    i = 1
+    while i <= length of doms
+        if counts[doms[i]] < fewest
+            fewest = counts[doms[i]]
+        end
+        recall doms counts fewest
+        i = i + 1
+    end
+    perform labels_of with pod into mine
+    perform selects with chooser, mine into itself
+    give back counts[d] + itself - fewest
+end
+
+# Whether the node selector and the required node affinity of a pod let it
+# live on a node.
+ritual allows pod, node
+    perform labels_of with node into labels
+    perform field with pod["spec"], "nodeSelector", {} into selector
+    let names = keys of selector
+    let i = 1
+    while i <= length of names
+        if place of names[i] in labels == 0
+            give back 0
+        end
+        if labels[names[i]] != selector[names[i]]
+            give back 0
+        end
+        recall labels selector names
+        i = i + 1
+    end
+    perform affine with pod, node into ok
+    give back ok
+end
+
+# How much a pod leans to a node because of the pods around it: the weights
+# of its preferred pod affinity terms met there, less those of its preferred
+# anti-affinity terms, less how uneven its ScheduleAnyway spreads would be.
+ritual drawn pod, node, around
+    let home = pod["metadata"]["namespace"]
+    let pull = 0
+    perform pod_terms with pod, "podAffinity", "preferred" into liked
+    let i = 1
+    while i <= length of liked
+        let term = liked[i]["podAffinityTerm"]
+        perform domain_of with node, term["topologyKey"] into d
+        if d != ""
+            perform near_count with term, home, d, around into here
+            if here > 0
+                pull = pull + liked[i]["weight"]
+            end
+        end
+        recall liked pull home node around pod
+        i = i + 1
+    end
+    perform pod_terms with pod, "podAntiAffinity", "preferred" into avoided
+    i = 1
+    while i <= length of avoided
+        let term = avoided[i]["podAffinityTerm"]
+        perform domain_of with node, term["topologyKey"] into d
+        if d != ""
+            perform near_count with term, home, d, around into here
+            if here > 0
+                pull = pull - avoided[i]["weight"]
+            end
+        end
+        recall avoided pull home node around pod
+        i = i + 1
+    end
+    perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
+    i = 1
+    while i <= length of spreads
+        perform field with spreads[i], "whenUnsatisfiable", "DoNotSchedule" into hard
+        if hard == "ScheduleAnyway"
+            perform skew with pod, node, spreads[i], around into over
+            pull = pull - over
+        end
+        recall spreads pull node around pod
+        i = i + 1
+    end
+    give back pull
+end
+
+# Whether a pod's place depends on the pods around it at all.
+ritual sociable pod
+    perform field with pod["spec"], "affinity", {} into affinity
+    perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
+    give back place of "podAffinity" in affinity > 0 or place of "podAntiAffinity" in affinity > 0 or length of spreads > 0
+end
