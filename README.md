@@ -306,6 +306,47 @@ of Gale and Shapley: the pod likes that node better, fits there, and the node
 has a seat for it. The scheduler, trusting nodes by the same relationships,
 finds the workload's next pod a better home.
 
+### Controller conflicts
+
+`kube/mediator.amae` watches field ownership in `metadata.managedFields`.
+Three observed owner-and-value swaps between the same two controllers within
+18 looks open a `Relationship` (`amae.io/v1`) with `spec.kind: quarrel`,
+`between` the managers and `over` the object and field. A Warning `Conflict`
+Event reports the quarrel. Its status records `resolution`, `owner`, `swaps`,
+`scars` and history; counsel ignores these Relationships.
+
+- **Consent:** annotation `amaenetes.io/agreement` contains one
+  `<path>=<manager>` per line, for example `spec.replicas=hpa`. An agreement
+  naming either manager emits Normal `Agreed` once and sets `consent`.
+  Further overwrites restore that manager's last observed value using a merge
+  patch with `--field-manager=<manager>`, emitting Normal `Restored`.
+- **Yielding:** without agreement, six looks after the quarrel began the
+  latecomer yields to the first observed owner. Normal `Yielded` announces it,
+  resolution becomes `yielded`, and the elder's value is restored. Each later
+  overwrite by the latecomer adds one scar and is restored again.
+- **Parting:** three scars, or annotation `amaenetes.io/parted` naming either
+  manager as the loser, emits Warning `Parted`. Resolution becomes `parted`;
+  restores stop and history continues to record the break. A later agreement
+  still wins and returns the quarrel to consent.
+
+The mediator reads `spec`, `data`, labels and annotations; it ignores status,
+its own annotations, last-applied configuration and deployment bookkeeping.
+List entries (`k:`/`v:`) and leaves with multiple owners are skipped. Dotted
+paths retain literal label/annotation keys for patches. Successful restores
+never count as swaps; refused patches are reported and retried next look.
+Observations reset on restart and are pruned when objects disappear; public
+Relationships remain in the API. Only changes visible between looks count.
+The image includes `jq`, used to preserve JSON boolean/null values before Amae
+reads them and to decode the raw JSON patch on restore.
+
+Defaults: `MEDIATOR_INTERVAL=10` seconds,
+`MEDIATOR_RESOURCES=deployments.apps,statefulsets.apps,daemonsets.apps,services,configmaps`,
+`MEDIATOR_SWAPS=3`, `MEDIATOR_PATIENCE=6` looks (the swap window is three times
+patience). `KUBE_CONTEXT` selects the cluster; `KUBECTL` overrides
+kubectl for tests. `MEDIATOR_LOOKS` optionally bounds a test run. `make kube`
+builds counsel and mediator. Adding watched resource types also requires
+extending the mediator's ClusterRole in `kube/deploy.yaml`.
+
 ## The compiler written in Amae
 
 `compiler.amae` is the compiler, and it is the only implementation of the
@@ -468,12 +509,13 @@ The scheduler spends about 50m of CPU between looks.
 
 ### Inside the cluster
 
-`kube/deploy.yaml` runs the scheduler, the parting operator and counsel (with
+`kube/deploy.yaml` runs the scheduler, the parting operator, counsel and mediator (with
 the `Relationship` CRD) as pods of the cluster they look after, each with a service account that may do no more than
 its job: the scheduler reads pods and nodes, creates bindings and events and
 holds its lease (two copies run, one leads), the operator
 reads them, patches nodes and evicts pods, counsel reads them and keeps
-relationships. All are compiled from Amae into
+relationships; mediator patches watched fields and records controller quarrels.
+Its Deployment is `amaenetes-mediator` in namespace `amaenetes`. All are compiled from Amae into
 the image `ghcr.io/tym83/amae`, which CI builds from every commit to main:
 
 ```

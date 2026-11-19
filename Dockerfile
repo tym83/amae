@@ -8,6 +8,7 @@ RUN make && mkdir -p /out \
  && bin/tc amaenetes.amae -o /out/amaenetes \
  && bin/tc kube/parting.amae -o /out/parting \
  && bin/tc kube/counsel.amae -o /out/counsel \
+ && bin/tc kube/mediator.amae -o /out/mediator \
  && cp build/tc-core /out/tc-core
 
 FROM alpine/k8s:1.35.9

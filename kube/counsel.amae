@@ -61,7 +61,10 @@ ritual known_relationships
     let known = {}
     let i = 1
     while i <= length of all
-        known[all[i]["metadata"]["namespace"] + "/" + all[i]["metadata"]["name"]] = all[i]
+        perform field with all[i]["spec"], "kind", "" into kind_
+        if kind_ != "quarrel"
+            known[all[i]["metadata"]["namespace"] + "/" + all[i]["metadata"]["name"]] = all[i]
+        end
         recall all known
         i = i + 1
     end

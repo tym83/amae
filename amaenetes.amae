@@ -273,9 +273,12 @@ ritual bonds_of all
     let i = 1
     while i <= length of all
         let r = all[i]
-        perform field with r, "status", {} into st
-        let partner = r["spec"]["partner"]
-        bonds[r["metadata"]["namespace"] + " " + partner["kind"] + "/" + partner["name"] + " " + r["spec"]["node"]] = st
+        perform field with r["spec"], "kind", "" into kind_
+        if kind_ != "quarrel"
+            perform field with r, "status", {} into st
+            let partner = r["spec"]["partner"]
+            bonds[r["metadata"]["namespace"] + " " + partner["kind"] + "/" + partner["name"] + " " + r["spec"]["node"]] = st
+        end
         recall all bonds
         i = i + 1
     end
