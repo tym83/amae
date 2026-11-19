@@ -1522,7 +1522,11 @@ def save():
     with open(state_file, "w") as f:
         json.dump(state, f)
 if args[:2] == ["get", "nodes"]:
-    print(json.dumps({"items": state["nodes"]}))
+    look = state.get("node_polls", 0)
+    state["node_polls"] = look + 1
+    snapshots = state.get("node_looks", [state["nodes"]])
+    save()
+    print(json.dumps({"items": snapshots[min(look, len(snapshots) - 1)]}))
 elif args[:2] == ["get", "pods"]:
     print(json.dumps({"items": state["pods"]}))
 elif args[:2] == ["get", "events"]:
@@ -1539,7 +1543,17 @@ elif args[:2] == ["get", "relationships.amae.io"]:
     print(json.dumps({"items": list(state["relationships"].values())}))
 elif args[:2] == ["create", "--raw"] and args[2].endswith("/eviction"):
     body = json.load(sys.stdin)
-    state["pods"] = [p for p in state["pods"] if p["metadata"]["name"] != body["metadata"]["name"]]
+    state.setdefault("eviction_attempts", []).append(body["metadata"]["name"])
+    if state.get("refuse_evictions", 0):
+        state["refuse_evictions"] -= 1
+        save()
+        sys.exit("disruption budget refused")
+    if state.get("keep_terminating"):
+        for p in state["pods"]:
+            if p["metadata"]["name"] == body["metadata"]["name"]:
+                p["metadata"]["deletionTimestamp"] = "2026-01-01T00:00:00Z"
+    else:
+        state["pods"] = [p for p in state["pods"] if p["metadata"]["name"] != body["metadata"]["name"]]
     state.setdefault("evicted", []).append(body["metadata"]["name"])
     save()
 elif args[:2] == ["create", "--raw"] and args[2].endswith("/events"):
@@ -1574,7 +1588,7 @@ def counselled_pod(name, node, restarts=0, oom=False, ready=True, phase="Running
                                      "lastState": {"terminated": {"reason": "OOMKilled"}} if oom else {}}]}
     if reason:
         status["reason"] = reason
-    meta = {"name": name, "namespace": "shop", "labels": {"pod-template-hash": hash_}, "annotations": {}}
+    meta = {"name": name, "uid": "uid-" + name, "namespace": "shop", "labels": {"pod-template-hash": hash_}, "annotations": {}}
     if likes:
         meta["annotations"][LIKES] = likes
     if owner:
@@ -1587,7 +1601,7 @@ def counselled_pod(name, node, restarts=0, oom=False, ready=True, phase="Running
 class LiveCounsel(unittest.TestCase):
     """counsel keeping Relationship objects, through a kubectl that only imagines a cluster."""
 
-    def counsel(self, d, looks=1, divorce=False, interval=0, clock_step=None):
+    def counsel(self, d, looks=1, divorce=False, interval=0, clock_step=None, thresholds=None):
         with open(os.path.join(ROOT, "kube", "counsel.amae")) as f:
             source = f.read()
         if clock_step is not None:
@@ -1602,6 +1616,7 @@ class LiveCounsel(unittest.TestCase):
         return run(source, flags=("--patience=0",),
                    env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": os.path.join(d, "state.json"),
                         "COUNSEL_INTERVAL": str(interval), "COUNSEL_LOOKS": str(looks),
+                        **{f"COUNSEL_{k.upper()}_AFTER": str(v) for k, v in (thresholds or {}).items()},
                         **({"COUNSEL_DIVORCE": "1", "COUNSEL_DIVORCE_EVERY": "1"} if divorce else {})})
 
     def state(self, d, **set_):
@@ -1616,6 +1631,85 @@ class LiveCounsel(unittest.TestCase):
                 json.dump(old, f)
         with open(path) as f:
             return json.load(f)
+
+    def attachment_pod(self, name, style, **kwargs):
+        p = counselled_pod(name, "n1", **kwargs)
+        if style is not None:
+            p["metadata"]["annotations"]["amaenetes.io/attachment"] = style
+        return p
+
+    def node_looks(self, *statuses):
+        snapshots = []
+        for status in statuses:
+            node = imagined_node("n1")
+            node["status"]["conditions"][0]["status"] = status
+            snapshots.append([node])
+        return snapshots
+
+    def test_anxious_separates_while_secure_waits(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[self.attachment_pod("worried", "anxious"),
+                                self.attachment_pod("patient", "secure")],
+                       node_looks=self.node_looks("True", "False"))
+            life = self.counsel(d, looks=2, thresholds={"anxious": 0, "secure": 60})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(life.err, "")
+            st = self.state(d)
+            self.assertEqual(st["evicted"], ["worried"])
+            event, = st["events"]
+            self.assertEqual((event["type"], event["reason"], event["source"]["component"]),
+                             ("Warning", "Separated", "counsel"))
+            self.assertRegex(event["message"], r"^anxious: n1 out of touch for \d+s$")
+
+    def test_secure_threshold_and_fallback(self):
+        for style in ("secure", None, "unrecognized"):
+            with self.subTest(style=style), tempfile.TemporaryDirectory() as d:
+                self.state(d, pods=[self.attachment_pod("patient", style)],
+                           node_looks=self.node_looks("True", "Unknown"))
+                life = self.counsel(d, looks=3, clock_step=1, thresholds={"secure": 1})
+                self.assertEqual(life.code, 0, life.err)
+                self.assertEqual(life.err, "")
+                st = self.state(d)
+                self.assertEqual(st["evicted"], ["patient"])
+                event, = st["events"]
+                self.assertEqual((event["type"], event["reason"], event["message"]),
+                                 ("Normal", "Separated", "secure: n1 out of touch for 1s, moving on"))
+
+    def test_avoidant_reunion_adds_one_carried_scar(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[self.attachment_pod("distant", "avoidant")],
+                       relationships={"shop/deployment-web.n1": self.failing("n1", scars=3)},
+                       node_looks=self.node_looks("True", "False", "Unknown", "True"))
+            life = self.counsel(d, looks=7, clock_step=1, thresholds={"avoidant": 1})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(life.err, "")
+            st = self.state(d)
+            self.assertNotIn("evicted", st)
+            rel = st["relationships"]["shop/deployment-web.n1"]["status"]
+            self.assertEqual(rel["scars"], 4)
+            self.assertEqual([h["what"] for h in rel["history"]],
+                             ["distant kept its distance: n1 went silent for 2s"])
+
+    def test_separation_never_evicts_bare_pods(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[self.attachment_pod("solo", "anxious", owner=None)],
+                       node_looks=self.node_looks("False"))
+            life = self.counsel(d, looks=2, thresholds={"anxious": 0})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(life.err, "")
+            self.assertNotIn("eviction_attempts", self.state(d))
+
+    def test_refused_separation_retries_but_terminating_pod_does_not(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[self.attachment_pod("worried", "anxious")],
+                       node_looks=self.node_looks("False"), refuse_evictions=1, keep_terminating=True)
+            life = self.counsel(d, looks=3, thresholds={"anxious": 0})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertIn("disruption budget refused", life.err)
+            st = self.state(d)
+            self.assertEqual(st["eviction_attempts"], ["worried", "worried"])
+            self.assertEqual(st["evicted"], ["worried"])
+            self.assertEqual(len(st["events"]), 1)
 
     def test_a_relationship_is_kept_and_remembered_across_restarts(self):
         with tempfile.TemporaryDirectory() as d:

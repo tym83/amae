@@ -275,6 +275,28 @@ in history; against adds no contempt or scars.
 kubectl --context <ctx> get relationships -A
 ```
 
+The pod annotation `amaenetes.io/attachment` chooses its reconnect policy when
+its node's Ready condition is not True (NotReady or Unknown):
+
+- `secure` (default, including unknown values) waits 60 seconds, then calmly
+  leaves by eviction with a Normal `Separated` Event:
+  `secure: <node> out of touch for <n>s, moving on`. Reunion before then adds no scar.
+- `anxious` leaves after 15 seconds with a Warning `Separated` Event:
+  `anxious: <node> out of touch for <n>s`.
+- `avoidant` never leaves on its own. Reunion after more than 15 seconds adds
+  one permanent scar to its partner's relationship with that node (read by the
+  scheduler's `distrust`) and a history line:
+  `<pod> kept its distance: <node> went silent for <n>s`. Later looks do not
+  repeat the scar. Kubernetes' own taint eviction still applies.
+
+Override the thresholds in seconds with `COUNSEL_SECURE_AFTER` (60),
+`COUNSEL_ANXIOUS_AFTER` (15), and `COUNSEL_AVOIDANT_AFTER` (15). Separation eviction
+is enabled independently of `COUNSEL_DIVORCE`, only for pods with an owner;
+terminating pods are skipped. A disruption budget can refuse eviction, which
+is retried next look. Separation starts at the first observed loss of readiness;
+its time is kept by pod UID in notes, cleared on reunion, pruned for vanished
+pods, and reset when counsel restarts.
+
 With `COUNSEL_DIVORCE=1` counsel is also a descheduler. It divorces a pod from
 its node by eviction, at most once a minute and only a pod whose workload
 brings it back, in two cases: when their relationship is failing (with three
@@ -405,6 +427,7 @@ be asked again, even if the intervening looks had nothing new to report.
 |---|---|---|
 | `amaenetes.io/likes: "node-a node-b"` | pod | nodes it wants first |
 | `amaenetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
+| `amaenetes.io/attachment: "secure"` | pod | reconnect policy: secure (default), anxious, avoidant |
 | `amaenetes.io/seats: "N"` | node | at most N pods of this scheduler |
 
 Then pods prefer the nodes their preferred node affinity leans to, then the
