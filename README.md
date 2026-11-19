@@ -323,6 +323,13 @@ taint role.` With `TAINTEDNETES_LEASE=namespace/name`, several copies can run
 at once: the one holding that Lease binds and renews it every look, the others
 wait and take it over once it has not been renewed for three looks.
 
+A pod with nowhere to live may preempt, as in kube-scheduler: it asks the node
+where the going of pods of lower priority would make room to let go of the
+fewest and least important of them (every pod it can keep is kept), evicts
+them, so a disruption budget may still refuse, and is promised that node in
+`status.nominatedNodeName` until they have left. `preemptionPolicy: Never`
+pods only wait.
+
 | Annotation | On | Meaning |
 |---|---|---|
 | `taintednetes.io/likes: "node-a node-b"` | pod | nodes it wants first |

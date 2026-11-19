@@ -2430,6 +2430,14 @@ static int64_t remember_run(const char *source) {
 
 /* ----------------------------------------------------------------- main */
 
+static World *the_world;
+
+static void asked_to_go(int sig) {
+    World *w = the_world;
+    if (w) for (size_t i = 0; i < w->nsrc; i++) if (w->src[i].pid > 0) kill(-w->src[i].pid, SIGTERM);
+    _exit(sig == SIGTERM ? 0 : 128 + sig);
+}
+
 int tainted_main(const Program *p, int argc, char **argv) {
     static char out_buffer[1 << 16];
     setvbuf(stdout, out_buffer, _IOLBF, sizeof out_buffer);
@@ -2450,6 +2458,11 @@ int tainted_main(const Program *p, int argc, char **argv) {
     World *w = oom(calloc(1, sizeof(World)));
     w->p = p;
     add_source(w, 0);
+    /* Asked to go (as a pod is, by SIGTERM, and as PID 1 it would otherwise
+       not hear it), the program goes at once, and what it listens to with it. */
+    the_world = w;
+    signal(SIGTERM, asked_to_go);
+    signal(SIGINT, asked_to_go);
     w->patience = patience;
     w->deterministic = deterministic;
     for (int u = 0; u < p->nunits; u++)

@@ -270,6 +270,9 @@ ritual describe all_nodes, all_pods, scheduler
     let free = {}
     let ports = {}
     let ours = {}
+    let residents = {}
+    let machines = {}
+    let dying = {}
     let up_nodes = []
     let i = 1
     while i <= length of all_nodes
@@ -281,8 +284,11 @@ ritual describe all_nodes, all_pods, scheduler
             free[name] = left
             ports[name] = ""
             ours[name] = 0
+            residents[name] = []
+            machines[name] = all_nodes[i]
+            dying[name] = 0
         end
-        recall all_nodes all_pods scheduler free ports ours up_nodes
+        recall all_nodes all_pods scheduler free ports ours up_nodes residents machines dying
         i = i + 1
     end
 
@@ -302,12 +308,17 @@ ritual describe all_nodes, all_pods, scheduler
             if chosen == scheduler
                 ours[where] = ours[where] + 1
             end
+            put p into residents[where]
+            perform field with p["metadata"], "deletionTimestamp", "" into going
+            if going != ""
+                dying[where] = dying[where] + 1
+            end
         end
-        perform field with p["metadata"], "deletionTimestamp", "" into dying
-        if where == "" and stage == "Pending" and dying == "" and chosen == scheduler
+        perform field with p["metadata"], "deletionTimestamp", "" into going
+        if where == "" and stage == "Pending" and going == "" and chosen == scheduler
             put p into pending
         end
-        recall all_nodes all_pods scheduler free ports ours up_nodes pending
+        recall all_nodes all_pods scheduler free ports ours up_nodes pending residents machines dying
         i = i + 1
     end
 
@@ -337,11 +348,11 @@ ritual describe all_nodes, all_pods, scheduler
                 end
                 reasons[reason] = reasons[reason] + 1
             end
-            recall p pn r reasons i pending up_nodes free ports ours pods objects wants fits why all_nodes
+            recall p pn r reasons i pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying
             j = j + 1
         end
         why[pn] = reasons
-        recall pending up_nodes free ports ours pods objects wants fits why all_nodes
+        recall pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying
         i = i + 1
     end
 
@@ -366,7 +377,7 @@ ritual describe all_nodes, all_pods, scheduler
                 put nn into candidates
                 put [rank, 0 - lean, 0 - cores / 1000, hash of ("pod:" + pn + " node:" + nn)] into order
             end
-            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes
+            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports
             j = j + 1
         end
         perform sorted with candidates, order into best
@@ -374,11 +385,11 @@ ritual describe all_nodes, all_pods, scheduler
         j = 1
         while j <= length of best
             line = line + " " + best[j]
-            recall best line pn i pods objects up_nodes free fits likes ours wants why all_nodes
+            recall best line pn i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports
             j = j + 1
         end
         likes[pn] = line
-        recall pods objects up_nodes free fits likes why all_nodes
+        recall pods objects up_nodes free fits likes why all_nodes residents machines dying ports
         i = i + 1
     end
 
@@ -405,7 +416,7 @@ ritual describe all_nodes, all_pods, scheduler
                 put pn into suitors
                 put [rank, 0 - priority, objects[pn]["metadata"]["creationTimestamp"], pn] into order
             end
-            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
+            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports
             j = j + 1
         end
         perform sorted with suitors, order into best
@@ -431,10 +442,10 @@ ritual describe all_nodes, all_pods, scheduler
                         room = has / r[names[k]]
                     end
                 end
-                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
+                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports
                 k = k + 1
             end
-            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
+            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports
             j = j + 1
         end
         if room < 0
@@ -442,10 +453,10 @@ ritual describe all_nodes, all_pods, scheduler
         end
         likes[nn] = line
         seats[nn] = room
-        recall up_nodes pods objects wants fits free ours nodes seats likes why all_nodes
+        recall up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports
         i = i + 1
     end
-    give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why, "count": length of all_nodes, "down": length of all_nodes - length of up_nodes}
+    give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why, "count": length of all_nodes, "down": length of all_nodes - length of up_nodes, "wants": wants, "free": free, "ports": ports, "residents": residents, "machines": machines, "dying": dying}
 end
 
 # A look made into the notes `match` reads. The pods of the look are named
@@ -493,6 +504,168 @@ ritual hear_preferences first_line
     end
 end
 
+# A pod with nowhere to live may ask a node to let go of pods that matter
+# less than it does, the way kube-scheduler preempts: on the node where the
+# going of pods of lower priority makes room for it, the fewest and least
+# important of them, every other one kept. A pod that has already been
+# promised a node waits there while those it displaced are leaving. Gives
+# back {"node": n, "victims": pods}, {"waits": n} or {}.
+ritual rescue look, pn
+    let pod = look["objects"][pn]
+    perform field with pod["spec"], "priority", 0 into mine
+    perform field with pod["spec"], "preemptionPolicy", "" into policy
+    if policy == "Never"
+        give back {}
+    end
+    perform field with pod["status"], "nominatedNodeName", "" into promised
+    if promised != "" and place of promised in look["dying"] > 0
+        if look["dying"][promised] > 0
+            give back {"waits": promised}
+        end
+    end
+    let chosen = {}
+    let chosen_key = []
+    let i = 1
+    while i <= words of look["nodes"]
+        let nn = word i of look["nodes"]
+        if place of nn in note "promised nodes" == 0
+            perform let_go_on with look, pn, mine, nn into tried
+            if place of "victims" in tried > 0
+                let worst = 0
+                let total = 0
+                let k = 1
+                while k <= length of tried["victims"]
+                    perform field with tried["victims"][k]["spec"], "priority", 0 into theirs
+                    if theirs > worst or k == 1
+                        worst = theirs
+                    end
+                    total = total + theirs
+                    recall tried worst total look pn mine nn chosen chosen_key i
+                    k = k + 1
+                end
+                let key_ = [worst, total, length of tried["victims"], nn]
+                let better = length of chosen_key == 0
+                if not better
+                    perform earlier with key_, chosen_key into better
+                end
+                if better
+                    chosen = {"node": nn, "victims": tried["victims"]}
+                    chosen_key = key_
+                end
+            end
+        end
+        recall look pn mine chosen chosen_key
+        i = i + 1
+    end
+    give back chosen
+end
+
+# Which pods of node `nn` would have to go for `pn` to live there:
+# {"victims": pods}, or {} if no going of lower pods makes room.
+ritual let_go_on look, pn, mine, nn
+    let pod = look["objects"][pn]
+    let r = look["wants"][pn]
+    let node = look["machines"][nn]
+    let residents = look["residents"][nn]
+    let lower = []
+    let order = []
+    let ports = ""
+    let left = look["free"][nn]
+    let i = 1
+    while i <= length of residents
+        let q = residents[i]
+        perform field with q["spec"], "priority", 0 into theirs
+        perform field with q["metadata"], "deletionTimestamp", "" into going
+        perform host_ports with q into qp
+        if going == "" and theirs < mine
+            put q into lower
+            put [0 - theirs, q["metadata"]["creationTimestamp"], q["metadata"]["name"]] into order
+            perform requests with q into qr
+            perform add_up with left, qr into more
+            left = more
+            if place of "pods" in left > 0
+                left["pods"] = left["pods"] + 1
+            end
+        else
+            ports = ports + qp
+        end
+        recall residents lower order ports left pod r node mine
+        i = i + 1
+    end
+    if length of lower == 0
+        give back {}
+    end
+    perform unfit with pod, node, r, left, ports into reason
+    if reason != ""
+        give back {}
+    end
+    perform sorted with lower, order into kept_first
+    let victims = []
+    i = 1
+    while i <= length of kept_first
+        let q = kept_first[i]
+        perform requests with q into qr
+        perform take_away with left, qr into trial
+        perform host_ports with q into qp
+        perform unfit with pod, node, r, trial, ports + qp into reason
+        if reason == ""
+            left = trial
+            ports = ports + qp
+        else
+            put q into victims
+        end
+        recall kept_first victims left ports pod r node
+        i = i + 1
+    end
+    if length of victims == 0
+        give back {}
+    end
+    give back {"victims": victims}
+end
+
+# Letting go, for `pn`, of the pods a node chose to let go: each is evicted,
+# so a disruption budget may still refuse, and told why; `pn` is promised
+# the node and waits for the room to be free.
+ritual let_go look, pn, saved, binding
+    let nn = saved["node"]
+    let victims = saved["victims"]
+    note "promised nodes" = note "promised nodes" + " " + nn
+    note "waiting" = note "waiting" + 1
+    let names = ""
+    let i = 1
+    while i <= length of victims
+        names = names + " " + victims[i]["metadata"]["namespace"] + "/" + victims[i]["metadata"]["name"]
+        i = i + 1
+    end
+    say pn + " asks " + nn + " to let go of" + names
+    if not binding
+        give back 0
+    end
+    note "victims" = victims
+    note "rescued" = look["objects"][pn]
+    note "for" = pn
+    note "on" = nn
+    i = 1
+    while i <= length of note "victims"
+        let victim = (note "victims")[i]
+        let vn = victim["metadata"]["namespace"] + "/" + victim["metadata"]["name"]
+        endure
+            perform evict with vn
+            say vn + " lets go of " + note "on" + " for " + note "for"
+            perform tell_event with victim, "Normal", "Preempted", "Preempted by " + note "for" + " on node " + note "on", note "scheduler"
+        when it hurts as pain
+            say vn + " cannot let go yet: " + pain
+        end
+        i = i + 1
+    end
+    endure
+        perform nominate with note "rescued", note "on"
+    when it hurts as pain
+        cry "taintednetes: " + note "for" + " was not promised " + note "on" + ": " + pain
+    end
+    give back 0
+end
+
 # Why a pod has nowhere to live, the way kube-scheduler says it: how many
 # nodes there are, and how many of them turned it away for each reason.
 # Nodes it fits on but which chose others had no seat left for it.
@@ -536,6 +709,7 @@ ritual tell_homes look, tail, binding
     let bound = 0
     let taken = {}
     note "waiting" = 0
+    note "promised nodes" = ""
     let i = 1
     while i <= words of look["pods"]
         let pn = word i of look["pods"]
@@ -568,6 +742,14 @@ ritual tell_homes look, tail, binding
                 when it hurts as pain
                     cry "taintednetes: no event for " + pn + ": " + pain
                 end
+            end
+            perform rescue with look, pn into saved
+            if place of "waits" in saved > 0
+                say pn + " waits for room on " + saved["waits"]
+                note "waiting" = note "waiting" + 1
+            end
+            if place of "node" in saved > 0
+                perform let_go with look, pn, saved, binding
             end
         else
             if clash != ""

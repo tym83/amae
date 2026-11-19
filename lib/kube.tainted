@@ -741,3 +741,11 @@ ritual hold_lease ns, name, who, span
     perform kubectl_telling with "replace --raw " + where + "/" + name + " -f -", json of lease into done
     give back who
 end
+
+# Promising a pod the node it waits for, in its status, as kube-scheduler
+# does while the pods it displaced are leaving.
+ritual nominate pod, node
+    let body = {"status": {"nominatedNodeName": node}}
+    perform kubectl_telling with "-n " + pod["metadata"]["namespace"] + " patch pod " + pod["metadata"]["name"] + " --subresource=status --type=merge --patch-file=/dev/stdin", json of body into said
+    give back said
+end

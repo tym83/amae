@@ -52,6 +52,13 @@ rules:
   - apiGroups: [""]
     resources: [events]
     verbs: [create]
+  # Preemption: letting pods of lower priority go, and promising the node.
+  - apiGroups: [""]
+    resources: [pods/eviction]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [pods/status]
+    verbs: [patch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

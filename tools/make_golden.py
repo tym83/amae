@@ -193,7 +193,8 @@ def snapshot():
     pods = [pod("db-0", node="east", requests={"cpu": "1500m"}), pod("web", likes="east west"),
             pod("api", spec=zone), pod("train", requests={"cpu": "1", "nvidia.com/gpu": "1"}),
             pod("tune", requests={"cpu": "1", "nvidia.com/gpu": "1"}),
-            pod("big", requests={"cpu": "3"})]
+            pod("big", requests={"cpu": "3"}),
+            pod("urgent", requests={"cpu": "1"}, spec={"priority": 100, "nodeSelector": {"zone": "east"}})]
     return json.dumps({"items": nodes}) + "\n" + json.dumps({"items": pods}) + "\n"
 
 
