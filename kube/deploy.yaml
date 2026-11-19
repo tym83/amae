@@ -58,7 +58,7 @@ rules:
     verbs: [create]
   - apiGroups: [""]
     resources: [pods/status]
-    verbs: [patch]
+    verbs: [get, patch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
