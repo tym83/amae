@@ -1,0 +1,26 @@
+# Closeness grows only from answered words.
+
+written by "amae"
+soul alice
+    meet bob
+    let n = 0
+    while n < 4
+        tell bob "a little more about me"
+        hear bob into answer
+        n = n + 1
+    end
+    promise bob
+    promise bob
+    promise bob
+    say "alice feels " + bond with bob
+end
+
+soul bob
+    meet alice
+    let n = 0
+    while n < 4
+        hear alice into greeting
+        tell alice "and a little more about me"
+        n = n + 1
+    end
+end

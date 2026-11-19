@@ -1,0 +1,22 @@
+written by "amae"
+
+soul ana
+    meet ben
+    tell ben "stay"
+    hear ben into answer
+    say "ben's answer: " + answer
+    say "ana keeps " + scars of ben + " scars:"
+    let i = 1
+    while i <= scars of ben
+        say "  " + scar i of ben
+        i = i + 1
+    end
+end
+
+soul ben
+    meet ana
+    hear ana into plea
+    tell ana "I met someone at the port"
+    knowingly leave ana
+    say "ben keeps " + scars of ana + " scar: " + scar 1 of ana
+end

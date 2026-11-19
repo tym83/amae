@@ -1,4 +1,4 @@
-# Pods for taintednetes to place. NODE_A and NODE_B stand for two of your nodes:
+# Pods for amaenetes to place. NODE_A and NODE_B stand for two of your nodes:
 #   kubectl --context <ctx> create namespace <ns>
 #   sed -e s/NODE_A/<node>/ -e s/NODE_B/<node>/ kube/demo.yaml \
 #     | kubectl --context <ctx> -n <ns> apply -f -
@@ -7,9 +7,9 @@ kind: Pod
 metadata:
   name: web
   annotations:
-    taintednetes.io/likes: "NODE_A NODE_B"
+    amaenetes.io/likes: "NODE_A NODE_B"
 spec:
-  schedulerName: taintednetes
+  schedulerName: amaenetes
   containers:
     - name: pause
       image: registry.k8s.io/pause:3.10
@@ -21,9 +21,9 @@ kind: Pod
 metadata:
   name: db
   annotations:
-    taintednetes.io/likes: "NODE_A"
+    amaenetes.io/likes: "NODE_A"
 spec:
-  schedulerName: taintednetes
+  schedulerName: amaenetes
   containers:
     - name: pause
       image: registry.k8s.io/pause:3.10
@@ -35,9 +35,9 @@ kind: Pod
 metadata:
   name: cache
   annotations:
-    taintednetes.io/likes: "NODE_B NODE_A"
+    amaenetes.io/likes: "NODE_B NODE_A"
 spec:
-  schedulerName: taintednetes
+  schedulerName: amaenetes
   containers:
     - name: pause
       image: registry.k8s.io/pause:3.10
@@ -56,7 +56,7 @@ spec:
     metadata:
       labels: {app: crowd}
     spec:
-      schedulerName: taintednetes
+      schedulerName: amaenetes
       containers:
         - name: pause
           image: registry.k8s.io/pause:3.10

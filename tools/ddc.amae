@@ -1,0 +1,71 @@
+# ddc.amae: David A. Wheeler's diverse double-compiling, as a date.
+#
+# Ken Thompson showed that a compiler can carry, from generation to
+# generation, something that is in no source. Wheeler's answer: build the
+# compiler's source with two different compilers, let each result build the
+# source again, and compare. Here the two are the seed and the living
+# generation. Each tells what it remembers (its lineage); then their children
+# compile the compiler once more, and if the two grandchildren say the same,
+# memory aside, the two compilers remember each other the same: nothing is
+# hidden in either that is not in the source.
+#
+#   ELDER=build/seed YOUNGER=build/tc-core AMAE_HOME=. ddc
+
+written by "amae"
+
+ritual without_memory text
+    let all = lines of text
+    let kept = ""
+    let remembering = 0
+    let i = 1
+    while i <= length of all
+        if all[i] == "/* lineage */"
+            remembering = 1
+        end
+        if remembering == 0
+            kept = kept + all[i] + "\n"
+        end
+        if all[i] == "/* end of lineage */"
+            remembering = 0
+        end
+        i = i + 1
+        recall all kept remembering
+    end
+    give back kept
+end
+
+# One compiler compiles the compiler, and the result is built: a child.
+ritual child_of compiler, name
+    let home = world "AMAE_HOME"
+    let work = world "WORK"
+    let quiet = "AMAE_GIVE_HEART=1 AMAE_HISTORY=" + work + "/history.json AMAE_MEMORY=" + work + "/memory.json "
+    ask world quiet + compiler + " < " + home + "/compiler.amae > " + work + "/" + name + ".c" into nothing
+    ask world "cc -std=c11 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -O1 -w -I" + home + "/runtime " + work + "/" + name + ".c " + home + "/runtime/amae.c -o " + work + "/" + name + " -lm" into nothing
+    give back work + "/" + name
+end
+
+ritual says compiler
+    let home = world "AMAE_HOME"
+    let work = world "WORK"
+    ask world "AMAE_GIVE_HEART=1 AMAE_HISTORY=" + work + "/history.json AMAE_MEMORY=" + work + "/memory.json " + compiler + " < " + home + "/compiler.amae" into said
+    perform without_memory with said into kept
+    give back kept
+end
+
+soul wheeler
+    let elder = world "ELDER"
+    let younger = world "YOUNGER"
+    ask world elder + " --lineage | tail -1" into elder_says
+    ask world younger + " --lineage | tail -1" into younger_says
+    say "the elder remembers: " + elder_says
+    say "the younger remembers: " + younger_says
+    perform child_of with elder, "child-of-elder" into first_child
+    perform child_of with younger, "child-of-younger" into second_child
+    perform says with first_child into one
+    perform says with second_child into other
+    if one != other
+        cry "the two compilers do not remember each other the same: one of them carries what is not in the source"
+        goodbye with 1
+    end
+    say "their children say the same of the compiler: the two remember each other the same"
+end

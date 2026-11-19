@@ -1,6 +1,6 @@
-# Tainted reference
+# Amae reference
 
-This is the complete description of Tainted as its compiler builds it. The
+This is the complete description of Amae as its compiler builds it. The
 [tutorial](tutorial.md) teaches the language from the first program on; this
 document is where to look up exactly what a statement does, when a soul waits,
 and how every feeling is counted.
@@ -30,7 +30,7 @@ and how every feeling is counted.
 - [The command line](#the-command-line)
 - [The compiler](#the-compiler)
 - [Constants](#constants)
-- [What Tainted does not have](#what-tainted-does-not-have)
+- [What Amae does not have](#what-amae-does-not-have)
 
 ## Programs and souls
 
@@ -211,7 +211,7 @@ A soul that has never met `S` sees nothing: zeros, `nothing yet`, no scars.
 |---|---|
 | `world e` | the environment variable named `e`, or `""` |
 | `now` | the time, in seconds since 1970, as a decimal |
-| `fate n` | a whole number from 0 to `n − 1`, as chance decides; `TAINTED_FATE` fixes the chance for a run |
+| `fate n` | a whole number from 0 to `n − 1`, as chance decides; `AMAE_FATE` fixes the chance for a run |
 | `lineage` | the compilers that made this program, one line each ([Lineage](#lineage)) |
 | `source` | the source this program was compiled from |
 | `hash of x` | the SHA-256 of `x` as text, in hex |
@@ -492,8 +492,8 @@ so nobody can declare it or work it out from the code. A program's first life
 has none: the first time, nothing stands in the way.
 
 Infrastructure wants the same life every run. A program that starts with the
-line `deterministic`, or runs with `--deterministic` or `TAINTED_DETERMINISTIC`
-set, has no chemistry; Taintednetes and the operators are such programs.
+line `deterministic`, or runs with `--deterministic` or `AMAE_DETERMINISTIC`
+set, has no chemistry; Amaenetes and the operators are such programs.
 
 ### Passion cools
 
@@ -589,13 +589,13 @@ string it heard. A soul that remembered the year 1999 and last heard 47 recalls
 `note k = e` writes `e` down under the key `k`, turned into a string: `note 1`
 and `note "1"` are the same note. Notes never fade, they belong to the soul,
 and rituals performed by the soul share them. Reading a note never written is
-an error. Notes are how a Tainted program keeps tables: `note ("likes " + name)`.
+an error. Notes are how a Amae program keeps tables: `note ("likes " + name)`.
 
 ## Runs
 
-Tainted remembers how many times every program has run. Before a program
+Amae remembers how many times every program has run. Before a program
 starts, it looks up the SHA-256 of the source it was compiled from in
-`~/.tainted/history.json` (or the file named by `TAINTED_HISTORY`), takes the
+`~/.amae/history.json` (or the file named by `AMAE_HISTORY`), takes the
 count it finds as `runs` and writes back one more. Changing the program by a
 single character makes it a new program that has never run.
 
@@ -634,8 +634,8 @@ waiting for silence moves on, together, in the same round. A soul that waits
 for silence while the world still has something to say waits for the world
 first.
 
-This is how a Tainted program knows that a computation spread over many souls
-has settled: the scheduler in `taintednetes.tainted` waits for silence and then
+This is how a Amae program knows that a computation spread over many souls
+has settled: the scheduler in `amaenetes.amae` waits for silence and then
 asks every pod where it lives.
 
 ## Before souls meet
@@ -660,7 +660,7 @@ hear, or both speak first, or one of whom says something the other never
 listens to, cannot get along, and the program does not compile:
 
 ```
-tainted: line 3: a and b cannot get along: here a tells b, but at line 7 b tells a
+amae: line 3: a and b cannot get along: here a tells b, but at line 7 b tells a
 ```
 
 Only what is certain is compared: a soul whose partners the code cannot tell
@@ -765,14 +765,14 @@ is the listener's to endure.
 ## Learning
 
 ```
-learn "kube.tainted"
+learn "kube.amae"
 ```
 
 At the top of a program, outside any soul, `learn` brings in the kinds and
 rituals of another file, as if they were written there. The file is looked
-for next to the program (`TAINTED_DIR`, set by `bin/tc`), then in the library
-(`TAINTED_LIB`, `lib/` by default). A file learned twice is learned once. A
-mistake in a learned file names it: `line 7 of kube.tainted, s: …`. The
+for next to the program (`AMAE_DIR`, set by `bin/tc`), then in the library
+(`AMAE_LIB`, `lib/` by default). A file learned twice is learned once. A
+mistake in a learned file names it: `line 7 of kube.amae, s: …`. The
 learned files are part of the program's source, and so of the history of its
 runs.
 
@@ -787,7 +787,7 @@ runs.
 | 4 | the world ran out of patience ([Constants](#constants)) |
 | 64 | the program was called wrongly |
 
-When everyone is waiting, Tainted laments on standard error:
+When everyone is waiting, Amae laments on standard error:
 
 ```
 the end.
@@ -796,23 +796,23 @@ carol is still waiting for anyone at all
 ```
 
 An error names the line and the soul:
-`tainted: line 7, alice: alice can confide only in someone they gave their heart to`.
+`amae: line 7, alice: alice can confide only in someone they gave their heart to`.
 
 ## The command line
 
 ```
 make                                build the compiler, build/tc-core, from the seed
-bin/tc program.tainted              compile a program to ./program
-bin/tc program.tainted -o path      compile it to path
-bin/tc program.tainted -c           print the C the compiler makes of it
+bin/tc program.amae              compile a program to ./program
+bin/tc program.amae -o path      compile it to path
+bin/tc program.amae -c           print the C the compiler makes of it
 ./program                           run it; the world is its standard input
 ./program --feelings                run it, then print every relationship
 ./program --patience=N              give up after N rounds; 0 never gives up
 ./program --deterministic           no chemistry, the same life every run
 ./program --lineage                 say which compilers made it, and stop
-bin/tc compiler.tainted --give-heart
+bin/tc compiler.amae --give-heart
                                     rebuild the heart of the compiler
-bin/tc compiler.tainted --give-heart --forgive
+bin/tc compiler.amae --give-heart --forgive
                                     rebuild it after a wound
 make ddc                            the seed and the living compiler remember each other
 ```
@@ -824,13 +824,13 @@ alice -> bob: romantic love; trust 3, intimacy 4, passion 3, commitment 0, scars
 ```
 
 A program that does not compile ends the compiler with exit code 1 and the
-reason: `tainted: line 4: expected 'of'`.
+reason: `amae: line 4: expected 'of'`.
 
 ## The compiler
 
-`compiler.tainted` is the compiler. It is a Tainted program: it hears a program
+`compiler.amae` is the compiler. It is a Amae program: it hears a program
 from the world, line by line, and says a C program that, built together with
-`runtime/tainted.c`, lives the same life. `bin/tc` runs the compiler and the C
+`runtime/amae.c`, lives the same life. `bin/tc` runs the compiler and the C
 compiler one after the other.
 
 - Every soul, kind and ritual becomes a unit: a table of its instructions and
@@ -849,7 +849,7 @@ The compiler compiles itself, and has no fixed point. Every generation
 remembers the generations before it and writes their lineage, and its own
 line, into what it makes, so no two generations are the same file. Instead of
 being the same, they recognize each other: given the same programs, they say
-the same thing about every one of them, memory aside. `tools/recognize.tainted`
+the same thing about every one of them, memory aside. `tools/recognize.amae`
 checks this on every recorded program and on the compiler itself.
 
 ```
@@ -858,22 +858,22 @@ make bootstrap       build/tc-core compiles the compiler into generation 2, 2 in
 make seed            the newest generation becomes the seed
 ```
 
-`compiler.tainted` begins with the line `core`: it is the heart of a compiler.
+`compiler.amae` begins with the line `core`: it is the heart of a compiler.
 A compiler rebuilds its own heart only when it gives its heart to itself, with
-`bin/tc compiler.tainted --give-heart` (or `TAINTED_GIVE_HEART`); without it,
+`bin/tc compiler.amae --give-heart` (or `AMAE_GIVE_HEART`); without it,
 it refuses. A new rule of the language is first taught to the compiler in the
 words the previous generation already understands.
 
 ### Scars and forgiveness
 
 When the compiler fails to rebuild its own heart, the failure is a wound it
-remembers, outside any program, in `TAINTED_MEMORY` (by default
-`~/.tainted/compiler.json`). It will not rebuild its heart again until it is
-forgiven: `bin/tc compiler.tainted --give-heart --forgive`. Forgiving does not
+remembers, outside any program, in `AMAE_MEMORY` (by default
+`~/.amae/compiler.json`). It will not rebuild its heart again until it is
+forgiven: `bin/tc compiler.amae --give-heart --forgive`. Forgiving does not
 forget: the wound becomes a scar of the new generation, in its lineage:
 
 ```
-scar of generation 4: tainted: line 20: expected a name, got '(', forgiven
+scar of generation 4: amae: line 20: expected a name, got '(', forgiven
 ```
 
 ### Fading
@@ -881,14 +881,14 @@ scar of generation 4: tainted: line 20: expected a name, got '(', forgiven
 A compiler that is not rebuilt fades. One made more than 90 days ago compiles
 nothing but its own heart, and asks to be rebuilt; `make` always rebuilds the
 compiler from the seed, so a living generation is never older than the last
-`make -B build/tc-core`. `TAINTED_CLOCK` sets the time, for tests.
+`make -B build/tc-core`. `AMAE_CLOCK` sets the time, for tests.
 
 ### Remembering each other
 
 David A. Wheeler's answer to Ken Thompson was to build a compiler's source
 with two different compilers, let each result build the source again, and
 compare. `make ddc` does this with the seed and the living generation:
-`tools/ddc.tainted` has each of them build the compiler, and the two children
+`tools/ddc.amae` has each of them build the compiler, and the two children
 build it once more; if what the children say is the same, memory aside, the two
 compilers remember each other the same, and neither carries anything that is
 not in the source.
@@ -925,7 +925,7 @@ a program, from 51fa19e57b34, made by generation 5
 
 `from` is the beginning of the SHA-256 of the source, `at` the time the
 generation was made. Ken Thompson showed that a compiler can carry, from
-generation to generation, something that is in no source; in Tainted what each
+generation to generation, something that is in no source; in Amae what each
 generation carries is in plain sight. A program reads its own with `lineage`,
 its own source with `source`, and `hash of x` is the SHA-256 of `x` as text.
 
@@ -947,7 +947,7 @@ suite checks this.
 | patience | 10,000,000 rounds | a program that runs longer is stopped, exit 4 |
 | rituals | 10,000 deep | rituals inside rituals |
 
-## What Tainted does not have
+## What Amae does not have
 
 These are absent by design or not yet written; a program has to live without
 them.

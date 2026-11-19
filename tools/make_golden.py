@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Record what every program does, compiled by the Tainted compiler.
+"""Record what every program does, compiled by the Amae compiler.
 
-Each case in tests/golden/<name>/ holds the program (prog.tainted), what the
+Each case in tests/golden/<name>/ holds the program (prog.amae), what the
 world says to it (input, if anything) and, for its first and second run,
 what it printed, what it lamented and how it ended (out0, err0, code0, out1,
 err1, code1). The compiled programs are checked against these.
@@ -125,33 +125,33 @@ PATIENCE = {"rule-patience": 1000}
 def run(prog, given, history, patience=None, cwd=None):
     """Compile the program and run it; a program that does not compile says
     what the compiler said, every time."""
-    binary = prog[:-len(".tainted")]
+    binary = prog[:-len(".amae")]
     if not os.path.exists(binary):
         with open(prog) as f:
             res = subprocess.run([os.path.join(ROOT, "build", "tc-core")], stdin=f,
                                  capture_output=True, text=True,
-                                 env=dict(os.environ, TAINTED_HISTORY=history + ".compiler",
-                                          TAINTED_MEMORY=history + ".memory",
-                                          TAINTED_LIB=os.path.join(ROOT, "lib")))
+                                 env=dict(os.environ, AMAE_HISTORY=history + ".compiler",
+                                          AMAE_MEMORY=history + ".memory",
+                                          AMAE_LIB=os.path.join(ROOT, "lib")))
         if res.returncode:
             return "", res.stderr, str(res.returncode)
         with open(binary + ".c", "w") as f:
             f.write(res.stdout)
         subprocess.run(["cc", "-std=c11", "-D_POSIX_C_SOURCE=200809L", "-D_DEFAULT_SOURCE", "-O1", "-w",
                         "-I" + os.path.join(ROOT, "runtime"), binary + ".c",
-                        os.path.join(ROOT, "runtime", "tainted.c"), "-o", binary, "-lm"], check=True)
+                        os.path.join(ROOT, "runtime", "amae.c"), "-o", binary, "-lm"], check=True)
     args = [binary, "--feelings"]
     if patience:
         args.append(f"--patience={patience}")
     res = subprocess.run(args, input=given, capture_output=True, text=True, cwd=cwd,
-                         env=dict(os.environ, TAINTED_HISTORY=history))
+                         env=dict(os.environ, AMAE_HISTORY=history))
     return res.stdout, res.stderr, str(res.returncode)
 
 
 def add(name, source, given="", patience=None):
     d = os.path.join(GOLDEN, name)
     os.makedirs(d)
-    prog = os.path.join(d, "prog.tainted")
+    prog = os.path.join(d, "prog.amae")
     with open(prog, "w") as f:
         f.write(source)
     if given:
@@ -162,9 +162,9 @@ def add(name, source, given="", patience=None):
             f.write(str(patience))
     with tempfile.TemporaryDirectory() as t:
         history = os.path.join(t, "history.json")
-        shutil.copy(prog, os.path.join(t, "prog.tainted"))
+        shutil.copy(prog, os.path.join(t, "prog.amae"))
         for k in range(2):
-            out, err, code = run(os.path.join(t, "prog.tainted"), given, history, patience, cwd=t)
+            out, err, code = run(os.path.join(t, "prog.amae"), given, history, patience, cwd=t)
             for part, text in (("out", out), ("err", err), ("code", code)):
                 with open(os.path.join(d, f"{part}{k}"), "w") as f:
                     f.write(text)
@@ -173,7 +173,7 @@ def add(name, source, given="", patience=None):
 def snapshot():
     """A cluster as kubectl tells it: nodes, then pods, one JSON line each."""
     def node(name, labels=None, taint=False, extra=None, seats=None):
-        notes = {"taintednetes.io/seats": str(seats)} if seats is not None else {}
+        notes = {"amaenetes.io/seats": str(seats)} if seats is not None else {}
         return {"metadata": {"name": name, "labels": labels or {}, "annotations": notes},
                 "spec": {"taints": [{"key": "role", "effect": "NoSchedule"}] if taint else []},
                 "status": {"allocatable": {"cpu": "2", "memory": "4Gi", "pods": "110", **(extra or {})},
@@ -181,10 +181,10 @@ def snapshot():
 
     def pod(name, node=None, requests=None, likes=None, spec=None):
         c = {"resources": {"requests": requests or {"cpu": "500m", "memory": "64Mi"}}}
-        body = {"schedulerName": "taintednetes", "nodeName": node, "containers": [c], **(spec or {})}
+        body = {"schedulerName": "amaenetes", "nodeName": node, "containers": [c], **(spec or {})}
         return {"metadata": {"name": name, "namespace": "shop",
                              "creationTimestamp": "2026-11-18T10:00:00Z",
-                             "annotations": {"taintednetes.io/likes": likes} if likes else {}},
+                             "annotations": {"amaenetes.io/likes": likes} if likes else {}},
                 "spec": body, "status": {"phase": "Running" if node else "Pending"}}
     zone = {"affinity": {"nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": {
         "nodeSelectorTerms": [{"matchExpressions": [{"key": "zone", "operator": "In", "values": ["west"]}]}]}}}}
@@ -225,8 +225,8 @@ def main():
                            ("examples/feelings", "feelings-"), ("examples/consent", "consent-"),
                            ("examples/styles", "styles-")):
         for name in sorted(os.listdir(os.path.join(ROOT, folder))):
-            if name.endswith(".tainted"):
-                key = prefix + name[:-len(".tainted")]
+            if name.endswith(".amae"):
+                key = prefix + name[:-len(".amae")]
                 with open(os.path.join(ROOT, folder, name)) as f:
                     add(key, f.read(), INPUTS.get(key, ""))
     for key, src in INLINE.items():
@@ -235,22 +235,22 @@ def main():
         blocks = re.findall(r"```(\w*)\n(.*?)```", f.read(), re.S)
     chapter = 0
     for i, (lang, body) in enumerate(blocks):
-        if lang == "tainted":
+        if lang == "amae":
             chapter += 1
             given = blocks[i + 1][1] if blocks[i + 1][0] == "input" else ""
             follows = blocks[i + 2][0] if given else blocks[i + 1][0]
             if follows != "output" or 'learn "' in body:
                 continue        # a file to learn from, or a program that learns
             add(f"tutorial-{chapter:02d}", body, given)
-    with open(os.path.join(ROOT, "taintednetes.tainted")) as f:
+    with open(os.path.join(ROOT, "amaenetes.amae")) as f:
         scheduler = f.read()
     with open(os.path.join(ROOT, "examples", "cluster.txt")) as f:
-        add("taintednetes-example", scheduler, f.read())
+        add("amaenetes-example", scheduler, f.read())
     rng = random.Random(2026)
     for k in range(6):
-        add(f"taintednetes-random-{k}", scheduler, cluster(rng))
-    add("taintednetes-snapshot", scheduler, snapshot())
-    with open(os.path.join(ROOT, "kube", "parting.tainted")) as f:
+        add(f"amaenetes-random-{k}", scheduler, cluster(rng))
+    add("amaenetes-snapshot", scheduler, snapshot())
+    with open(os.path.join(ROOT, "kube", "parting.amae")) as f:
         parting = f.read()
     nodes = ["w1 ready schedulable staying", "w2 ready schedulable leaving"]
     add("parting-drain", parting, ticks(nodes, [

@@ -1,6 +1,6 @@
 > Основная версия этого документа — английская: [tutorial.md](tutorial.md).
 
-# Учимся Tainted
+# Учимся Amae
 
 Этот учебник ведёт от программы, которая печатает одну строку, до оператора,
 который присматривает за кластером Kubernetes. Каждую программу в нём
@@ -11,11 +11,11 @@
 и запускают:
 
 ```
-bin/tc program.tainted
+bin/tc program.amae
 ./program
 ```
 
-Tainted помнит каждую программу, которую когда-либо выполнял (см. [главу 22](#22-во-второй-раз)),
+Amae помнит каждую программу, которую когда-либо выполнял (см. [главу 22](#22-во-второй-раз)),
 поэтому первый запуск программы может отличаться от последующих. Здесь
 показан вывод первых запусков.
 
@@ -46,8 +46,8 @@ Tainted помнит каждую программу, которую когда-
 
 ## 1. Душа
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     say "hello, world"
@@ -69,8 +69,8 @@ hello, world
 
 ## 2. Две души
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     meet bob
@@ -105,8 +105,8 @@ alice heard: hello to you
 
 ## 3. Наедине с собой
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul counter
     let i = 1
@@ -147,7 +147,7 @@ Fizz
 FizzBuzz
 ```
 
-Внутри души Tainted — обычный маленький язык: переменные (`let i = 1`, а
+Внутри души Amae — обычный маленький язык: переменные (`let i = 1`, а
 потом `i = i + 1`), числа и строки (списки и словари — в [главе 13](#13-списки-и-словари)), `if … else … end` и `while … end`.
 `+` склеивает строки, а число, приклеенное к строке, становится текстом.
 Логического типа нет: сравнение даёт `1` или `0`, и с ними работают `and`,
@@ -155,8 +155,8 @@ FizzBuzz
 
 ## 4. Слишком много слов
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul ben
     meet ana
@@ -197,8 +197,8 @@ Ben говорит три фразы подряд, и ana не отвечает 
 
 ## 5. Доверие, обещания и узы
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     meet bob
@@ -253,8 +253,8 @@ Bob ответил трижды и ничего не обещал: это ром
 
 ## 6. Сердце и нож
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul alice
     meet bob
@@ -303,8 +303,8 @@ Alice отдала сердце carol, но не bob. Оба её ранят, и
 
 ## 7. Уход
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul ana
     meet ben
@@ -343,8 +343,8 @@ ana keeps 2 scars:
 
 ## 8. Память выцветает
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul penelope
     let year = 1999
@@ -387,8 +387,8 @@ what she wrote down does not fade: Odysseus
 
 ## 9. Много душ
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 kind worker
     meet anyone as boss
@@ -431,8 +431,8 @@ worker 3: 4 squared is 16
 
 ## 10. Ритуалы
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 ritual gcd a, b
     while b != 0
@@ -475,11 +475,11 @@ gcd: 21
 
 ## 11. Тишина
 
-```tainted
+```amae
 # A rumour passes from soul to soul. Nobody knows how far it went
 # until everyone falls silent.
 
-written by "tainted"
+written by "amae"
 kind gossip
     meet anyone as teller
     hear soul named teller into rumour
@@ -516,15 +516,15 @@ gossip5 heard: the miller is rich!!!!
 считает, далеко ли он ушёл. `wait for silence` ждёт, пока ни одна душа уже
 ничего не сможет сделать, и тогда все, кто ждал тишины, идут дальше вместе.
 
-По тишине Tainted и узнаёт, что вычисление, разошедшееся по многим душам,
-закончено. Так устроен Taintednetes, планировщик, написанный на Tainted: поды
+По тишине Amae и узнаёт, что вычисление, разошедшееся по многим душам,
+закончено. Так устроен Amaenetes, планировщик, написанный на Amae: поды
 и ноды спорят, пока никому больше нечего сказать, и эта тишина и есть
 устойчивое паросочетание.
 
 ## 12. Мир
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul reader
     let heard = 0
@@ -556,8 +556,8 @@ that is
 
 ## 13. Списки и словари
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul librarian
     let shelf = ["Ada", "Oberon"]
@@ -613,8 +613,8 @@ Oberon in 2 copies
 
 ## 14. Вопросы к миру
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul clerk
     ask world "date -u +%Y" into year
@@ -656,8 +656,8 @@ one then two
 
 ## 15. Перетерпеть боль
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 ritual open_door name
     let doors = {"front": "open"}
@@ -698,10 +698,10 @@ and the guest goes on
 
 ## 16. Изучить файл
 
-```tainted
-# words.tainted: a few rituals to learn from.
+```amae
+# words.amae: a few rituals to learn from.
 
-written by "tainted"
+written by "amae"
 ritual shout text
     ask world "tr a-z A-Z" telling text into loud
     give back loud
@@ -718,10 +718,10 @@ ritual initials list
 end
 ```
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
-learn "words.tainted"
+learn "words.amae"
 
 soul poet
     perform shout with "tainted love" into loud
@@ -736,16 +736,16 @@ TAINTED LOVE
 sc
 ```
 
-`learn "words.tainted"` в начале программы приносит в неё роды и ритуалы
+`learn "words.amae"` в начале программы приносит в неё роды и ритуалы
 другого файла, будто они были написаны в самой программе. Файл ищут рядом с
 программой, потом в библиотеке, `lib/`. Файл, изученный дважды, изучается
 один раз, а об ошибке в нём сообщают под его собственным именем:
-`tainted: line 3 of words.tainted: expected 'of'`.
+`amae: line 3 of words.amae: expected 'of'`.
 
 ## 17. Чувства случаются
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul ana
     meet ben
@@ -817,10 +817,10 @@ a letter: from far away
 
 ## 18. Вместе
 
-```tainted
+```amae
 # Two moves together, then one of them withdraws halfway through the second.
 
-written by "tainted"
+written by "amae"
 soul ana
     meet ben
     consent to ben
@@ -874,10 +874,10 @@ ben: I withdrew
 миг, даже на полпути: тогда обе останавливаются там, где были, и переходят к
 `apart`.
 
-```tainted
+```amae
 # Some things anyone trusted may read; some only a heart given lets you near.
 
-written by "tainted"
+written by "amae"
 soul ana
     meet ben
     meet cal
@@ -926,10 +926,10 @@ cal: ana keeps fear behind a boundary cal may not cross
 
 ## 19. Как любят
 
-```tainted
+```amae
 # The same meeting, lived by souls who love in different ways.
 
-written by "tainted"
+written by "amae"
 soul erin is eros
     meet luca
     say "erin at first sight: passion " + passion luca
@@ -1027,7 +1027,7 @@ end
 ```
 
 ```
-tainted: line 3: alice and bob cannot get along: here alice tells bob, but at line 8 bob tells alice
+amae: line 3: alice and bob cannot get along: here alice tells bob, but at line 8 bob tells alice
 ```
 
 Когда две души называют друг друга, компилятор по порядку читает, что каждая
@@ -1046,7 +1046,7 @@ tainted: line 3: alice and bob cannot get along: here alice tells bob, but at li
 
 ## 21. Долгая любовь
 
-```tainted
+```amae
 # A long love: passion is only the spark; love is built, and grows stronger
 # every year.
 #
@@ -1057,7 +1057,7 @@ tainted: line 3: alice and bob cannot get along: here alice tells bob, but at li
 # Mira. In the third year it still hurts, and he apologizes; in the eighth,
 # love is stronger than the hurt. Every year Mira says where they are.
 
-written by "tainted"
+written by "amae"
 
 ritual season of_whom, year
     let who = of_whom
@@ -1166,8 +1166,8 @@ mira and teo, ten years on: consummate love, love
 
 ## 22. Во второй раз
 
-```tainted
-written by "tainted"
+```amae
+written by "amae"
 
 soul stranger
     first time
@@ -1189,7 +1189,7 @@ I have never been here before.
 Runs before this one: 1
 ```
 
-Tainted считает, сколько раз выполнялась каждая программа; `runs` — это число,
+Amae считает, сколько раз выполнялась каждая программа; `runs` — это число,
 а `first time` срабатывает только в первый раз. Счёт привязан к точному тексту
 программы, так что стоит изменить в ней хоть один символ, и это уже программа,
 которая ни разу не запускалась. Порядок, в котором души делают свои шаги,
@@ -1203,11 +1203,11 @@ Tainted считает, сколько раз выполнялась кажда�
 
 ## 23. Оператор
 
-```tainted
+```amae
 # watchman: cordons a node that stops being ready and lets it work again
 # once it is back, but only the nodes it cordoned itself.
 
-written by "tainted"
+written by "amae"
 
 ritual without name, list
     let rest = ""
@@ -1275,17 +1275,17 @@ done
 помнит, какие ноды закрыл сам, чтобы никогда не открыть ту, которую закрыл
 администратор, а чтобы вычеркнуть имя из этого списка, совершает ритуал. Здесь
 он слышит кластер строками — так его проверяют. Чтобы присматривать за
-настоящим кластером, он читает кластер сам: `learn "kube.tainted"` приносит
+настоящим кластером, он читает кластер сам: `learn "kube.amae"` приносит
 ритуалы, которые спрашивают kubectl (в контексте из `KUBE_CONTEXT`) и читают
 его ответ, а `listen to world` на `kubectl get nodes --watch-only` будит
 сторожа всякий раз, когда меняется какая-нибудь нода:
 
-```tainted
-# watchman.tainted: the watchman, looking after a cluster itself.
+```amae
+# watchman.amae: the watchman, looking after a cluster itself.
 
-written by "tainted"
+written by "amae"
 
-learn "kube.tainted"
+learn "kube.amae"
 
 ritual without name, list
     let rest = ""
@@ -1338,12 +1338,12 @@ end
 ```
 
 ```
-bin/tc watchman.tainted && KUBE_CONTEXT=<context> ./watchman --patience=0
+bin/tc watchman.amae && KUBE_CONTEXT=<context> ./watchman --patience=0
 ```
 
 С `--patience=0` он живёт столько же, сколько кластер.
 
-`kube/parting.tainted` — оператор побольше: он бережно отпускает ноду из
+`kube/parting.amae` — оператор побольше: он бережно отпускает ноду из
 кластера, по одному поду за раз, дожидаясь замены каждого.
 
 ## Куда двигаться дальше
@@ -1352,8 +1352,8 @@ bin/tc watchman.tainted && KUBE_CONTEXT=<context> ./watchman --patience=0
   памяти и времени, со всей точностью.
 - `examples/classics`: FizzBuzz, простые числа, сортировка, Ханойские башни,
   обедающие философы и многое другое.
-- `examples/a-life.tainted`: одна программа, в которой каждое правило языка
+- `examples/a-life.amae`: одна программа, в которой каждое правило языка
   меняет ход истории.
-- `taintednetes.tainted` и `kube/parting.tainted`: планировщик и оператор,
-  написанные на Tainted, а в [README](../README.ru.md) рассказано, как
+- `amaenetes.amae` и `kube/parting.amae`: планировщик и оператор,
+  написанные на Amae, а в [README](../README.ru.md) рассказано, как
   запустить их в кластере.

@@ -1,0 +1,1182 @@
+# kube.amae: Kubernetes, as a Amae program sees it.
+#
+#   learn "kube.amae"
+#
+# The cluster is part of the world. A soul asks it through kubectl, with the
+# context named by KUBE_CONTEXT (and the kubectl named by KUBECTL, if not the
+# one on the path), and reads what it says as JSON. Everything else here is
+# counted in Amae: what a pod asks of a node, the way the kubelet counts
+# it; whether it fits there, the way kube-scheduler decides it; what is left.
+#
+# Resources are maps from a resource name to an amount: cpu in thousandths of
+# a core, memory and storage in bytes, everything else (pods, nvidia.com/gpu
+# and every other extended resource) as a whole count.
+
+# ------------------------------------------------------------- the world
+
+ritual kubectl what
+    let tool = world "KUBECTL"
+    if tool == ""
+        tool = "kubectl"
+    end
+    ask world tool + " --context '" + world "KUBE_CONTEXT" + "' " + what into said
+    give back said
+end
+
+ritual kubectl_telling what, body
+    let tool = world "KUBECTL"
+    if tool == ""
+        tool = "kubectl"
+    end
+    ask world tool + " --context '" + world "KUBE_CONTEXT" + "' " + what telling body into said
+    give back said
+end
+
+# The items of a list, such as "pods -A" or "nodes".
+ritual get_all what
+    perform kubectl with "get " + what + " -o json" into said
+    give back (meaning of said)["items"]
+end
+
+# Binding a pod to a node through the binding subresource, which needs no
+# more rights than binding.
+ritual bind namespace, name, node
+    let body = {"apiVersion": "v1", "kind": "Binding", "metadata": {"name": name, "namespace": namespace}, "target": {"apiVersion": "v1", "kind": "Node", "name": node}}
+    perform kubectl_telling with "create --raw /api/v1/namespaces/" + namespace + "/pods/" + name + "/binding -f -", json of body into said
+    give back said
+end
+
+# ---------------------------------------------------------------- fields
+
+# m[k], or `otherwise` when m has no k. JSON null reads as "", which has no
+# fields either.
+ritual field m, k, otherwise
+    if place of k in m > 0
+        if m[k] == ""
+            give back otherwise
+        end
+        give back m[k]
+    end
+    give back otherwise
+end
+
+ritual ends_with text, tail
+    let n = length of text
+    let k = length of tail
+    if k > n or k == 0
+        give back 0
+    end
+    give back part (n - k + 1) n of text == tail
+end
+
+# ------------------------------------------------------------ quantities
+
+ritual cpu_of q
+    let t = "" + q
+    if t == ""
+        give back 0
+    end
+    perform ends_with with t, "m" into milli
+    if milli
+        give back whole of number of part 1 (length of t - 1) of t
+    end
+    give back whole of (number of t * 1000)
+end
+
+ritual bytes_of q
+    let t = "" + q
+    if t == ""
+        give back 0
+    end
+    let units = [["Ki", 1024], ["Mi", 1048576], ["Gi", 1073741824], ["Ti", 1099511627776], ["Pi", 1125899906842624], ["Ei", 1152921504606846976], ["k", 1000], ["M", 1000000], ["G", 1000000000], ["T", 1000000000000], ["P", 1000000000000000], ["E", 1000000000000000000]]
+    let i = 1
+    while i <= length of units
+        perform ends_with with t, units[i][1] into has
+        if has
+            let digits = part 1 (length of t - length of units[i][1]) of t
+            give back whole of (number of digits * units[i][2])
+        end
+        recall t units
+        i = i + 1
+    end
+    give back whole of number of t
+end
+
+ritual amount_of resource, q
+    if resource == "cpu"
+        perform cpu_of with q into n
+        give back n
+    end
+    perform bytes_of with q into n
+    give back n
+end
+
+# A map of quantities as written ("500m", "1Gi") made into amounts.
+ritual amounts quantities
+    let made = {}
+    let names = keys of quantities
+    let i = 1
+    while i <= length of names
+        perform amount_of with names[i], quantities[names[i]] into n
+        made[names[i]] = n
+        recall quantities names made
+        i = i + 1
+    end
+    give back made
+end
+
+# a + b, resource by resource.
+ritual add_up a, b
+    let sum = a
+    let names = keys of b
+    let i = 1
+    while i <= length of names
+        if place of names[i] in sum > 0
+            sum[names[i]] = sum[names[i]] + b[names[i]]
+        else
+            sum[names[i]] = b[names[i]]
+        end
+        recall b names sum
+        i = i + 1
+    end
+    give back sum
+end
+
+# The larger of a and b, resource by resource.
+ritual larger a, b
+    let most = a
+    let names = keys of b
+    let i = 1
+    while i <= length of names
+        if place of names[i] in most == 0
+            most[names[i]] = b[names[i]]
+        else
+            if b[names[i]] > most[names[i]]
+                most[names[i]] = b[names[i]]
+            end
+        end
+        recall b names most
+        i = i + 1
+    end
+    give back most
+end
+
+ritual container_requests c
+    perform field with c, "resources", {} into r
+    perform field with r, "requests", {} into quantities
+    perform amounts with quantities into made
+    give back made
+end
+
+# What the kubelet will hold for a pod, counted the way the kubelet counts
+# it: app containers and sidecars run together, every other init container
+# runs alone next to the sidecars started before it, the pod takes the
+# larger of the two, and the runtime's overhead comes on top. Resources set
+# for the pod as a whole replace the containers' own.
+ritual requests pod
+    let spec = pod["spec"]
+    perform field with spec, "resources", {} into whole_pod
+    perform field with whole_pod, "requests", {} into own
+    if length of own > 0
+        perform amounts with own into held
+    else
+        let side = {}
+        let peak = {}
+        perform field with spec, "initContainers", [] into inits
+        let i = 1
+        while i <= length of inits
+            perform container_requests with inits[i] into r
+            perform field with inits[i], "restartPolicy", "" into policy
+            if policy == "Always"
+                perform add_up with side, r into side
+                perform larger with peak, side into peak
+            else
+                perform add_up with side, r into alone
+                perform larger with peak, alone into peak
+            end
+            recall spec inits side peak
+            i = i + 1
+        end
+        let apps = side
+        perform field with spec, "containers", [] into containers
+        i = 1
+        while i <= length of containers
+            perform container_requests with containers[i] into r
+            perform add_up with apps, r into apps
+            recall spec containers apps peak
+            i = i + 1
+        end
+        perform larger with peak, apps into held
+    end
+    perform field with spec, "overhead", {} into extra
+    perform amounts with extra into extra
+    perform add_up with held, extra into held
+    give back held
+end
+
+# ----------------------------------------------------------------- nodes
+
+ritual ready node
+    perform field with node, "spec", {} into spec
+    perform field with spec, "unschedulable", 0 into cordoned
+    if cordoned
+        give back 0
+    end
+    perform field with node["status"], "conditions", [] into conditions
+    let i = 1
+    while i <= length of conditions
+        if conditions[i]["type"] == "Ready"
+            give back conditions[i]["status"] == "True"
+        end
+        i = i + 1
+    end
+    give back 0
+end
+
+ritual labels_of thing
+    perform field with thing["metadata"], "labels", {} into labels
+    give back labels
+end
+
+ritual annotation thing, k
+    perform field with thing["metadata"], "annotations", {} into notes
+    perform field with notes, k, "" into said
+    give back said
+end
+
+# What a node has left, before anyone else counts what they hold.
+ritual allocatable node
+    perform field with node["status"], "allocatable", {} into quantities
+    perform amounts with quantities into made
+    give back made
+end
+
+# The host ports a pod takes, as "TCP/80" words.
+ritual host_ports pod
+    let taken = ""
+    perform field with pod["spec"], "containers", [] into containers
+    let i = 1
+    while i <= length of containers
+        perform field with containers[i], "ports", [] into ports
+        let j = 1
+        while j <= length of ports
+            perform field with ports[j], "hostPort", 0 into hp
+            if hp != 0
+                perform field with ports[j], "protocol", "TCP" into proto
+                perform field with ports[j], "hostIP", "" into address
+                let port = proto + "/" + hp
+                if address != "" and address != "0.0.0.0"
+                    port = port + "@" + address
+                end
+                taken = taken + " " + port
+            end
+            recall containers ports taken i
+            j = j + 1
+        end
+        recall containers taken
+        i = i + 1
+    end
+    give back taken
+end
+
+# --------------------------------------------------------------- fitting
+
+ritual tolerates tolerations, taint
+    perform field with taint, "effect", "" into effect
+    if effect != "NoSchedule" and effect != "NoExecute"
+        give back 1
+    end
+    perform field with taint, "value", "" into tv
+    let i = 1
+    while i <= length of tolerations
+        let t = tolerations[i]
+        perform field with t, "effect", "" into te
+        perform field with t, "operator", "Equal" into op
+        perform field with t, "key", "" into tk
+        perform field with t, "value", "" into wanted
+        if te == "" or te == effect
+            if op == "Exists"
+                if tk == "" or tk == taint["key"]
+                    give back 1
+                end
+            else
+                if tk == taint["key"] and wanted == tv
+                    give back 1
+                end
+            end
+        end
+        recall tolerations taint effect tv
+        i = i + 1
+    end
+    give back 0
+end
+
+# One requirement of node affinity: {key, operator, values}.
+ritual meets labels, e
+    let k = e["key"]
+    let op = e["operator"]
+    perform field with e, "values", [] into values
+    let has = place of k in labels > 0
+    if op == "In"
+        give back has and place of labels[k] in values > 0
+    end
+    if op == "NotIn"
+        give back not has or place of labels[k] in values == 0
+    end
+    if op == "Exists"
+        give back has
+    end
+    if op == "DoesNotExist"
+        give back not has
+    end
+    if op == "Gt"
+        give back has and number of labels[k] > number of values[1]
+    end
+    if op == "Lt"
+        give back has and number of labels[k] < number of values[1]
+    end
+    give back 0
+end
+
+# A node selector term: every expression on the labels and every field
+# (metadata.name is the only one) must hold. A term with nothing in it
+# selects nothing.
+ritual term_holds node, term
+    perform labels_of with node into labels
+    perform field with term, "matchExpressions", [] into expressions
+    perform field with term, "matchFields", [] into fields
+    if length of expressions + length of fields == 0
+        give back 0
+    end
+    let i = 1
+    while i <= length of expressions
+        perform meets with labels, expressions[i] into ok
+        if not ok
+            give back 0
+        end
+        recall labels expressions fields
+        i = i + 1
+    end
+    let names = {"metadata.name": node["metadata"]["name"]}
+    i = 1
+    while i <= length of fields
+        perform meets with names, fields[i] into ok
+        if not ok
+            give back 0
+        end
+        recall names fields
+        i = i + 1
+    end
+    give back 1
+end
+
+ritual node_affinity pod
+    perform field with pod["spec"], "affinity", {} into affinity
+    perform field with affinity, "nodeAffinity", {} into na
+    give back na
+end
+
+# Required node affinity: one of the terms holds, or there are none.
+ritual affine pod, node
+    perform node_affinity with pod into na
+    perform field with na, "requiredDuringSchedulingIgnoredDuringExecution", {} into required
+    perform field with required, "nodeSelectorTerms", [] into terms
+    if length of required == 0
+        give back 1
+    end
+    let i = 1
+    while i <= length of terms
+        perform term_holds with node, terms[i] into ok
+        if ok
+            give back 1
+        end
+        recall terms node
+        i = i + 1
+    end
+    give back 0
+end
+
+# Preferred node affinity: the weights of the terms that hold.
+ritual leaning pod, node
+    perform node_affinity with pod into na
+    perform field with na, "preferredDuringSchedulingIgnoredDuringExecution", [] into preferred
+    let weight = 0
+    let i = 1
+    while i <= length of preferred
+        perform term_holds with node, preferred[i]["preference"] into ok
+        if ok
+            weight = weight + preferred[i]["weight"]
+        end
+        recall preferred node weight
+        i = i + 1
+    end
+    give back weight
+end
+
+# Whether a pod that holds `wants` fits on a node with `left` free and the
+# host ports `ports` taken. The first reason it does not is given back;
+# "" means it fits.
+ritual unfit pod, node, wants, left, ports
+    if left["pods"] < 1
+        give back "too many pods"
+    end
+    let names = keys of wants
+    let i = 1
+    while i <= length of names
+        if wants[names[i]] > 0
+            if place of names[i] in left == 0
+                give back "no " + names[i]
+            end
+            if wants[names[i]] > left[names[i]]
+                give back "not enough " + names[i]
+            end
+        end
+        recall wants left names
+        i = i + 1
+    end
+    perform labels_of with node into labels
+    perform field with pod["spec"], "nodeSelector", {} into selector
+    names = keys of selector
+    i = 1
+    while i <= length of names
+        if place of names[i] in labels == 0
+            give back "node selector"
+        end
+        if labels[names[i]] != selector[names[i]]
+            give back "node selector"
+        end
+        recall labels selector names
+        i = i + 1
+    end
+    perform affine with pod, node into ok
+    if not ok
+        give back "node affinity"
+    end
+    perform field with pod["spec"], "tolerations", [] into tolerations
+    perform field with node["spec"], "taints", [] into taints
+    i = 1
+    while i <= length of taints
+        perform tolerates with tolerations, taints[i] into ok
+        if not ok
+            give back "taint " + taints[i]["key"]
+        end
+        recall tolerations taints
+        i = i + 1
+    end
+    perform host_ports with pod into mine
+    i = 1
+    while i <= words of mine
+        perform port_clash with word i of mine, ports into clash
+        if clash != ""
+            give back "host port " + word i of mine
+        end
+        recall mine ports
+        i = i + 1
+    end
+    give back ""
+end
+
+# A host port is written PROTOCOL/NUMBER, with @ADDRESS when it listens on
+# one address only. The port among `taken` that `port` cannot share a node
+# with, or "": the same protocol and number, on the same address or with
+# one of the two listening on every address.
+ritual port_clash port, taken
+    perform port_base with port into mine
+    let i = 1
+    while i <= words of taken
+        let other = word i of taken
+        perform port_base with other into theirs
+        if theirs == mine
+            if other == port or other == theirs or port == mine
+                give back other
+            end
+        end
+        recall port taken mine
+        i = i + 1
+    end
+    give back ""
+end
+
+ritual port_base port
+    let i = 1
+    while i <= length of port
+        if port[i] == "@"
+            give back part 1 (i - 1) of port
+        end
+        i = i + 1
+    end
+    give back port
+end
+
+# ----------------------------------------------------------------- order
+
+# Whether the key a comes before the key b: lists compared item by item,
+# each pair numbers or strings.
+ritual earlier a, b
+    let i = 1
+    while i <= length of a
+        if a[i] < b[i]
+            give back 1
+        end
+        if a[i] > b[i]
+            give back 0
+        end
+        i = i + 1
+    end
+    give back 0
+end
+
+# The items in the order of their keys; keys[i] is the key of items[i].
+ritual sorted items, keys_
+    let order = []
+    let order_keys = []
+    let i = 1
+    while i <= length of items
+        let j = length of order + 1
+        let at = 1
+        let found = 0
+        while at <= length of order and not found
+            perform earlier with keys_[i], order_keys[at] into goes
+            if goes
+                j = at
+                found = 1
+            end
+            recall items keys_ order order_keys i j found
+            at = at + 1
+        end
+        let left = []
+        let left_keys = []
+        let k = 1
+        while k <= length of order
+            if k == j
+                put items[i] into left
+                put keys_[i] into left_keys
+            end
+            put order[k] into left
+            put order_keys[k] into left_keys
+            recall items keys_ order order_keys i j left left_keys
+            k = k + 1
+        end
+        if j > length of order
+            put items[i] into left
+            put keys_[i] into left_keys
+        end
+        order = left
+        order_keys = left_keys
+        recall items keys_
+        i = i + 1
+    end
+    give back order
+end
+
+# What is left of `left` once `r` is held there, and one pod fewer.
+ritual take_away left, r
+    let rest = left
+    let names = keys of r
+    let i = 1
+    while i <= length of names
+        if place of names[i] in rest > 0
+            rest[names[i]] = rest[names[i]] - r[names[i]]
+        else
+            rest[names[i]] = 0 - r[names[i]]
+        end
+        recall r names rest
+        i = i + 1
+    end
+    if place of "pods" in rest > 0
+        rest["pods"] = rest["pods"] - 1
+    end
+    give back rest
+end
+
+# The words of a line, each with `tail` added.
+ritual each_with line, tail
+    let made = ""
+    let i = 1
+    while i <= words of line
+        made = made + " " + word i of line + tail
+        i = i + 1
+    end
+    give back made
+end
+
+# "namespace/name" as [namespace, name].
+ritual namespaced full
+    let i = 1
+    while i <= length of full
+        if full[i] == "/"
+            give back [part 1 (i - 1) of full, part (i + 1) (length of full) of full]
+        end
+        i = i + 1
+    end
+    give back ["", full]
+end
+
+# Evicting a pod, "ns/name", through the eviction subresource: a disruption
+# budget may refuse it.
+ritual evict pod
+    perform namespaced with pod into both
+    let ns = both[1]
+    let name = both[2]
+    let body = {"apiVersion": "policy/v1", "kind": "Eviction", "metadata": {"name": name, "namespace": ns}}
+    perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/pods/" + name + "/eviction -f -", json of body into said
+    give back said
+end
+
+# ------------------------------------------------------------------ time
+
+# A time as the API writes it, 2026-11-18T10:20:30Z (a fraction of a second
+# may follow), in whole seconds since 1970.
+ritual seconds_of stamp
+    let y = number of (part 1 4 of stamp)
+    let m = number of (part 6 7 of stamp)
+    let d = number of (part 9 10 of stamp)
+    if m <= 2
+        y = y - 1
+    end
+    let era = y / 400
+    let yoe = y - era * 400
+    let shift = 9
+    if m > 2
+        shift = 0 - 3
+    end
+    let doy = (153 * (m + shift) + 2) / 5 + d - 1
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
+    let days = era * 146097 + doe - 719468
+    let hours = number of (part 12 13 of stamp)
+    let minutes = number of (part 15 16 of stamp)
+    let rest = number of (part 18 19 of stamp)
+    give back days * 86400 + hours * 3600 + minutes * 60 + rest
+end
+
+# Seconds since 1970 as the API writes a time.
+ritual stamp_of at
+    let s = whole of at
+    let z = s / 86400
+    let rest = s - z * 86400
+    z = z + 719468
+    let era = z / 146097
+    let doe = z - era * 146097
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365
+    let y = yoe + era * 400
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100)
+    let mp = (5 * doy + 2) / 153
+    let d = doy - (153 * mp + 2) / 5 + 1
+    let m = mp + 3
+    if mp >= 10
+        m = mp - 9
+    end
+    if m <= 2
+        y = y + 1
+    end
+    perform two_digits with m into mm
+    perform two_digits with d into dd
+    perform two_digits with rest / 3600 into hh
+    perform two_digits with rest % 3600 / 60 into mi
+    perform two_digits with rest % 60 into ss
+    give back "" + y + "-" + mm + "-" + dd + "T" + hh + ":" + mi + ":" + ss + "Z"
+end
+
+ritual two_digits n
+    if n < 10
+        give back "0" + n
+    end
+    give back "" + n
+end
+
+# ---------------------------------------------------- events and leases
+
+# Telling what happened to a pod as an Event, where kubectl describe and
+# kubectl get events show it. `kind_` is "Normal" or "Warning".
+ritual tell_event pod, kind_, reason, message, component
+    let at = now
+    perform stamp_of with at into stamp
+    let ns = pod["metadata"]["namespace"]
+    let name = pod["metadata"]["name"]
+    perform field with pod["metadata"], "uid", "" into uid
+    let involved = {"apiVersion": "v1", "kind": "Pod", "namespace": ns, "name": name, "uid": uid}
+    let body = {"apiVersion": "v1", "kind": "Event", "metadata": {"name": name + "." + whole of (at * 1000000), "namespace": ns}, "involvedObject": involved, "reason": reason, "message": message, "type": kind_, "source": {"component": component}, "reportingComponent": component, "firstTimestamp": stamp, "lastTimestamp": stamp, "count": 1}
+    perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/events -f -", json of body into said
+    give back said
+end
+
+# The lease `name` in namespace `ns`, held the way the controllers of a
+# cluster agree which of them leads: the one named in it leads while it
+# keeps renewing it, and anyone may take it once nobody has renewed it for
+# as many seconds as it says. `who` renews it or takes it if it can, and
+# learns who holds it now: itself, someone else, or nobody ("") when the
+# cluster could not be asked. Two who try at once cannot both win: the
+# lease is written back with the version that was read.
+ritual hold_lease ns, name, who, span
+    let at = whole of now
+    perform stamp_of with at into stamp
+    let micro = part 1 19 of stamp + ".000000Z"
+    let where = "/apis/coordination.k8s.io/v1/namespaces/" + ns + "/leases"
+    perform kubectl with "-n " + ns + " get leases.coordination.k8s.io " + name + " --ignore-not-found -o json" into said
+    if words of said == 0
+        let made = {"apiVersion": "coordination.k8s.io/v1", "kind": "Lease", "metadata": {"name": name, "namespace": ns}, "spec": {"holderIdentity": who, "leaseDurationSeconds": span, "acquireTime": micro, "renewTime": micro, "leaseTransitions": 0}}
+        perform kubectl_telling with "create --raw " + where + " -f -", json of made into done
+        give back who
+    end
+    let lease = meaning of said
+    let spec = lease["spec"]
+    perform field with spec, "holderIdentity", "" into holder
+    perform field with spec, "renewTime", "" into renewed
+    perform field with spec, "leaseDurationSeconds", span into lasts
+    if holder != who and holder != "" and renewed != ""
+        perform seconds_of with renewed into last
+        if last + lasts >= at
+            give back holder
+        end
+    end
+    if holder != who
+        perform field with spec, "leaseTransitions", 0 into transitions
+        spec["leaseTransitions"] = transitions + 1
+        spec["acquireTime"] = micro
+    end
+    spec["holderIdentity"] = who
+    spec["renewTime"] = micro
+    spec["leaseDurationSeconds"] = span
+    lease["spec"] = spec
+    perform kubectl_telling with "replace --raw " + where + "/" + name + " -f -", json of lease into done
+    give back who
+end
+
+# Promising a pod the node it waits for, in its status, as kube-scheduler
+# does while the pods it displaced are leaving.
+ritual nominate pod, node
+    let body = {"status": {"nominatedNodeName": node}}
+    perform kubectl_telling with "-n " + pod["metadata"]["namespace"] + " patch pod " + pod["metadata"]["name"] + " --subresource=status --type=merge --patch-file=/dev/stdin", json of body into said
+    give back said
+end
+
+# ------------------------------------------------------ pods among pods
+#
+# Where a pod may live can depend on who already lives near it: pod
+# affinity (it wants to be near pods of some kind), pod anti-affinity (it
+# wants to be far from them, or they from it) and topology spread (pods of
+# a kind spread over zones, nodes, racks). Who lives where is `around`:
+#   {"placed": [{"pod": pod, "node": name}, ...],
+#    "guarded": the placed whose required anti-affinity keeps others away,
+#    "machines": {name: node}, "spaces": {namespace: labels}}
+# "Near" is the topology domain: nodes with the same value of the term's
+# topologyKey label.
+
+# Whether a label selector selects these labels. No selector selects
+# nothing; an empty one selects everything.
+ritual selects selector, labels
+    if selector == ""
+        give back 0
+    end
+    perform field with selector, "matchLabels", {} into wanted
+    let names = keys of wanted
+    let i = 1
+    while i <= length of names
+        if place of names[i] in labels == 0
+            give back 0
+        end
+        if labels[names[i]] != wanted[names[i]]
+            give back 0
+        end
+        recall selector labels wanted names
+        i = i + 1
+    end
+    perform field with selector, "matchExpressions", [] into asked
+    i = 1
+    while i <= length of asked
+        perform meets with labels, asked[i] into ok
+        if not ok
+            give back 0
+        end
+        recall labels asked
+        i = i + 1
+    end
+    give back 1
+end
+
+# Whether a term written in namespace `home` looks at pods of namespace
+# `ns`: its own namespace unless it names others or selects them.
+ritual covers term, home, ns, spaces
+    perform field with term, "namespaces", [] into listed
+    let chooser = ""
+    if place of "namespaceSelector" in term > 0
+        chooser = term["namespaceSelector"]
+    end
+    if length of listed == 0 and chooser == ""
+        give back ns == home
+    end
+    if place of ns in listed > 0
+        give back 1
+    end
+    if chooser == ""
+        give back 0
+    end
+    let labels = {"kubernetes.io/metadata.name": ns}
+    if place of ns in spaces > 0
+        labels = spaces[ns]
+    end
+    perform selects with chooser, labels into ok
+    give back ok
+end
+
+# Whether the term of a pod in namespace `home` is about pod `q`.
+ritual about term, home, q, spaces
+    perform covers with term, home, q["metadata"]["namespace"], spaces into near
+    if not near
+        give back 0
+    end
+    let chooser = ""
+    if place of "labelSelector" in term > 0
+        chooser = term["labelSelector"]
+    end
+    perform labels_of with q into labels
+    perform selects with chooser, labels into ok
+    give back ok
+end
+
+# The value of label `k` on a node, or "" if it has none.
+ritual domain_of node, k
+    perform labels_of with node into labels
+    if place of k in labels == 0
+        give back ""
+    end
+    give back labels[k]
+end
+
+# The pod affinity or anti-affinity terms of a pod: `which` is
+# "podAffinity" or "podAntiAffinity", `how` "required" or "preferred".
+ritual pod_terms pod, which, how
+    perform field with pod["spec"], "affinity", {} into affinity
+    perform field with affinity, which, {} into side
+    perform field with side, how + "DuringSchedulingIgnoredDuringExecution", [] into terms
+    give back terms
+end
+
+# How many pods of `around` the term is about, in the domain `d` of its
+# topology key (or anywhere, if `d` is "*").
+ritual near_count term, home, d, around
+    let placed = around["placed"]
+    let k = term["topologyKey"]
+    let n = 0
+    let i = 1
+    while i <= length of placed
+        perform domain_of with around["machines"][placed[i]["node"]], k into theirs
+        if theirs != "" and (d == "*" or theirs == d)
+            perform about with term, home, placed[i]["pod"], around["spaces"] into ok
+            if ok
+                n = n + 1
+            end
+        end
+        recall placed k n term home d around
+        i = i + 1
+    end
+    give back n
+end
+
+# Why `pod` may not live on `node` because of the pods around it, or "".
+ritual crowded pod, node, around
+    let home = pod["metadata"]["namespace"]
+    perform labels_of with pod into mine
+    perform pod_terms with pod, "podAffinity", "required" into wanted
+    let i = 1
+    while i <= length of wanted
+        let term = wanted[i]
+        perform domain_of with node, term["topologyKey"] into d
+        if d == ""
+            give back "pod affinity"
+        end
+        perform near_count with term, home, d, around into here
+        if here == 0
+            # The first of a kind may live anywhere its own term is about it.
+            perform near_count with term, home, "*", around into anywhere
+            perform about with term, home, pod, around["spaces"] into itself
+            if anywhere > 0 or not itself
+                give back "pod affinity"
+            end
+        end
+        recall wanted home mine node around pod
+        i = i + 1
+    end
+    perform pod_terms with pod, "podAntiAffinity", "required" into shunned
+    i = 1
+    while i <= length of shunned
+        let term = shunned[i]
+        perform domain_of with node, term["topologyKey"] into d
+        if d != ""
+            perform near_count with term, home, d, around into here
+            if here > 0
+                give back "pod anti-affinity"
+            end
+        end
+        recall shunned home mine node around pod
+        i = i + 1
+    end
+    # Those already there who do not want this pod near them.
+    let placed = around["guarded"]
+    i = 1
+    while i <= length of placed
+        let q = placed[i]["pod"]
+        perform pod_terms with q, "podAntiAffinity", "required" into theirs
+        let j = 1
+        while j <= length of theirs
+            let term = theirs[j]
+            perform domain_of with node, term["topologyKey"] into d
+            perform domain_of with around["machines"][placed[i]["node"]], term["topologyKey"] into qd
+            if d != "" and d == qd
+                perform about with term, q["metadata"]["namespace"], pod, around["spaces"] into ok
+                if ok
+                    give back "pod anti-affinity of " + q["metadata"]["namespace"] + "/" + q["metadata"]["name"]
+                end
+            end
+            recall theirs placed q i home node around pod
+            j = j + 1
+        end
+        recall placed home node around pod
+        i = i + 1
+    end
+    perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
+    i = 1
+    while i <= length of spreads
+        let c = spreads[i]
+        perform field with c, "whenUnsatisfiable", "DoNotSchedule" into hard
+        if hard == "DoNotSchedule"
+            perform skew with pod, node, c, around into over
+            if over > c["maxSkew"]
+                give back "topology spread"
+            end
+        end
+        recall spreads node around pod
+        i = i + 1
+    end
+    give back ""
+end
+
+# How uneven the pods a spread constraint is about would be if `pod` lived
+# on `node`: the pods in the node's domain, with this one, less the fewest
+# in any domain. Domains are those of the nodes that carry the key and that
+# the pod's node selector and required node affinity allow; a node without
+# the key cannot take the pod at all (a skew too large to bear).
+ritual skew pod, node, c, around
+    let k = c["topologyKey"]
+    perform domain_of with node, k into d
+    if d == ""
+        give back c["maxSkew"] + 1
+    end
+    let chooser = ""
+    if place of "labelSelector" in c > 0
+        chooser = c["labelSelector"]
+    end
+    let home = pod["metadata"]["namespace"]
+    let counts = {}
+    let names = keys of around["machines"]
+    let i = 1
+    while i <= length of names
+        let m = around["machines"][names[i]]
+        perform domain_of with m, k into md
+        perform allows with pod, m into ok
+        if md != "" and ok
+            counts[md] = 0
+        end
+        recall names counts k around pod home chooser d
+        i = i + 1
+    end
+    if place of d in counts == 0
+        counts[d] = 0
+    end
+    let placed = around["placed"]
+    i = 1
+    while i <= length of placed
+        let q = placed[i]["pod"]
+        if q["metadata"]["namespace"] == home
+            perform domain_of with around["machines"][placed[i]["node"]], k into qd
+            if place of qd in counts > 0
+                perform labels_of with q into ql
+                perform selects with chooser, ql into ok
+                if ok
+                    counts[qd] = counts[qd] + 1
+                end
+            end
+        end
+        recall placed counts k around pod home chooser d
+        i = i + 1
+    end
+    let doms = keys of counts
+    let fewest = counts[doms[1]]
+    i = 1
+    while i <= length of doms
+        if counts[doms[i]] < fewest
+            fewest = counts[doms[i]]
+        end
+        recall doms counts fewest
+        i = i + 1
+    end
+    perform labels_of with pod into mine
+    perform selects with chooser, mine into itself
+    give back counts[d] + itself - fewest
+end
+
+# Whether the node selector and the required node affinity of a pod let it
+# live on a node.
+ritual allows pod, node
+    perform labels_of with node into labels
+    perform field with pod["spec"], "nodeSelector", {} into selector
+    let names = keys of selector
+    let i = 1
+    while i <= length of names
+        if place of names[i] in labels == 0
+            give back 0
+        end
+        if labels[names[i]] != selector[names[i]]
+            give back 0
+        end
+        recall labels selector names
+        i = i + 1
+    end
+    perform affine with pod, node into ok
+    give back ok
+end
+
+# How much a pod leans to a node because of the pods around it: the weights
+# of its preferred pod affinity terms met there, less those of its preferred
+# anti-affinity terms, less how uneven its ScheduleAnyway spreads would be.
+ritual drawn pod, node, around
+    let home = pod["metadata"]["namespace"]
+    let pull = 0
+    perform pod_terms with pod, "podAffinity", "preferred" into liked
+    let i = 1
+    while i <= length of liked
+        let term = liked[i]["podAffinityTerm"]
+        perform domain_of with node, term["topologyKey"] into d
+        if d != ""
+            perform near_count with term, home, d, around into here
+            if here > 0
+                pull = pull + liked[i]["weight"]
+            end
+        end
+        recall liked pull home node around pod
+        i = i + 1
+    end
+    perform pod_terms with pod, "podAntiAffinity", "preferred" into avoided
+    i = 1
+    while i <= length of avoided
+        let term = avoided[i]["podAffinityTerm"]
+        perform domain_of with node, term["topologyKey"] into d
+        if d != ""
+            perform near_count with term, home, d, around into here
+            if here > 0
+                pull = pull - avoided[i]["weight"]
+            end
+        end
+        recall avoided pull home node around pod
+        i = i + 1
+    end
+    perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
+    i = 1
+    while i <= length of spreads
+        perform field with spreads[i], "whenUnsatisfiable", "DoNotSchedule" into hard
+        if hard == "ScheduleAnyway"
+            perform skew with pod, node, spreads[i], around into over
+            pull = pull - over
+        end
+        recall spreads pull node around pod
+        i = i + 1
+    end
+    give back pull
+end
+
+# Whether a pod's place depends on the pods around it at all.
+ritual sociable pod
+    perform field with pod["spec"], "affinity", {} into affinity
+    perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
+    give back place of "podAffinity" in affinity > 0 or place of "podAntiAffinity" in affinity > 0 or length of spreads > 0
+end
+
+# ------------------------------------------------------------ partners
+
+# Letters a name can have, in both cases.
+ritual lowered text
+    let upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    let lower = "abcdefghijklmnopqrstuvwxyz"
+    let made = ""
+    let i = 1
+    while i <= length of text
+        let c = text[i]
+        let j = 1
+        while j <= 26
+            if c == upper[j]
+                c = lower[j]
+            end
+            recall c made i text upper lower
+            j = j + 1
+        end
+        made = made + c
+        recall text made upper lower
+        i = i + 1
+    end
+    give back made
+end
+
+# Who a pod belongs to, the workload that brings it back: its controller,
+# with a ReplicaSet seen through to its Deployment; a bare pod is its own.
+ritual partner_of pod
+    perform field with pod["metadata"], "ownerReferences", [] into owners
+    if length of owners == 0
+        give back {"kind": "Pod", "name": pod["metadata"]["name"]}
+    end
+    let owner = owners[1]
+    let i = 1
+    while i <= length of owners
+        perform field with owners[i], "controller", 0 into leads
+        if leads
+            owner = owners[i]
+        end
+        i = i + 1
+    end
+    if owner["kind"] == "ReplicaSet"
+        perform labels_of with pod into labels
+        if place of "pod-template-hash" in labels > 0
+            let tail = "-" + labels["pod-template-hash"]
+            perform ends_with with owner["name"], tail into ok
+            if ok
+                give back {"kind": "Deployment", "name": part 1 (length of owner["name"] - length of tail) of owner["name"]}
+            end
+        end
+    end
+    give back {"kind": owner["kind"], "name": owner["name"]}
+end
+
+# How many times the containers of a pod have restarted, and whether the
+# last end of one of them was for memory.
+ritual restarts_of pod
+    perform field with pod["status"], "containerStatuses", [] into statuses
+    let n = 0
+    let oom = 0
+    let i = 1
+    while i <= length of statuses
+        perform field with statuses[i], "restartCount", 0 into r
+        n = n + r
+        perform field with statuses[i], "lastState", {} into last
+        perform field with last, "terminated", {} into ended
+        perform field with ended, "reason", "" into why
+        if why == "OOMKilled"
+            oom = 1
+        end
+        recall statuses n oom
+        i = i + 1
+    end
+    give back {"restarts": n, "oom": oom}
+end
+
+# Whether the condition `kind_` of a thing is true.
+ritual condition_of thing, kind_
+    perform field with thing["status"], "conditions", [] into conditions
+    let i = 1
+    while i <= length of conditions
+        if conditions[i]["type"] == kind_
+            give back conditions[i]["status"] == "True"
+        end
+        recall conditions kind_
+        i = i + 1
+    end
+    give back 0
+end

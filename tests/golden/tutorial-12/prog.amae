@@ -1,0 +1,15 @@
+written by "amae"
+
+soul reader
+    let heard = 0
+    let longest = ""
+    hear world into line
+    while line != 0
+        heard = heard + 1
+        if length of line > length of longest
+            longest = line
+        end
+        hear world into line
+    end
+    say heard + " lines; the longest: " + longest
+end
