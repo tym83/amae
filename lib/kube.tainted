@@ -757,6 +757,7 @@ end
 # wants to be far from them, or they from it) and topology spread (pods of
 # a kind spread over zones, nodes, racks). Who lives where is `around`:
 #   {"placed": [{"pod": pod, "node": name}, ...],
+#    "guarded": the placed whose required anti-affinity keeps others away,
 #    "machines": {name: node}, "spaces": {namespace: labels}}
 # "Near" is the topology domain: nodes with the same value of the term's
 # topologyKey label.
@@ -911,7 +912,7 @@ ritual crowded pod, node, around
         i = i + 1
     end
     # Those already there who do not want this pod near them.
-    let placed = around["placed"]
+    let placed = around["guarded"]
     i = 1
     while i <= length of placed
         let q = placed[i]["pod"]
