@@ -272,6 +272,10 @@ rules:
   - apiGroups: [tainted.io]
     resources: [relationships]
     verbs: [get, list, create, update]
+  # Divorce: a pod parts from its node by eviction, and is told why.
+  - apiGroups: [""]
+    resources: [pods/eviction, events]
+    verbs: [create]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -305,6 +309,7 @@ spec:
             - {name: KUBECONFIG, value: /etc/taintednetes/config}
             - {name: KUBE_CONTEXT, value: in-cluster}
             - {name: COUNSEL_INTERVAL, value: "10"}
+            - {name: COUNSEL_DIVORCE, value: "1"}
             - {name: HOME, value: /tmp}
           volumeMounts:
             - {name: kubeconfig, mountPath: /etc/taintednetes}

@@ -253,6 +253,15 @@ where it was.
 kubectl --context <ctx> get relationships -A
 ```
 
+With `COUNSEL_DIVORCE=1` counsel is also a descheduler. It divorces a pod from
+its node by eviction, at most once a minute and only a pod whose workload
+brings it back, in two cases: when their relationship is failing (with three
+scars or more) and the pod could live on a node it is not failing with, and
+when the pod and another node would both rather be together, the unstable pair
+of Gale and Shapley: the pod likes that node better, fits there, and the node
+has a seat for it. The scheduler, trusting nodes by the same relationships,
+finds the workload's next pod a better home.
+
 ## The compiler written in Tainted
 
 `compiler.tainted` is the compiler, and it is the only implementation of the

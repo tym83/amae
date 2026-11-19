@@ -1362,6 +1362,14 @@ elif args[:2] == ["get", "pods"]:
     print(json.dumps({"items": state["pods"]}))
 elif args[:2] == ["get", "relationships.tainted.io"]:
     print(json.dumps({"items": list(state["relationships"].values())}))
+elif args[:2] == ["create", "--raw"] and args[2].endswith("/eviction"):
+    body = json.load(sys.stdin)
+    state["pods"] = [p for p in state["pods"] if p["metadata"]["name"] != body["metadata"]["name"]]
+    state.setdefault("evicted", []).append(body["metadata"]["name"])
+    save()
+elif args[:2] == ["create", "--raw"] and args[2].endswith("/events"):
+    state.setdefault("events", []).append(json.load(sys.stdin))
+    save()
 elif args[:2] == ["create", "--raw"]:
     body = json.load(sys.stdin)
     key = body["metadata"]["namespace"] + "/" + body["metadata"]["name"]
@@ -1385,22 +1393,26 @@ else:
 
 
 def counselled_pod(name, node, restarts=0, oom=False, ready=True, phase="Running", reason=None,
-                   owner=("ReplicaSet", "web-5d9f"), hash_="5d9f"):
+                   owner=("ReplicaSet", "web-5d9f"), hash_="5d9f", likes=None):
     status = {"phase": phase, "conditions": [{"type": "Ready", "status": "True" if ready else "False"}],
               "containerStatuses": [{"restartCount": restarts,
                                      "lastState": {"terminated": {"reason": "OOMKilled"}} if oom else {}}]}
     if reason:
         status["reason"] = reason
-    meta = {"name": name, "namespace": "shop", "labels": {"pod-template-hash": hash_}}
+    meta = {"name": name, "namespace": "shop", "labels": {"pod-template-hash": hash_}, "annotations": {}}
+    if likes:
+        meta["annotations"][LIKES] = likes
     if owner:
         meta["ownerReferences"] = [{"kind": owner[0], "name": owner[1], "controller": True}]
-    return {"metadata": meta, "spec": {"schedulerName": "taintednetes", "nodeName": node}, "status": status}
+    return {"metadata": meta, "spec": {"schedulerName": "taintednetes", "nodeName": node,
+                                       "containers": [{"resources": {"requests": {"cpu": "100m"}}}]},
+            "status": status}
 
 
 class LiveCounsel(unittest.TestCase):
     """counsel keeping Relationship objects, through a kubectl that only imagines a cluster."""
 
-    def counsel(self, d, looks=1):
+    def counsel(self, d, looks=1, divorce=False):
         with open(os.path.join(ROOT, "kube", "counsel.tainted")) as f:
             source = f.read()
         fake = os.path.join(d, "kubectl")
@@ -1409,7 +1421,8 @@ class LiveCounsel(unittest.TestCase):
         os.chmod(fake, 0o755)
         return run(source, flags=("--patience=0",),
                    env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": os.path.join(d, "state.json"),
-                        "COUNSEL_INTERVAL": "0", "COUNSEL_LOOKS": str(looks)})
+                        "COUNSEL_INTERVAL": "0", "COUNSEL_LOOKS": str(looks),
+                        **({"COUNSEL_DIVORCE": "1", "COUNSEL_DIVORCE_EVERY": "1"} if divorce else {})})
 
     def state(self, d, **set_):
         path = os.path.join(d, "state.json")
@@ -1446,6 +1459,57 @@ class LiveCounsel(unittest.TestCase):
             self.assertIn("shop/deployment-web.n1 is at risk", " ".join(life.lines))
             life = self.counsel(d)
             self.assertEqual(self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]["scars"], 2)
+
+    @staticmethod
+    def roomy(name, seats=None):
+        node = fake_node(name, seats=seats)
+        return node
+
+    def failing(self, node, scars=5):
+        return {"apiVersion": "tainted.io/v1", "kind": "Relationship",
+                "metadata": {"namespace": "shop", "name": f"deployment-web.{node}", "resourceVersion": "1"},
+                "spec": {"partner": {"kind": "Deployment", "name": "web"}, "node": node},
+                "status": {"positive": 0, "criticism": 10, "scars": scars, "health": "failing"}}
+
+    def test_a_failing_relationship_ends_in_divorce(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, nodes=[self.roomy("n1"), self.roomy("n2")],
+                       pods=[counselled_pod("web-5d9f-a", "n1")],
+                       relationships={"shop/deployment-web.n1": self.failing("n1")})
+            life = self.counsel(d, divorce=True)
+            self.assertEqual(life.code, 0, life.err)
+            st = self.state(d)
+            self.assertEqual(st["evicted"], ["web-5d9f-a"])
+            self.assertIn("shop/web-5d9f-a parts from n1: their relationship is failing (5 scars)", life.lines)
+            (event,) = st["events"]
+            self.assertEqual((event["reason"], event["source"]["component"]), ("Divorced", "counsel"))
+
+    def test_no_divorce_without_somewhere_better_or_without_an_owner(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, nodes=[self.roomy("n1")],
+                       pods=[counselled_pod("web-5d9f-a", "n1"), counselled_pod("solo", "n1", owner=None)],
+                       relationships={"shop/deployment-web.n1": self.failing("n1"),
+                                      "shop/pod-solo.n1": {**self.failing("n1"), "metadata": {
+                                          "namespace": "shop", "name": "pod-solo.n1", "resourceVersion": "1"},
+                                          "spec": {"partner": {"kind": "Pod", "name": "solo"}, "node": "n1"}}})
+            life = self.counsel(d, divorce=True)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("evicted", self.state(d))
+
+    def test_an_unstable_pair_parts(self):
+        """The pod likes n2 better and n2 has a seat: both would rather be
+        together, so the pod parts from n1. Without a seat it stays."""
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, nodes=[self.roomy("n1"), self.roomy("n2", seats=0)],
+                       pods=[counselled_pod("web-5d9f-a", "n1", likes="n2 n1")])
+            life = self.counsel(d, divorce=True)
+            self.assertNotIn("evicted", self.state(d))
+            self.state(d, nodes=[self.roomy("n1"), self.roomy("n2", seats=1)])
+            life = self.counsel(d, divorce=True)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(self.state(d)["evicted"], ["web-5d9f-a"])
+            self.assertIn("shop/web-5d9f-a parts from n1: it would rather live on n2, and n2 has a seat for it",
+                          life.lines)
 
     def test_gottman_ratio(self):
         with tempfile.TemporaryDirectory() as d:

@@ -17,6 +17,17 @@
 # with more negative moments than positive ones is failing. Scars, every
 # restart and every refusal, do not fade.
 #
+# With COUNSEL_DIVORCE=1 it is also a descheduler, and divorces a pod from
+# its node, by eviction, so a disruption budget may refuse, at most once
+# every COUNSEL_DIVORCE_EVERY looks (6 if not set), and only a pod whose
+# workload brings it back:
+#   when their relationship is failing (with three scars or more) and the
+#   pod could live on a node it is not failing with; or
+#   when the pod and another node would both rather be together, the
+#   unstable pair of Gale and Shapley: the pod likes that node better
+#   (taintednetes.io/likes), fits there, and the node has a seat for it.
+# The scheduler then finds the workload's next pod a better home.
+#
 # Everything counsel knows lives in the Relationship objects, so a counsel
 # that restarts goes on where it was. With KUBE_CONTEXT set it looks every
 # COUNSEL_INTERVAL seconds (10 if not set), and rests after COUNSEL_LOOKS
@@ -210,6 +221,8 @@ end
 ritual counsel_once
     perform get_all with "nodes" into all_nodes
     perform get_all with "pods -A" into all_pods
+    note "nodes" = all_nodes
+    note "pods" = all_pods
     perform known_relationships into known
     note "known" = known
     let up = {}
@@ -258,6 +271,134 @@ ritual counsel_once
     end
 end
 
+# Whether two who live together should part, and where the pod would go.
+ritual divorce_once all_nodes, all_pods
+    let free = {}
+    let ports = {}
+    let ours = {}
+    let machines = {}
+    let i = 1
+    while i <= length of all_nodes
+        perform ready with all_nodes[i] into up
+        if up
+            let name = all_nodes[i]["metadata"]["name"]
+            perform allocatable with all_nodes[i] into left
+            free[name] = left
+            ports[name] = ""
+            ours[name] = 0
+            machines[name] = all_nodes[i]
+        end
+        recall all_nodes all_pods free ports ours machines
+        i = i + 1
+    end
+    let movable = []
+    i = 1
+    while i <= length of all_pods
+        let p = all_pods[i]
+        perform field with p["spec"], "nodeName", "" into where
+        perform field with p["status"], "phase", "" into stage
+        if where != "" and place of where in free > 0 and stage != "Succeeded" and stage != "Failed"
+            perform requests with p into r
+            perform take_away with free[where], r into left
+            free[where] = left
+            perform host_ports with p into hp
+            ports[where] = ports[where] + hp
+            perform field with p["spec"], "schedulerName", "" into chosen
+            perform field with p["metadata"], "deletionTimestamp", "" into going
+            if chosen == note "scheduler"
+                ours[where] = ours[where] + 1
+                perform partner_of with p into partner
+                if partner["kind"] != "Pod" and stage == "Running" and going == ""
+                    put p into movable
+                end
+            end
+        end
+        recall all_pods free ports ours machines movable
+        i = i + 1
+    end
+    let kept = note "kept"
+    let nodes = keys of machines
+    i = 1
+    while i <= length of movable
+        let p = movable[i]
+        let here = p["spec"]["nodeName"]
+        perform partner_of with p into partner
+        perform lowered with partner["kind"] into kind_
+        let ns = p["metadata"]["namespace"]
+        let stem = ns + "/" + kind_ + "-" + partner["name"] + "."
+        perform requests with p into r
+        let why = ""
+        let target = ""
+        let st = {}
+        if place of (stem + here) in kept > 0
+            st = kept[stem + here]
+        end
+        perform field with st, "health", "" into health
+        perform field with st, "scars", 0 into carried
+        if health == "failing" and carried >= 3
+            let j = 1
+            while j <= length of nodes and target == ""
+                let m = nodes[j]
+                let theirs = ""
+                if place of (stem + m) in kept > 0
+                    perform field with kept[stem + m], "health", "" into theirs
+                end
+                if m != here and theirs != "failing"
+                    perform unfit with p, machines[m], r, free[m], ports[m] into no
+                    if no == ""
+                        target = m
+                        why = "their relationship is failing (" + carried + " scars)"
+                    end
+                end
+                recall j nodes kept stem here p r machines free ports target why carried
+                j = j + 1
+            end
+        end
+        if target == ""
+            perform annotation with p, "taintednetes.io/likes" into wanted
+            let mine = place of here in wanted
+            if mine == 0
+                mine = words of wanted + 1
+            end
+            let j = 1
+            while j < mine and target == ""
+                let m = word j of wanted
+                if place of m in machines > 0
+                    perform unfit with p, machines[m], r, free[m], ports[m] into no
+                    perform annotation with machines[m], "taintednetes.io/seats" into limit
+                    let room = 1
+                    if limit != ""
+                        room = number of limit - ours[m]
+                    end
+                    if no == "" and room > 0
+                        target = m
+                        why = "it would rather live on " + m + ", and " + m + " has a seat for it"
+                    end
+                end
+                recall j mine wanted p r machines free ports ours target why here
+                j = j + 1
+            end
+        end
+        if target != ""
+            let pn = ns + "/" + p["metadata"]["name"]
+            note "divorced" = p
+            note "why" = why
+            note "here" = here
+            endure
+                perform evict with pn
+                say pn + " parts from " + note "here" + ": " + note "why"
+                perform tell_event with note "divorced", "Normal", "Divorced", "Parted from " + note "here" + ": " + note "why", "counsel"
+            when it hurts as pain
+                say pn + " cannot part from " + note "here" + " yet: " + pain
+            end
+            give back 1
+        end
+        recall movable kept nodes machines free ports ours
+        i = i + 1
+    end
+    give back 0
+end
+
 soul counsel
     note "scheduler" = world "TAINTEDNETES_NAME"
     if note "scheduler" == ""
@@ -269,10 +410,17 @@ soul counsel
     end
     note "looks" = 0
     note "kept" = {}
+    note "divorce every" = 6
+    if world "COUNSEL_DIVORCE_EVERY" != ""
+        note "divorce every" = number of world "COUNSEL_DIVORCE_EVERY"
+    end
     say "counsel looks after the relationships of the pods that choose " + note "scheduler"
     mark looking
     endure
         perform counsel_once
+        if world "COUNSEL_DIVORCE" == "1" and note "looks" % note "divorce every" == 0
+            perform divorce_once with note "nodes", note "pods"
+        end
     when it hurts as pain
         cry "counsel: " + pain
     end
