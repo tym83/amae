@@ -1090,3 +1090,93 @@ ritual sociable pod
     perform field with pod["spec"], "topologySpreadConstraints", [] into spreads
     give back place of "podAffinity" in affinity > 0 or place of "podAntiAffinity" in affinity > 0 or length of spreads > 0
 end
+
+# ------------------------------------------------------------ partners
+
+# Letters a name can have, in both cases.
+ritual lowered text
+    let upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    let lower = "abcdefghijklmnopqrstuvwxyz"
+    let made = ""
+    let i = 1
+    while i <= length of text
+        let c = text[i]
+        let j = 1
+        while j <= 26
+            if c == upper[j]
+                c = lower[j]
+            end
+            recall c made i text upper lower
+            j = j + 1
+        end
+        made = made + c
+        recall text made upper lower
+        i = i + 1
+    end
+    give back made
+end
+
+# Who a pod belongs to, the workload that brings it back: its controller,
+# with a ReplicaSet seen through to its Deployment; a bare pod is its own.
+ritual partner_of pod
+    perform field with pod["metadata"], "ownerReferences", [] into owners
+    if length of owners == 0
+        give back {"kind": "Pod", "name": pod["metadata"]["name"]}
+    end
+    let owner = owners[1]
+    let i = 1
+    while i <= length of owners
+        perform field with owners[i], "controller", 0 into leads
+        if leads
+            owner = owners[i]
+        end
+        i = i + 1
+    end
+    if owner["kind"] == "ReplicaSet"
+        perform labels_of with pod into labels
+        if place of "pod-template-hash" in labels > 0
+            let tail = "-" + labels["pod-template-hash"]
+            perform ends_with with owner["name"], tail into ok
+            if ok
+                give back {"kind": "Deployment", "name": part 1 (length of owner["name"] - length of tail) of owner["name"]}
+            end
+        end
+    end
+    give back {"kind": owner["kind"], "name": owner["name"]}
+end
+
+# How many times the containers of a pod have restarted, and whether the
+# last end of one of them was for memory.
+ritual restarts_of pod
+    perform field with pod["status"], "containerStatuses", [] into statuses
+    let n = 0
+    let oom = 0
+    let i = 1
+    while i <= length of statuses
+        perform field with statuses[i], "restartCount", 0 into r
+        n = n + r
+        perform field with statuses[i], "lastState", {} into last
+        perform field with last, "terminated", {} into ended
+        perform field with ended, "reason", "" into why
+        if why == "OOMKilled"
+            oom = 1
+        end
+        recall statuses n oom
+        i = i + 1
+    end
+    give back {"restarts": n, "oom": oom}
+end
+
+# Whether the condition `kind_` of a thing is true.
+ritual condition_of thing, kind_
+    perform field with thing["status"], "conditions", [] into conditions
+    let i = 1
+    while i <= length of conditions
+        if conditions[i]["type"] == kind_
+            give back conditions[i]["status"] == "True"
+        end
+        recall conditions kind_
+        i = i + 1
+    end
+    give back 0
+end

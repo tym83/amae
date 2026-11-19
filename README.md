@@ -235,6 +235,24 @@ has no owner to bring it back, so the node stays and says why:
 08:04:54 cw2gd cannot leave: its last pod has nowhere to come back from
 ```
 
+`kube/counsel.tainted` keeps what a workload and a node have lived through
+together as a `Relationship` object (`tainted.io/v1`, in the workload's
+namespace, named after the workload and the node), and tells how they are
+doing the way John Gottman tells it of couples. Every look at the cluster is a
+moment of their life together: a ready pod is a turn towards each other, a
+restart is criticism, a restart killed for memory is contempt, a pod the
+kubelet refused is defensiveness, a pod or node that does not answer is
+stonewalling. Moments fade, 1 in 100 every look, so what counts is the recent
+life of the two. With five positive moments or more for every negative one the
+relationship is stable, with fewer it is at risk, and with more negative than
+positive ones it is failing. Scars, every restart and every refusal, never
+fade. All counsel knows is in the objects, so a counsel that restarts goes on
+where it was.
+
+```
+kubectl --context <ctx> get relationships -A
+```
+
 ## The compiler written in Tainted
 
 `compiler.tainted` is the compiler, and it is the only implementation of the
@@ -376,11 +394,12 @@ The scheduler spends about 50m of CPU between looks.
 
 ### Inside the cluster
 
-`kube/deploy.yaml` runs the scheduler and the parting operator as pods of the
-cluster they look after, each with a service account that may do no more than
+`kube/deploy.yaml` runs the scheduler, the parting operator and counsel (with
+the `Relationship` CRD) as pods of the cluster they look after, each with a service account that may do no more than
 its job: the scheduler reads pods and nodes, creates bindings and events and
 holds its lease (two copies run, one leads), the operator
-reads them, patches nodes and evicts pods. Both are compiled from Tainted into
+reads them, patches nodes and evicts pods, counsel reads them and keeps
+relationships. All are compiled from Tainted into
 the image `ghcr.io/tym83/tainted`, which CI builds from every commit to main:
 
 ```
