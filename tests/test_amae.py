@@ -1065,6 +1065,23 @@ end
         self.assertEqual(placed, {"ns/high": None})
         self.assertIn("ns/high asks a to let go of ns/low1", life.lines)
 
+    def test_preemption_prefers_non_attached_equal_priority(self):
+        old = fake_pod("attached", node="a", requests={"cpu": "1"}, created="2026-11-18T00:00:00Z")
+        old["status"]["conditions"] = [{"type": "Ready", "status": "True", "lastTransitionTime": "2020-01-01T00:00:00Z"}]
+        young = fake_pod("new", node="a", requests={"cpu": "1"}, created="2026-11-17T00:00:00Z")
+        pods = [young, old, fake_pod("high", requests={"cpu": "1"}, priority=10)]
+        nodes = [fake_node("a", extra={"cpu": "2"})]
+        life, _ = place(nodes, pods)
+        self.assertIn("ns/high asks a to let go of ns/new", life.lines, life.err)
+
+    def test_preemption_prefers_non_attached_on_another_node(self):
+        old = fake_pod("attached", node="a", requests={"cpu": "1"})
+        old["status"]["conditions"] = [{"type": "Ready", "status": "True", "lastTransitionTime": "2020-01-01T00:00:00Z"}]
+        young = fake_pod("new", node="b", requests={"cpu": "1"})
+        nodes = [fake_node(n, extra={"cpu": "1"}) for n in ("a", "b")]
+        life, _ = place(nodes, [old, young, fake_pod("high", requests={"cpu": "1"}, priority=10)])
+        self.assertIn("ns/high asks b to let go of ns/new", life.lines, life.err)
+
     def test_preemption_picks_the_node_with_the_least_important_victims(self):
         nodes = [fake_node("a", extra={"cpu": "1"}), fake_node("b", extra={"cpu": "1"})]
         pods = [fake_pod("on-a", node="a", requests={"cpu": "1"}, priority=3),
@@ -1400,6 +1417,15 @@ class LiveScheduler(unittest.TestCase):
             self.assertEqual(e["source"]["component"], "amaenetes")
             self.assertRegex(e["firstTimestamp"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
 
+    def test_preemption_prefers_non_attached_equal_priority(self):
+        old = fake_pod("attached", node="a", requests={"cpu": "1"}, created="2026-11-18T00:00:00Z")
+        old["status"]["conditions"] = [{"type": "Ready", "status": "True", "lastTransitionTime": "2020-01-01T00:00:00Z"}]
+        young = fake_pod("new", node="a", requests={"cpu": "1"}, created="2026-11-17T00:00:00Z")
+        pods = [young, old, fake_pod("high", requests={"cpu": "1"}, priority=10)]
+        nodes = [fake_node("a", extra={"cpu": "2"})]
+        life, asked = self.live(nodes, pods, looks=1)
+        self.assertEqual([path for path, _ in asked], ["/api/v1/namespaces/ns/pods/new/eviction"], life.err)
+
     def test_preemption_evicts_and_promises_the_node(self):
         pods = [fake_pod("low", node="a", requests={"cpu": "1"}),
                 fake_pod("high", requests={"cpu": "1"}, priority=10)]
@@ -1527,12 +1553,16 @@ if args[:2] == ["get", "nodes"]:
     snapshots = state.get("node_looks", [state["nodes"]])
     save()
     print(json.dumps({"items": snapshots[min(look, len(snapshots) - 1)]}))
+elif args[:2] == ["get", "namespaces"]:
+    print(json.dumps({"items": state.get("namespaces", [])}))
 elif args[:2] == ["get", "pods"]:
-    print(json.dumps({"items": state["pods"]}))
+    look = max(0, state.get("node_polls", 1) - 1)
+    snapshots = state.get("pod_looks", [state["pods"]])
+    print(json.dumps({"items": snapshots[min(look, len(snapshots) - 1)]}))
 elif args[:2] == ["get", "events"]:
     reason = args[args.index("--field-selector") + 1].split("=", 1)[1]
-    assert reason in ("Unhealthy", "Killing"), args
-    polls = state.setdefault("event_polls", {})
+    assert reason in ("Unhealthy", "Killing", "Pulled", "Started"), args
+    polls = state.setdefault("service_polls" if reason in ("Pulled", "Started") else "event_polls", {})
     look = polls.get(reason, 0)
     polls[reason] = look + 1
     snapshots = state.get("probe_event_looks", [state.get("probe_events", [])])
@@ -1583,7 +1613,8 @@ else:
 
 def counselled_pod(name, node, restarts=0, oom=False, ready=True, phase="Running", reason=None,
                    owner=("ReplicaSet", "web-5d9f"), hash_="5d9f", likes=None):
-    status = {"phase": phase, "conditions": [{"type": "Ready", "status": "True" if ready else "False"}],
+    status = {"phase": phase, "conditions": [{"type": "Ready", "status": "True" if ready else "False",
+                                                   "lastTransitionTime": "2020-01-01T00:00:00Z"}],
               "containerStatuses": [{"restartCount": restarts,
                                      "lastState": {"terminated": {"reason": "OOMKilled"}} if oom else {}}]}
     if reason:
@@ -1631,6 +1662,210 @@ class LiveCounsel(unittest.TestCase):
                 json.dump(old, f)
         with open(path) as f:
             return json.load(f)
+
+    def result_status(self, d):
+        return self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+
+    def test_fisher_phases_and_pending_has_no_relationship(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = counselled_pod("web", "n1", phase="Pending")
+            self.state(d, pods=[p])
+            life = self.counsel(d)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(self.state(d)["relationships"], {})
+            p["status"]["phase"] = "Running"
+            p["status"]["conditions"][0].pop("lastTransitionTime")
+            self.state(d, pods=[p])
+            life = self.counsel(d, looks=1, clock_step=150)
+            self.assertEqual(self.result_status(d)["phase"], "attraction", life.err)
+            self.state(d, relationships={})
+            life = self.counsel(d, looks=3, clock_step=150)
+            st = self.result_status(d)
+            self.assertEqual(st["phase"], "attachment", life.err)
+            self.assertEqual(st["positive"], 4.94)
+
+    def test_attraction_doubles_moments_but_not_scars(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = counselled_pod("web", "n1", restarts=2)
+            p["status"]["conditions"][0].pop("lastTransitionTime")
+            self.state(d, pods=[p])
+            life = self.counsel(d)
+            st = self.result_status(d)
+            self.assertEqual((st["phase"], st["positive"], st["criticism"], st["scars"]),
+                             ("attraction", 2, 4, 2), life.err)
+
+    def test_readiness_and_restart_reset_attachment_clock(self):
+        for lost_ready in (True, False):
+            with self.subTest(lost_ready=lost_ready), tempfile.TemporaryDirectory() as d:
+                first = counselled_pod("web", "n1")
+                changed = counselled_pod("web", "n1", ready=not lost_ready,
+                                         restarts=0 if lost_ready else 1)
+                recovered = counselled_pod("web", "n1", restarts=0 if lost_ready else 1)
+                self.state(d, pods=[first], pod_looks=[[first], [changed], [recovered]])
+                life = self.counsel(d, looks=3, clock_step=100)
+                st = self.result_status(d)
+                self.assertEqual(st["phase"], "attraction", life.err)
+                self.assertEqual(st["scars"], 0 if lost_ready else 1)
+
+    def test_divorce_waits_for_attachment_and_tells_once(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = counselled_pod("web", "n1", likes="n2 n1")
+            p["status"]["conditions"][0].pop("lastTransitionTime")
+            self.state(d, nodes=[fake_node("n1"), fake_node("n2")], pods=[p])
+            life = self.counsel(d, looks=2, clock_step=100, divorce=True)
+            self.assertNotIn("evicted", self.state(d), life.err)
+            self.assertEqual([h["what"] for h in self.result_status(d)["history"]],
+                             ["web is still in attraction; divorce can wait"])
+            self.state(d, relationships={})
+            life = self.counsel(d, looks=4, clock_step=100, divorce=True)
+            self.assertEqual(self.state(d)["evicted"], ["web"], life.err)
+            self.assertEqual(self.result_status(d)["phase"], "attachment")
+
+    def language_pod(self, language):
+        p = counselled_pod("web", "n1")
+        p["metadata"]["annotations"]["amaenetes.io/love-language"] = language
+        return p
+
+    def test_words_language_and_other_signals_count_half(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, nodes=[fake_node("n1")], pods=[self.language_pod("words")])
+            life = self.counsel(d)
+            st = self.result_status(d)
+            self.assertEqual(st["positive"], 4, life.err)  # words 3, time and gifts 0.5 each
+            self.assertEqual(st["language"], "words")
+            self.assertEqual(st["history"][-1]["what"], "web speaks words")
+            life = self.counsel(d)
+            self.assertEqual(len(self.result_status(d)["history"]), 1, life.err)
+
+    def test_time_language_and_full_hours(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = self.language_pod("time")
+            # Fixed clock 1800000000 is 2027-01-15T08:00:00Z.
+            p["status"]["startTime"] = "2027-01-15T06:30:00Z"
+            self.state(d, nodes=[fake_node("n1")], pods=[p])
+            life = self.counsel(d, clock_step=0)
+            self.assertEqual(self.result_status(d)["positive"], 7, life.err)
+
+    def test_gifts_language_needs_cpu_and_memory_room(self):
+        for capacity, expected in [({"cpu": "200m"}, 4), ({"cpu": "199m"}, 1),
+                                   ({"cpu": "200m", "memory": "1Mi"}, 1)]:
+            with self.subTest(capacity=capacity), tempfile.TemporaryDirectory() as d:
+                p = self.language_pod("gifts")
+                p["spec"]["containers"][0]["resources"]["requests"]["memory"] = "1Mi"
+                self.state(d, nodes=[fake_node("n1", extra=capacity)], pods=[p])
+                life = self.counsel(d)
+                self.assertEqual(self.result_status(d)["positive"], expected, life.err)
+
+    def test_service_language_counts_event_growth_and_slow_pull(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = self.language_pod("service")
+            events = [self.probe_event("Started", "Started container web", 1, uid="started", pod_uid="uid-web"),
+                      self.probe_event("Pulled", 'Successfully pulled image "web" in 500ms', 1,
+                                       uid="pulled", pod_uid="uid-web"),
+                      self.probe_event("Pulled", 'Successfully pulled image "other" in 1m1s', 1,
+                                       uid="slow", pod_uid="uid-web")]
+            self.state(d, nodes=[fake_node("n1")], pods=[p], probe_event_looks=[[], events, events])
+            life = self.counsel(d, looks=3, clock_step=1)
+            st = self.result_status(d)
+            self.assertEqual(st["criticism"], 1, life.err)  # last persisted at the event look
+            self.assertEqual(st["positive"], 8.99, life.err)  # 1.5 * .99 + 7.5
+            life = self.counsel(d, looks=7, clock_step=1)
+            self.assertLess(self.result_status(d)["criticism"], 1, life.err)
+
+    def test_touch_language_same_node_or_only_zone(self):
+        for where, expected in [("n1", 4), ("n2", 2.5), ("n3", 1)]:
+            with self.subTest(where=where), tempfile.TemporaryDirectory() as d:
+                p = self.language_pod("touch")
+                q = counselled_pod("friend", where)
+                q["spec"]["schedulerName"] = "other"
+                nodes = [fake_node(n, labels={"topology.kubernetes.io/zone": z}, extra={"cpu": "100m"})
+                         for n, z in [("n1", "a"), ("n2", "a"), ("n3", "b")]]
+                self.state(d, nodes=nodes, pods=[p, q])
+                life = self.counsel(d)
+                self.assertEqual(self.result_status(d)["positive"], expected, life.err)
+
+    def test_slow_pull_criticism_is_independent_of_language(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = counselled_pod("web", "n1")
+            e = self.probe_event("Pulled", "Successfully pulled image web in 61s", 1,
+                                 uid="slow", pod_uid="uid-web")
+            self.state(d, nodes=[fake_node("n1")], pods=[p], probe_event_looks=[[], [e]])
+            life = self.counsel(d, looks=2)
+            st = self.result_status(d)
+            self.assertEqual((st["positive"], st["criticism"], st["scars"]), (1.99, 1, 0), life.err)
+
+    def test_unannotated_positives_unchanged(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, nodes=[fake_node("n1")], pods=[counselled_pod("web", "n1")])
+            life = self.counsel(d)
+            self.assertEqual(self.result_status(d)["positive"], 1, life.err)
+
+    def test_youngest_pod_supplies_phase_and_language(self):
+        with tempfile.TemporaryDirectory() as d:
+            old = self.language_pod("words")
+            old["metadata"]["creationTimestamp"] = "2026-01-01T00:00:00Z"
+            young = self.language_pod("gifts")
+            young["metadata"].update(name="young", uid="uid-young", creationTimestamp="2026-02-01T00:00:00Z")
+            young["status"]["conditions"][0].pop("lastTransitionTime")
+            # Reverse age order to catch last-observed rather than youngest selection.
+            self.state(d, nodes=[fake_node("n1")], pods=[young, old])
+            life = self.counsel(d)
+            st = self.result_status(d)
+            self.assertEqual((st["phase"], st["language"]), ("attraction", "gifts"), life.err)
+            self.assertEqual(st["positive"], 13.5)  # closeness also contributes half to each pod
+
+    def test_touch_matches_affinity_and_namespace_selector(self):
+        for kind in ("podAffinity", "podAntiAffinity"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as d:
+                p = self.language_pod("touch")
+                p["spec"]["affinity"] = {kind: {"preferredDuringSchedulingIgnoredDuringExecution": [
+                    {"weight": 1, "podAffinityTerm": {
+                        "topologyKey": "kubernetes.io/hostname",
+                        "namespaceSelector": {"matchLabels": {"team": "friends"}},
+                        "labelSelector": {"matchLabels": {"app": "friend"}}}}]}}
+                q = counselled_pod("friend", "n1", owner=None)
+                q["metadata"].update(namespace="other", labels={"app": "friend"})
+                q["spec"]["schedulerName"] = "other"
+                self.state(d, nodes=[fake_node("n1")], pods=[p, q],
+                           namespaces=[{"metadata": {"name": "other", "labels": {"team": "friends"}}}])
+                life = self.counsel(d)
+                self.assertEqual(self.result_status(d)["positive"], 4.5, life.err)
+
+    def test_time_restarts_reset_uptime_and_skip_this_look(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = self.language_pod("time")
+            q = json.loads(json.dumps(p))
+            q["status"]["containerStatuses"][0]["restartCount"] = 1
+            self.state(d, nodes=[fake_node("n1")], pods=[p], pod_looks=[[p], [q], [q]])
+            life = self.counsel(d, looks=3, clock_step=3600)
+            st = self.result_status(d)
+            self.assertEqual(st["positive"], 12.9, life.err)  # 4 -> 5.96 (attraction) -> 12.9
+            self.assertEqual(st["criticism"], 1.98)
+
+    def test_pull_duration_boundaries_and_lust_clock(self):
+        with open(os.path.join(ROOT, "kube", "counsel.amae")) as f:
+            source = f.read().split("soul counsel\n")[0]
+        source += '''soul check
+    let durations = ["500ms", "9.9s", "10s", "60s", "1m1s", "2m3.5s", "unknown"]
+    let i = 1
+    while i <= length of durations
+        perform pull_seconds with "Successfully pulled image web in " + durations[i] into d
+        say d
+        recall durations
+        i = i + 1
+    end
+    note "look time" = 1800000000
+    note "pod phases" = {}
+    note "current pod phases" = {}
+    note "attachment after" = 300
+    perform phase_of with {"metadata": {"uid": "u", "name": "p", "namespace": "ns"}, "spec": {"nodeName": ""}, "status": {"phase": "Pending"}} into clock_
+    say clock_["phase"]
+end
+'''
+        life = run(source)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual([float(x) for x in life.lines[:-1]], [0.5, 9.9, 10, 60, 61, 123.5, -1])
+        self.assertEqual(life.lines[-1], "lust")
 
     def attachment_pod(self, name, style, **kwargs):
         p = counselled_pod(name, "n1", **kwargs)

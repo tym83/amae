@@ -43,6 +43,14 @@
 # probe periods. Their counts fade like moments, independently of contempt.
 # With at least 20 bids, turning below 33% fails, below 86% is at best at risk.
 #
+# Fisher: Pending is lust (no node relationship); continuous Ready for
+# COUNSEL_ATTACHMENT_AFTER (300s) is attachment, otherwise attraction. The
+# latter doubles moments and defers divorce; scars and bids stay unweighted.
+# Ready clocks follow UIDs in notes and reset on restarts or lost readiness.
+# Chapman: amaenetes.io/love-language chooses words/time/gifts/service/touch.
+# Its signals weigh 3, other languages 0.5; absent means the original Ready
+# positive. Relationship phase/language follow the youngest resident pod.
+#
 # Relationship totals live in the API; look times and Event count baselines
 # live in notes and start afresh when counsel restarts. With KUBE_CONTEXT set
 # it looks every COUNSEL_INTERVAL seconds (10 if not set), and rests after COUNSEL_LOOKS
@@ -234,9 +242,309 @@ ritual separation_of p, node_ready
     give back ""
 end
 
+# Fisher's clock follows a UID, resetting on lost readiness or a restart.
+# On first sight the API's Ready transition supplies the earlier history.
+ritual phase_of p
+    perform field with p["metadata"], "uid", p["metadata"]["namespace"] + "/" + p["metadata"]["name"] into uid
+    perform field with p["status"], "phase", "" into stage
+    perform restarts_of with p into r
+    perform condition_of with p, "Ready" into up
+    let previous = note "pod phases"
+    let at = note "look time"
+    let uptime_from = 0
+    perform field with p["status"], "startTime", "" into started
+    if started != ""
+        perform seconds_of with started into uptime_from
+    end
+    perform field with p["status"], "containerStatuses", [] into statuses
+    let ci = 1
+    while ci <= length of statuses
+        perform field with statuses[ci], "state", {} into state_
+        perform field with state_, "running", {} into running
+        perform field with running, "startedAt", "" into stamp
+        if stamp != ""
+            perform seconds_of with stamp into at_start
+            if at_start > uptime_from
+                uptime_from = at_start
+            end
+        end
+        recall p uid stage r up previous at uptime_from statuses
+        ci = ci + 1
+    end
+    let began = 0
+    let steady = 1
+    if up
+        perform ready_since with p into began
+    end
+    if place of uid in previous > 0
+        let prior = previous[uid]
+        if prior["uptime from"] > uptime_from
+            uptime_from = prior["uptime from"]
+        end
+        if prior["restarts"] != r["restarts"] or prior["node"] != p["spec"]["nodeName"]
+            steady = 0
+            uptime_from = at
+            began = at
+        else
+            if up and prior["ready"]
+                if prior["since"] > began
+                    began = prior["since"]
+                end
+            else
+                began = at
+            end
+        end
+    end
+    if uptime_from == 0
+        uptime_from = at
+    end
+    if began == 0
+        began = at
+    end
+    recall p uid r up at began steady uptime_from stage
+    let stage_ = "attraction"
+    if stage == "Pending"
+        stage_ = "lust"
+    else
+        if up and at - began >= note "attachment after"
+            stage_ = "attachment"
+        end
+    end
+    let current = note "current pod phases"
+    let entry = {"phase": stage_, "since": began, "ready": up, "restarts": r["restarts"], "node": p["spec"]["nodeName"], "steady": steady, "uptime from": uptime_from}
+    current[uid] = entry
+    note "current pod phases" = current
+    give back entry
+end
+
+# Parse the small Go-duration token in a kubelet pull message, not its JSON.
+ritual pull_seconds message
+    let i = 1
+    while i < words of message
+        if word i of message == "in"
+            let token = word (i + 1) of message
+            let digits = ""
+            let total = 0.0
+            let j = 1
+            while j <= length of token
+                let c = part j j of token
+                if (c >= "0" and c <= "9") or c == "."
+                    digits = digits + c
+                else
+                    let scale = 0
+                    if c == "s"
+                        scale = 1
+                    end
+                    if c == "m"
+                        scale = 60
+                        if part (j + 1) (j + 1) of token == "s"
+                            scale = 0.001
+                            j = j + 1
+                        end
+                    end
+                    if c == "h"
+                        scale = 3600
+                    end
+                    if scale == 0 or digits == ""
+                        give back -1
+                    end
+                    total = total + number of digits * scale
+                    digits = ""
+                end
+                recall token digits total
+                j = j + 1
+            end
+            if digits == ""
+                give back total
+            end
+            give back -1
+        end
+        recall message
+        i = i + 1
+    end
+    give back -1
+end
+
+ritual service_events
+    perform get_all with "events -A --field-selector reason=Pulled" into pulled
+    perform get_all with "events -A --field-selector reason=Started" into started
+    let events_ = pulled + started
+    let previous = note "service counts"
+    let counts = {}
+    let answers = {}
+    let i = 1
+    while i <= length of events_
+        let e = events_[i]
+        let uid = e["metadata"]["uid"]
+        perform field with e, "count", 1 into count_
+        perform field with previous, uid, 0 into prior
+        counts[uid] = count_
+        let delta = count_ - prior
+        perform field with e, "involvedObject", {} into involved
+        perform field with involved, "uid", "" into pod_uid
+        perform field with involved, "kind", "" into kind_
+        if note "service baseline" and delta > 0 and kind_ == "Pod" and pod_uid != ""
+            perform field with answers, pod_uid, {"positive": 0, "criticism": 0} into a
+            if e["reason"] == "Started"
+                a["positive"] = a["positive"] + delta
+            else
+                perform field with e, "message", "" into message
+                if part 1 25 of message == "Successfully pulled image"
+                    perform pull_seconds with message into duration
+                    if duration >= 0 and duration < 10
+                        a["positive"] = a["positive"] + delta
+                    end
+                    if duration > 60
+                        a["criticism"] = a["criticism"] + delta
+                    end
+                end
+            end
+            answers[pod_uid] = a
+        end
+        recall events_ previous counts answers
+        i = i + 1
+    end
+    note "service counts" = counts
+    note "service baseline" = 1
+    note "service answers" = answers
+end
+
+# Room is allocatable minus requests of every active resident, not just ours.
+ritual gift_of p
+    let nodes = note "nodes"
+    let pods = note "pods"
+    let here = p["spec"]["nodeName"]
+    let left = {}
+    let i = 1
+    while i <= length of nodes
+        if nodes[i]["metadata"]["name"] == here
+            perform allocatable with nodes[i] into capacity
+            left = capacity
+        end
+        recall nodes pods here left p
+        i = i + 1
+    end
+    i = 1
+    while i <= length of pods
+        perform field with pods[i]["spec"], "nodeName", "" into where
+        perform field with pods[i]["status"], "phase", "" into stage
+        if where == here and stage != "Succeeded" and stage != "Failed"
+            perform requests with pods[i] into r
+            perform take_away with left, r into remaining
+            left = remaining
+        end
+        recall pods here left p
+        i = i + 1
+    end
+    perform requests with p into mine
+    perform field with left, "cpu", 0 into cpu
+    perform field with left, "memory", 0 into mem
+    perform field with mine, "cpu", 0 into need_cpu
+    perform field with mine, "memory", 0 into need_mem
+    give back cpu >= need_cpu and mem >= need_mem
+end
+
+ritual touch_terms p
+    let result = []
+    let kinds = ["podAffinity", "podAntiAffinity"]
+    let i = 1
+    while i <= length of kinds
+        perform pod_terms with p, kinds[i], "required" into required
+        result = result + required
+        perform pod_terms with p, kinds[i], "preferred" into preferred
+        let j = 1
+        while j <= length of preferred
+            put preferred[j]["podAffinityTerm"] into result
+            recall p result kinds i preferred
+            j = j + 1
+        end
+        recall p result kinds
+        i = i + 1
+    end
+    give back result
+end
+
+ritual closeness p
+    perform partner_of with p into partner
+    perform touch_terms with p into terms
+    let pods = note "pods"
+    let zones = note "zones"
+    let here = p["spec"]["nodeName"]
+    perform field with zones, here, "" into zone
+    let ns = p["metadata"]["namespace"]
+    let result = 0
+    let i = 1
+    while i <= length of pods
+        let q = pods[i]
+        perform field with q["spec"], "nodeName", "" into where
+        perform field with q["status"], "phase", "" into stage
+        if where != "" and stage != "Succeeded" and stage != "Failed" and (q["metadata"]["name"] != p["metadata"]["name"] or q["metadata"]["namespace"] != ns)
+            perform partner_of with q into other
+            let related = q["metadata"]["namespace"] == ns and other["kind"] == partner["kind"] and other["name"] == partner["name"]
+            let j = 1
+            while j <= length of terms and not related
+                perform about with terms[j], ns, q, note "spaces" into matched
+                related = matched
+                recall p partner terms pods zones here zone ns result i q where related
+                j = j + 1
+            end
+            if related
+                if where == here
+                    give back 1
+                end
+                perform field with zones, where, "" into theirs
+                if zone != "" and zone == theirs
+                    result = 0.5
+                end
+            end
+        end
+        recall p partner terms pods zones here zone ns result
+        i = i + 1
+    end
+    give back result
+end
+
+# A selected language amplifies its signal, while hearing the others softly.
+ritual care_of p, clock_, tongue
+    perform condition_of with p, "Ready" into up
+    let signals = {"words": up, "time": 0, "gifts": 0, "service": 0, "touch": 0}
+    if clock_["steady"]
+        let uptime = note "look time" - clock_["uptime from"]
+        if uptime < 0
+            uptime = 0
+        end
+        signals["time"] = 1 + whole of (uptime / 3600.0)
+    end
+    perform gift_of with p into gift
+    signals["gifts"] = gift
+    perform closeness with p into close_
+    signals["touch"] = close_
+    let answers = note "service answers"
+    perform field with p["metadata"], "uid", "" into uid
+    perform field with answers, uid, {"positive": 0, "criticism": 0} into served
+    signals["service"] = served["positive"]
+    let total = 0.0
+    let names = keys of signals
+    let i = 1
+    while i <= length of names
+        let weight = 0.5
+        if names[i] == tongue
+            weight = 3
+        end
+        total = total + weight * signals[names[i]]
+        recall signals names tongue total served
+        i = i + 1
+    end
+    give back {"positive": total, "criticism": served["criticism"]}
+end
+
 # What happened between one pod and its node in this look, added to what
 # happened between its partner and the node.
 ritual observe p, node_ready, known
+    perform phase_of with p into clock_
+    if clock_["phase"] == "lust"
+        give back 0
+    end
     perform separation_of with p, node_ready into reunion
     perform partner_of with p into partner
     let ns = p["metadata"]["namespace"]
@@ -245,10 +553,25 @@ ritual observe p, node_ready, known
     let name = kind_ + "-" + partner["name"] + "." + node
     let key_ = ns + "/" + name
     let seen = note "seen"
-    let o = {"namespace": ns, "name": name, "partner": partner, "node": node, "positive": 0, "criticism": 0, "contempt": 0, "defensiveness": 0, "stonewalling": 0, "distance scars": 0, "pods": {}, "told": [], "bids": 0, "towards": 0, "away": 0, "against": 0}
+    let o = {"namespace": ns, "name": name, "partner": partner, "node": node, "positive": 0, "criticism": 0, "contempt": 0, "defensiveness": 0, "stonewalling": 0, "distance scars": 0, "new scars": 0, "phase": "attachment", "youngest": "", "language": "", "pods": {}, "told": [], "bids": 0, "towards": 0, "away": 0, "against": 0}
     if place of key_ in seen > 0
         o = seen[key_]
     end
+    perform field with p["metadata"], "creationTimestamp", "" into born
+    perform annotation with p, "amaenetes.io/love-language" into tongue
+    if place of tongue in ["words", "time", "gifts", "service", "touch"] == 0
+        tongue = ""
+    end
+    if born >= o["youngest"]
+        o["youngest"] = born
+        o["phase"] = clock_["phase"]
+        o["language"] = tongue
+    end
+    let weight = 1
+    if clock_["phase"] == "attraction"
+        weight = 2
+    end
+    recall p clock_ tongue weight known key_ o
     if reunion != ""
         o["distance scars"] = o["distance scars"] + 1
         o["told"] = o["told"] + [reunion]
@@ -258,38 +581,69 @@ ritual observe p, node_ready, known
         perform field with known[key_], "status", {} into st
         perform field with st, "pods", {} into earlier_pods
     end
+    let kept = note "kept"
+    if place of key_ in kept > 0
+        perform field with kept[key_], "pods", {} into earlier_pods
+    end
     let pn = p["metadata"]["name"]
     let was = {"restarts": 0, "refused": 0}
     if place of pn in earlier_pods > 0
         was = earlier_pods[pn]
     end
+    perform field with p["metadata"], "uid", "" into pod_uid
+    perform field with was, "uid", pod_uid into old_uid
+    if old_uid != pod_uid
+        was = {"restarts": 0, "refused": 0}
+    end
     perform restarts_of with p into r
-    let now_ = {"restarts": r["restarts"], "refused": was["refused"]}
+    recall p o pn was r weight tongue key_ node_ready clock_
+    let now_ = {"uid": pod_uid, "restarts": r["restarts"], "refused": was["refused"], "phase": clock_["phase"]}
+    perform field with was, "waiting", 0 into warned
+    now_["waiting"] = warned
+    if clock_["phase"] == "attraction" and world "COUNSEL_DIVORCE" == "1" and not warned
+        o["told"] = o["told"] + [pn + " is still in attraction; divorce can wait"]
+        now_["waiting"] = 1
+    end
+    recall p o pn was r now_ weight tongue key_ node_ready clock_
     if r["restarts"] > was["restarts"]
         let more = r["restarts"] - was["restarts"]
+        o["new scars"] = o["new scars"] + more
         if r["oom"]
-            o["contempt"] = o["contempt"] + more
+            o["contempt"] = o["contempt"] + more * weight
             o["told"] = o["told"] + ["contempt: " + pn + " was killed for memory"]
         else
-            o["criticism"] = o["criticism"] + more
+            o["criticism"] = o["criticism"] + more * weight
             o["told"] = o["told"] + ["criticism: " + pn + " restarted"]
         end
     end
+    recall p o pn now_ was weight tongue key_ node_ready clock_
     perform field with p["status"], "phase", "" into stage
     perform field with p["status"], "reason", "" into why
     if stage == "Failed" and why != "" and why != "Evicted" and not was["refused"]
-        o["defensiveness"] = o["defensiveness"] + 1
+        o["defensiveness"] = o["defensiveness"] + weight
+        o["new scars"] = o["new scars"] + 1
         o["told"] = o["told"] + ["defensiveness: the node refused " + pn + ": " + why]
         now_["refused"] = 1
     end
     if stage == "Running"
         perform condition_of with p, "Ready" into up
         if up and node_ready
-            o["positive"] = o["positive"] + 1
+            if tongue == ""
+                o["positive"] = o["positive"] + weight
+            end
         else
-            o["stonewalling"] = o["stonewalling"] + 1
+            o["stonewalling"] = o["stonewalling"] + weight
         end
     end
+    recall p o pn now_ key_ tongue weight clock_
+    if tongue != ""
+        perform care_of with p, clock_, tongue into care
+        o["positive"] = o["positive"] + care["positive"] * weight
+    end
+    let answers = note "service answers"
+    perform field with p["metadata"], "uid", "" into service_uid
+    perform field with answers, service_uid, {"criticism": 0} into served
+    o["criticism"] = o["criticism"] + served["criticism"] * weight
     perform bids_of with p into bids_
     let bid_names = ["bids", "towards", "away", "against"]
     let bi = 1
@@ -364,7 +718,7 @@ ritual relate o, known, looks
         i = i + 1
     end
     perform field with old, "scars", 0 into carried
-    st["scars"] = carried + o["criticism"] + o["contempt"] + o["defensiveness"] + o["distance scars"]
+    st["scars"] = carried + o["new scars"] + o["distance scars"]
     if o["distance scars"] > 0
         fresh = 1
     end
@@ -393,6 +747,19 @@ ritual relate o, known, looks
             end
         end
     end
+    st["phase"] = o["phase"]
+    st["language"] = o["language"]
+    perform field with old, "phase", "" into old_stage
+    perform field with old, "language", "" into old_tongue
+    if old_stage != st["phase"] or old_tongue != st["language"]
+        fresh = 1
+    end
+    perform field with old, "spokenLanguages", [] into spoken
+    if st["language"] != "" and place of st["language"] in spoken == 0
+        put st["language"] into spoken
+        o["told"] = o["told"] + [o["partner"]["name"] + " speaks " + st["language"]]
+    end
+    st["spokenLanguages"] = spoken
     st["health"] = health
     if negative >= 0.01
         perform rounded with st["positive"] / negative into ratio
@@ -410,6 +777,7 @@ ritual relate o, known, looks
     i = 1
     while i <= length of o["told"]
         history = history + [{"at": stamp, "what": o["told"][i]}]
+        fresh = 1
         recall o history stamp st fresh body key_ looks health was_health
         i = i + 1
     end
@@ -453,18 +821,36 @@ ritual counsel_once
     note "look time" = now
     note "current pod looks" = {}
     note "current separations" = {}
+    note "current pod phases" = {}
+    perform service_events
     perform bid_events
     perform get_all with "nodes" into all_nodes
     perform get_all with "pods -A" into all_pods
     note "nodes" = all_nodes
     note "pods" = all_pods
+    perform get_all with "namespaces" into spaces
+    note "spaces" = {}
+    let si = 1
+    while si <= length of spaces
+        perform labels_of with spaces[si] into labels
+        let mapped = note "spaces"
+        mapped[spaces[si]["metadata"]["name"]] = labels
+        note "spaces" = mapped
+        recall spaces all_nodes all_pods
+        si = si + 1
+    end
     perform known_relationships into known
     note "known" = known
     let up = {}
+    note "zones" = {}
     let i = 1
     while i <= length of all_nodes
         perform ready with all_nodes[i] into ok
         up[all_nodes[i]["metadata"]["name"]] = ok
+        perform domain_of with all_nodes[i], "topology.kubernetes.io/zone" into zone
+        let zones = note "zones"
+        zones[all_nodes[i]["metadata"]["name"]] = zone
+        note "zones" = zones
         recall all_nodes all_pods up
         i = i + 1
     end
@@ -486,6 +872,7 @@ ritual counsel_once
     end
     note "pod looks" = note "current pod looks"
     note "separations" = note "current separations"
+    note "pod phases" = note "current pod phases"
     let seen = note "seen"
     let keys_ = keys of seen
     i = 1
@@ -563,7 +950,13 @@ ritual divorce_once all_nodes, all_pods
                 ours[where] = ours[where] + 1
                 perform partner_of with p into partner
                 if partner["kind"] != "Pod" and stage == "Running" and going == ""
-                    put p into movable
+                    perform field with p["metadata"], "uid", p["metadata"]["namespace"] + "/" + p["metadata"]["name"] into uid
+                    let phases = note "pod phases"
+                    if place of uid in phases > 0
+                        if phases[uid]["phase"] == "attachment"
+                            put p into movable
+                        end
+                    end
                 end
             end
         end
@@ -665,6 +1058,14 @@ soul counsel
     note "event baseline ready" = 0
     note "pod looks" = {}
     note "separations" = {}
+    note "pod phases" = {}
+    note "spaces" = {}
+    note "service counts" = {}
+    note "service baseline" = 0
+    note "attachment after" = 300
+    if world "COUNSEL_ATTACHMENT_AFTER" != ""
+        note "attachment after" = number of world "COUNSEL_ATTACHMENT_AFTER"
+    end
     note "secure after" = 60
     note "anxious after" = 15
     note "avoidant after" = 15

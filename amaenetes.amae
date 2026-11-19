@@ -692,6 +692,7 @@ ritual rescue look, pn
             if place of "victims" in tried > 0
                 let worst = 0
                 let total = 0
+                let bonded_count = 0
                 let k = 1
                 while k <= length of tried["victims"]
                     perform field with tried["victims"][k]["spec"], "priority", 0 into theirs
@@ -699,10 +700,12 @@ ritual rescue look, pn
                         worst = theirs
                     end
                     total = total + theirs
-                    recall tried worst total look pn mine nn chosen chosen_key i
+                    perform attached with tried["victims"][k] into bonded
+                    bonded_count = bonded_count + bonded
+                    recall tried worst total bonded_count look pn mine nn chosen chosen_key i
                     k = k + 1
                 end
-                let key_ = [worst, total, length of tried["victims"], nn]
+                let key_ = [worst, total, bonded_count, length of tried["victims"], nn]
                 let better = length of chosen_key == 0
                 if not better
                     perform earlier with key_, chosen_key into better
@@ -720,6 +723,7 @@ ritual rescue look, pn
 end
 
 # Which pods of node `nn` would have to go for `pn` to live there:
+# reprieve higher priorities first, then attached pods, then older pods.
 # {"victims": pods}, or {} if no going of lower pods makes room.
 ritual let_go_on look, pn, mine, nn
     let pod = look["objects"][pn]
@@ -738,7 +742,8 @@ ritual let_go_on look, pn, mine, nn
         perform host_ports with q into qp
         if going == "" and theirs < mine
             put q into lower
-            put [0 - theirs, q["metadata"]["creationTimestamp"], q["metadata"]["name"]] into order
+            perform attached with q into bonded
+            put [0 - theirs, 0 - bonded, q["metadata"]["creationTimestamp"], q["metadata"]["name"]] into order
             perform requests with q into qr
             perform add_up with left, qr into more
             left = more

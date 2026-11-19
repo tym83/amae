@@ -1230,3 +1230,34 @@ ritual condition_of thing, kind_
     end
     give back 0
 end
+
+# Ready's transition time; missing or false conditions have no known age.
+ritual ready_since pod
+    perform field with pod["status"], "conditions", [] into conditions
+    let i = 1
+    while i <= length of conditions
+        if conditions[i]["type"] == "Ready" and conditions[i]["status"] == "True"
+            perform field with conditions[i], "lastTransitionTime", "" into stamp
+            if stamp != ""
+                perform seconds_of with stamp into at
+                give back at
+            end
+        end
+        recall conditions
+        i = i + 1
+    end
+    give back 0
+end
+
+# Scheduler attachment is deliberately independent of counsel's notes.
+ritual attached pod
+    perform ready_since with pod into began
+    let limit = 300
+    if world "COUNSEL_ATTACHMENT_AFTER" != ""
+        limit = number of world "COUNSEL_ATTACHMENT_AFTER"
+    end
+    if world "AMAENETES_ATTACHMENT_AFTER" != ""
+        limit = number of world "AMAENETES_ATTACHMENT_AFTER"
+    end
+    give back began > 0 and now - began >= limit
+end
