@@ -1525,6 +1525,16 @@ if args[:2] == ["get", "nodes"]:
     print(json.dumps({"items": state["nodes"]}))
 elif args[:2] == ["get", "pods"]:
     print(json.dumps({"items": state["pods"]}))
+elif args[:2] == ["get", "events"]:
+    reason = args[args.index("--field-selector") + 1].split("=", 1)[1]
+    assert reason in ("Unhealthy", "Killing"), args
+    polls = state.setdefault("event_polls", {})
+    look = polls.get(reason, 0)
+    polls[reason] = look + 1
+    snapshots = state.get("probe_event_looks", [state.get("probe_events", [])])
+    events = snapshots[min(look, len(snapshots) - 1)]
+    save()
+    print(json.dumps({"items": [e for e in events if e["reason"] == reason]}))
 elif args[:2] == ["get", "relationships.amae.io"]:
     print(json.dumps({"items": list(state["relationships"].values())}))
 elif args[:2] == ["create", "--raw"] and args[2].endswith("/eviction"):
@@ -1577,16 +1587,21 @@ def counselled_pod(name, node, restarts=0, oom=False, ready=True, phase="Running
 class LiveCounsel(unittest.TestCase):
     """counsel keeping Relationship objects, through a kubectl that only imagines a cluster."""
 
-    def counsel(self, d, looks=1, divorce=False):
+    def counsel(self, d, looks=1, divorce=False, interval=0, clock_step=None):
         with open(os.path.join(ROOT, "kube", "counsel.amae")) as f:
             source = f.read()
+        if clock_step is not None:
+            # Advance only the look clock, keeping multi-look probe tests fast and exact.
+            source = source.replace('note "look time" = now',
+                                    f'note "look time" = 1800000000 + (note "looks") * {clock_step}')
+            source = source.replace('wait number of ("" + note "every") seconds', 'wait 0 seconds')
         fake = os.path.join(d, "kubectl")
         with open(fake, "w") as f:
             f.write(COUNSEL_KUBECTL)
         os.chmod(fake, 0o755)
         return run(source, flags=("--patience=0",),
                    env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": os.path.join(d, "state.json"),
-                        "COUNSEL_INTERVAL": "0", "COUNSEL_LOOKS": str(looks),
+                        "COUNSEL_INTERVAL": str(interval), "COUNSEL_LOOKS": str(looks),
                         **({"COUNSEL_DIVORCE": "1", "COUNSEL_DIVORCE_EVERY": "1"} if divorce else {})})
 
     def state(self, d, **set_):
@@ -1624,6 +1639,129 @@ class LiveCounsel(unittest.TestCase):
             self.assertIn("shop/deployment-web.n1 is at risk", " ".join(life.lines))
             life = self.counsel(d)
             self.assertEqual(self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]["scars"], 2)
+
+    def probing_pod(self):
+        p = counselled_pod("web-5d9f-a", "n1")
+        p["metadata"]["uid"] = "pod-web"
+        p["status"]["startTime"] = "2020-01-01T00:00:00Z"
+        p["spec"]["containers"][0].update(livenessProbe={}, readinessProbe={"periodSeconds": 5})
+        return p
+
+    def probe_event(self, reason, message, count=1, uid="event-1", pod_uid="pod-web"):
+        return {"metadata": {"uid": uid}, "reason": reason, "message": message, "count": count,
+                "involvedObject": {"kind": "Pod", "namespace": "shop", "name": "web-5d9f-a",
+                                   "uid": pod_uid}}
+
+    def test_probe_bids_turn_towards(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.state(d, pods=[self.probing_pod()])
+            life = self.counsel(d, interval=100)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("counsel:", life.err)
+            st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+            self.assertEqual((st["bids"], st["towards"], st["turning"], st["health"]),
+                             (30, 30, 100, "stable"))
+            self.assertEqual(self.state(d)["event_polls"], {"Unhealthy": 1, "Killing": 1})
+
+    def test_first_look_baselines_existing_events_then_counts_only_growth(self):
+        for reason, message, answer in [("Unhealthy", "Liveness probe failed", "away"),
+                                         ("Killing", "Container failed liveness probe", "against")]:
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as d:
+                e = self.probe_event(reason, message, 50)
+                self.state(d, pods=[self.probing_pod()], probe_events=[e])
+                life = self.counsel(d)
+                self.assertEqual(life.code, 0, life.err)
+                self.assertNotIn("counsel:", life.err)
+                st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+                self.assertEqual((st["away"], st["against"], st["history"]), (0, 0, []))
+
+                # Restart against the same Relationship: establish 50, then count only 3.
+                self.state(d, event_polls={}, probe_event_looks=[[e], [{**e, "count": 53}]])
+                life = self.counsel(d, looks=2, clock_step=100)
+                self.assertEqual(life.code, 0, life.err)
+                self.assertNotIn("counsel:", life.err)
+                st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+                self.assertEqual(st[answer], 3)
+                self.assertEqual(len(st["history"]), 1)
+
+                # Another restart must preserve the faded total without adding 53 again.
+                self.state(d, event_polls={}, probe_event_looks=[[{**e, "count": 53}]])
+                life = self.counsel(d)
+                self.assertEqual(life.code, 0, life.err)
+                self.assertNotIn("counsel:", life.err)
+                st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+                self.assertEqual(st[answer], 2.97)
+                self.assertEqual(len(st["history"]), 1)
+
+    def test_probe_failures_grow_and_are_not_counted_twice(self):
+        with tempfile.TemporaryDirectory() as d:
+            e = self.probe_event("Unhealthy", "Readiness probe failed: refused", 2)
+            grown = {**e, "count": 42}
+            # A second look sees a large increment; later looks see the same count.
+            self.state(d, pods=[self.probing_pod()], probe_event_looks=[[e], [grown]])
+            life = self.counsel(d, looks=7, interval=0)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("counsel:", life.err)
+            st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+            self.assertAlmostEqual(st["away"], 38.04, places=2)
+            self.assertEqual(len(st["history"]), 1)
+            self.assertEqual(self.state(d)["event_polls"], {"Unhealthy": 7, "Killing": 7})
+
+    def test_growing_unhealthy_count_bounds_health(self):
+        with tempfile.TemporaryDirectory() as d:
+            e = self.probe_event("Unhealthy", "Liveness probe failed: refused", 25)
+            self.state(d, pods=[self.probing_pod()], probe_event_looks=[[e], [{**e, "count": 100}]])
+            life = self.counsel(d, looks=2, clock_step=100)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("counsel:", life.err)
+            st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+            self.assertEqual((st["bids"], st["away"], st["towards"], st["turning"], st["health"]),
+                             (30, 75, 0, 0, "failing"))
+            self.assertIn("turned away from 75 bids", st["history"][-1]["what"])
+
+    def test_turning_thresholds_and_minimum_sample(self):
+        for interval, failures, turning, health in [(100, 4, 86, "stable"),
+                                                    (100, 5, 83, "at risk"),
+                                                    (100, 20, 33, "at risk"),
+                                                    (100, 21, 30, "failing"),
+                                                    (10, 3, 0, "stable")]:
+            with self.subTest(turning=turning), tempfile.TemporaryDirectory() as d:
+                self.state(d, pods=[self.probing_pod()], probe_event_looks=[[], [
+                    self.probe_event("Unhealthy", "Liveness probe failed", failures)]])
+                life = self.counsel(d, looks=2, clock_step=interval)
+                self.assertEqual(life.code, 0, life.err)
+                self.assertNotIn("counsel:", life.err)
+                st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+                self.assertEqual((st["turning"], st["health"]), (turning, health))
+
+    def test_event_counts_are_pruned_and_container_loops_keep_totals(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = self.probing_pod()
+            p["spec"]["containers"] *= 12
+            e = self.probe_event("Unhealthy", "Readiness probe failed", 2)
+            self.state(d, pods=[p], probe_event_looks=[[e], [], [e]])
+            life = self.counsel(d, looks=3, interval=100, clock_step=100)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("counsel:", life.err)
+            st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+            self.assertEqual(st["bids"], 1069.24)
+            self.assertEqual(st["away"], 2)
+            self.assertEqual(len(st["history"]), 1)
+
+    def test_killing_is_against_and_told_without_contempt(self):
+        with tempfile.TemporaryDirectory() as d:
+            events = [self.probe_event("Killing", "Container web failed liveness probe, will be restarted"),
+                      self.probe_event("Killing", "Stopping container web", 100, "unrelated"),
+                      self.probe_event("Unhealthy", "Startup probe failed", 100, "startup"),
+                      self.probe_event("Unhealthy", "Liveness probe failed", 100, "old", "old-pod")]
+            self.state(d, pods=[self.probing_pod()], probe_event_looks=[[], events])
+            life = self.counsel(d, looks=2, clock_step=100)
+            self.assertEqual(life.code, 0, life.err)
+            self.assertNotIn("counsel:", life.err)
+            st = self.state(d)["relationships"]["shop/deployment-web.n1"]["status"]
+            self.assertEqual((st["against"], st["away"], st["towards"], st["contempt"], st["scars"]),
+                             (1, 0, 29, 0, 0))
+            self.assertIn("turned against 1 bids: killed for a failed liveness probe", st["history"][0]["what"])
 
     @staticmethod
     def roomy(name, seats=None):
