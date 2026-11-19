@@ -863,10 +863,12 @@ def scheduler_source():
         return f.read()
 
 
-def place(nodes, pods):
+def place(nodes, pods, relationships=None):
     """Where taintednetes.tainted would put the pending pods of a cluster
     that is only imagined, told to it as kubectl would tell it."""
     given = json.dumps({"items": nodes}) + "\n" + json.dumps({"items": pods}) + "\n"
+    if relationships is not None:
+        given += json.dumps({"items": relationships}) + "\n"
     life = run(scheduler_source(), given=given)
     placed = {}
     for line in life.lines:
@@ -1088,6 +1090,24 @@ class Scheduler(unittest.TestCase):
         pods[1] = fake_pod("w2", labels={"app": "web"}, spread=soft)
         _, placed = place(nodes, pods)
         self.assertEqual(placed, {"ns/w2": "b"})
+
+    def test_where_a_workload_has_fallen_it_goes_less(self):
+        def bond(node, health, scars):
+            return {"metadata": {"namespace": "ns", "name": f"deployment-web.{node}"},
+                    "spec": {"partner": {"kind": "Deployment", "name": "web"}, "node": node},
+                    "status": {"health": health, "scars": scars}}
+        web = fake_pod("web-7c9-x", likes=None)
+        web["metadata"]["labels"] = {"pod-template-hash": "7c9"}
+        web["metadata"]["ownerReferences"] = [{"kind": "ReplicaSet", "name": "web-7c9", "controller": True}]
+        nodes = [fake_node("a"), fake_node("b")]
+        for bad in ("a", "b"):
+            good = "b" if bad == "a" else "a"
+            _, placed = place(nodes, [web], [bond(bad, "failing", 4), bond(good, "stable", 0)])
+            self.assertEqual(placed, {"ns/web-7c9-x": good})
+        # What the pod itself asks for still comes first.
+        web["metadata"]["annotations"] = {LIKES: "a"}
+        _, placed = place(nodes, [web], [bond("a", "failing", 4)])
+        self.assertEqual(placed, {"ns/web-7c9-x": "a"})
 
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):

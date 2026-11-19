@@ -359,7 +359,10 @@ pods only wait.
 | `taintednetes.io/likes: "ns/pod ns/pod"` | node | pods it wants first |
 | `taintednetes.io/seats: "N"` | node | at most N pods of this scheduler |
 
-Then pods prefer the nodes their preferred node affinity leans to, then nodes
+Then pods prefer the nodes their preferred node affinity leans to, then the
+nodes their workload trusts more: fewer scars and a healthier relationship, as
+counsel keeps them (see [Operators](#operators)), counted twice for pods with a
+priority, so where a pod has fallen less of what matters goes. Then nodes
 with more free cores, and where the nodes are equal every pod has its own lasting taste, so identical pods spread
 out; nodes prefer pods with higher priority, then the ones waiting longest.
 

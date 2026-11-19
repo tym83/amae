@@ -53,6 +53,10 @@ rules:
   - apiGroups: [""]
     resources: [events]
     verbs: [create]
+  # Trust in nodes, from the relationships counsel keeps.
+  - apiGroups: [tainted.io]
+    resources: [relationships]
+    verbs: [get, list]
   # Preemption: letting pods of lower priority go, and promising the node.
   - apiGroups: [""]
     resources: [pods/eviction]
