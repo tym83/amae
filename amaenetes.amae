@@ -314,6 +314,7 @@ end
 # The cluster as kubectl tells it, made into a look: who may meet whom, in
 # what order, and how many seats every node has. Pods are named ns/name.
 ritual describe all_nodes, all_pods, scheduler, spaces, bonds
+    note "bonds" = bonds
     let free = {}
     let ports = {}
     let ours = {}
@@ -426,7 +427,8 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
         let j = 1
         while j <= length of up_nodes
             let nn = up_nodes[j]["metadata"]["name"]
-            if fits[pn + " " + nn]
+            perform recently_refused with pn, nn into refused
+            if fits[pn + " " + nn] and not refused
                 let rank = place of nn in wanted
                 if rank == 0
                     rank = words of wanted + 1
@@ -524,6 +526,94 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
     give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why, "count": length of all_nodes, "down": length of all_nodes - length of up_nodes, "wants": wants, "free": free, "ports": ports, "residents": residents, "machines": machines, "dying": dying, "around": around}
 end
 
+# Forget expired node refusals and pods with no refusals left.
+ritual prune_refused
+    let refused = note "refused"
+    let pods = keys of refused
+    let i = 1
+    while i <= length of pods
+        let pn = pods[i]
+        let refused = note "refused"
+        let nodes = refused[pn]
+        let names = keys of nodes
+        let j = 1
+        while j <= length of names
+            let nn = names[j]
+            if note "looks" - nodes[nn] > 6
+                remove nn from nodes
+            end
+            recall pods i pn nodes names
+            j = j + 1
+        end
+        let refused = note "refused"
+        if length of nodes == 0
+            remove pn from refused
+        else
+            refused[pn] = nodes
+        end
+        note "refused" = refused
+        recall pods
+        i = i + 1
+    end
+end
+
+# A refusal excludes this node for the next six looks, even silent ones.
+ritual recently_refused pn, nn
+    let refused = note "refused"
+    if place of pn in refused > 0
+        let nodes = refused[pn]
+        if place of nn in nodes > 0
+            give back note "looks" - nodes[nn] <= 6
+        end
+    end
+    give back 0
+end
+
+# Fresh reads, including failures, are cached once per node in this look.
+ritual ask_home look, pn, home, binding
+    let node = look["machines"][home]
+    if binding
+        let fresh = note "fresh nodes"
+        if place of home in fresh == 0
+            let result = {"error": ""}
+            endure
+                perform kubectl with "get node " + home + " -o json" into said
+                result["node"] = meaning of said
+            when it hurts as pain
+                result["error"] = "could not read node: " + pain
+            end
+            let fresh = note "fresh nodes"
+            fresh[home] = result
+            note "fresh nodes" = fresh
+        end
+        let result = fresh[home]
+        if result["error"] != ""
+            give back result["error"]
+        end
+        node = result["node"]
+    end
+    perform consent_of with node, look["objects"][pn], note "bonds" into reason
+    give back reason
+end
+
+ritual refuse_home look, pn, home, reason, binding
+    say pn + " is refused by " + home + ": " + reason
+    note "waiting" = note "waiting" + 1
+    let refused = note "refused"
+    perform field with refused, pn, {} into nodes
+    nodes[home] = note "looks"
+    let refused = note "refused"
+    refused[pn] = nodes
+    note "refused" = refused
+    if binding
+        endure
+            perform tell_event with look["objects"][pn], "Warning", "Refused", "node " + home + " refused: " + reason, note "scheduler"
+        when it hurts as pain
+            cry "amaenetes: no event for " + pn + ": " + pain
+        end
+    end
+end
+
 # A look made into the notes `match` reads. The pods of the look are named
 # with "#" and the number of the look, so that every look has souls of its own.
 ritual prepare look, tail
@@ -593,7 +683,8 @@ ritual rescue look, pn
     let i = 1
     while i <= words of look["nodes"]
         let nn = word i of look["nodes"]
-        if place of nn in note "promised nodes" == 0
+        perform recently_refused with pn, nn into refused
+        if place of nn in note "promised nodes" == 0 and not refused
             perform let_go_on with look, pn, mine, nn into tried
             if place of "victims" in tried > 0
                 let worst = 0
@@ -789,6 +880,7 @@ end
 ritual tell_homes look, tail, binding
     let bound = 0
     let taken = {}
+    note "fresh nodes" = {}
     note "waiting" = 0
     note "promised nodes" = ""
     note "around" = look["around"]
@@ -809,7 +901,7 @@ ritual tell_homes look, tail, binding
                 if other != ""
                     clash = word k of mine
                 end
-                recall mine taken home look tail binding bound pn
+                recall mine taken home look tail binding bound pn i clash crowd
                 k = k + 1
             end
             if clash == ""
@@ -819,10 +911,6 @@ ritual tell_homes look, tail, binding
                     perform crowded with look["objects"][pn], look["machines"][home], ar into near
                     crowd = near
                 end
-            end
-            if clash == "" and crowd == ""
-                taken[home] = taken[home] + mine
-                perform settle_near with look["objects"][pn], home
             end
         end
         if home == "nowhere"
@@ -852,25 +940,33 @@ ritual tell_homes look, tail, binding
                 end
                 note "waiting" = note "waiting" + 1
             else
-                if binding
-                    let pod = look["objects"][pn]
-                    endure
-                        perform bind with pod["metadata"]["namespace"], pod["metadata"]["name"], home into said
+                perform ask_home with look, pn, home, binding into reason
+                recall look tail binding bound taken i pn home mine
+                if reason != ""
+                    perform refuse_home with look, pn, home, reason, binding
+                else
+                    taken[home] = taken[home] + mine
+                    perform settle_near with look["objects"][pn], home
+                    if binding
+                        let pod = look["objects"][pn]
+                        endure
+                            perform bind with pod["metadata"]["namespace"], pod["metadata"]["name"], home into said
+                            say pn + " lives on " + home
+                            bound = bound + 1
+                            note "bound pod" = pod
+                            note "bound home" = home
+                            endure
+                                perform tell_event with note "bound pod", "Normal", "Scheduled", "Successfully assigned " + pn + " to " + note "bound home", note "scheduler"
+                            when it hurts as pain
+                                cry "amaenetes: no event for " + pn + ": " + pain
+                            end
+                        when it hurts as pain
+                            cry "amaenetes: " + pn + " could not live on " + home + ": " + pain
+                        end
+                    else
                         say pn + " lives on " + home
                         bound = bound + 1
-                        note "bound pod" = pod
-                        note "bound home" = home
-                        endure
-                            perform tell_event with note "bound pod", "Normal", "Scheduled", "Successfully assigned " + pn + " to " + note "bound home", note "scheduler"
-                        when it hurts as pain
-                            cry "amaenetes: no event for " + pn + ": " + pain
-                        end
-                    when it hurts as pain
-                        cry "amaenetes: " + pn + " could not live on " + home + ": " + pain
                     end
-                else
-                    say pn + " lives on " + home
-                    bound = bound + 1
                 end
             end
         end
@@ -882,6 +978,8 @@ end
 
 soul cluster
     note "known nodes" = ""
+    note "refused" = {}
+    note "looks" = 0
     let scheduler = world "AMAENETES_NAME"
     if scheduler == ""
         scheduler = "amaenetes"
@@ -988,6 +1086,8 @@ end
 
 # One look at the cluster, told if it has something new to tell.
 ritual look_once
+    note "looks" = note "looks" + 1
+    perform prune_refused
     endure
         perform get_all with "nodes" into all_nodes
         perform get_all with "pods -A" into all_pods
@@ -1020,7 +1120,6 @@ ritual look_once
     else
         let story = hash of json of [look["likes"], look["seats"]]
         if story != note "story"
-            note "looks" = note "looks" + 1
             perform prepare with note "look", "#" + note "looks"
             perform match
             perform tell_homes with note "look", "#" + note "looks", 1 into bound

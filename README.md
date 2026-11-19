@@ -365,6 +365,23 @@ them, so a disruption budget may still refuse, and is promised that node in
 `status.nominatedNodeName` until they have left. `preemptionPolicy: Never`
 pods only wait.
 
+#### Node consent
+
+Binding has two phases: prepare asks the chosen node for consent; commit
+binds the pod only if it agrees. Live mode reads the node afresh just before
+prepare, at most once per node per look; snapshots use their supplied nodes.
+In order, a node refuses if it is not Ready, is cordoned, has MemoryPressure,
+DiskPressure or PIDPressure, carries `amaenetes.io/leaving`, has a non-empty
+`amaenetes.io/refuses` annotation, or has a failing relationship with the pod's
+partner with at least three scars. The `amaenetes.io/refuses` text is the
+node's own reason, for example `maintenance until 18:00`.
+
+A refusal is printed and, in live mode, recorded as a Warning `Refused` Event
+on the pod. No binding is sent. The scheduler remembers the refused node for
+that namespace/pod for the next six looks and removes it from that pod's
+preferences, so another node can be proposed. After those six looks it may
+be asked again, even if the intervening looks had nothing new to report.
+
 | Annotation | On | Meaning |
 |---|---|---|
 | `amaenetes.io/likes: "node-a node-b"` | pod | nodes it wants first |
