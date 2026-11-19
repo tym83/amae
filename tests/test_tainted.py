@@ -830,7 +830,8 @@ def fake_node(name, seats=None, likes=None, taint=False, labels=None, extra=None
 
 def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z", requests=None,
              affinity=None, host_port=None, tolerations=None, scheduler="taintednetes",
-             host_ip=None, protocol=None, priority=None, policy=None):
+             host_ip=None, protocol=None, priority=None, policy=None, labels=None,
+             spread=None, namespace="ns"):
     container = {"resources": {"requests": requests or {"cpu": "100m", "memory": "16Mi"}}}
     if host_port:
         port = {"containerPort": host_port, "hostPort": host_port}
@@ -848,7 +849,10 @@ def fake_pod(name, likes=None, node=None, created="2026-11-17T00:00:00Z", reques
         spec["priority"] = priority
     if policy:
         spec["preemptionPolicy"] = policy
-    return {"metadata": {"name": name, "namespace": "ns", "creationTimestamp": created,
+    if spread:
+        spec["topologySpreadConstraints"] = spread
+    return {"metadata": {"name": name, "namespace": namespace, "creationTimestamp": created,
+                         "labels": labels or {},
                          "annotations": {LIKES: likes} if likes else {}},
             "spec": spec,
             "status": {"phase": "Running" if node else "Pending"}}
@@ -995,6 +999,96 @@ class Scheduler(unittest.TestCase):
         life, _ = place(nodes, pods)
         self.assertFalse(any("let go" in line for line in life.lines), life.lines)
 
+    HOSTS = staticmethod(lambda *names: [fake_node(n, labels={"kubernetes.io/hostname": n, "zone": z})
+                                         for n, z in names])
+
+    @staticmethod
+    def term(app, key="kubernetes.io/hostname", **more):
+        return {"labelSelector": {"matchLabels": {"app": app}}, "topologyKey": key, **more}
+
+    def test_required_anti_affinity_keeps_replicas_apart(self):
+        web = {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [self.term("web")]}}
+        nodes = self.HOSTS(("a", "z1"), ("b", "z1"))
+        pods = [fake_pod("web-1", node="a", labels={"app": "web"}, affinity=web),
+                fake_pod("web-2", labels={"app": "web"}, affinity=web)]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/web-2": "b"})
+
+    def test_two_of_one_look_that_shun_each_other_do_not_share_a_node(self):
+        web = {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [self.term("web")]}}
+        nodes = self.HOSTS(("a", "z1"))
+        pods = [fake_pod("web-1", labels={"app": "web"}, affinity=web),
+                fake_pod("web-2", labels={"app": "web"}, affinity=web)]
+        life, placed = place(nodes, pods)
+        self.assertEqual(list(placed.values()), ["a"])
+        self.assertTrue(any("waits for the next look: pod anti-affinity on a" in line
+                            for line in life.lines), life.lines)
+
+    def test_a_pod_already_there_may_shun_newcomers(self):
+        loner = {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [self.term("web")]}}
+        nodes = self.HOSTS(("a", "z1"), ("b", "z1"))
+        pods = [fake_pod("loner", node="a", affinity=loner),
+                fake_pod("web", labels={"app": "web"}, likes="a")]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/web": "b"})
+
+    def test_required_affinity_follows_its_kind_and_the_first_goes_anywhere(self):
+        near_cache = {"podAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [
+            self.term("cache", key="zone")]}}
+        nodes = self.HOSTS(("a", "z1"), ("b", "z2"), ("c", "z2"))
+        pods = [fake_pod("cache", node="c", labels={"app": "cache"}),
+                fake_pod("web", affinity=near_cache, likes="a")]
+        _, placed = place(nodes, pods)
+        self.assertIn(placed["ns/web"], ("b", "c"))
+        own = {"podAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [self.term("group")]}}
+        _, placed = place(nodes, [fake_pod("first", labels={"app": "group"}, affinity=own)])
+        self.assertIsNotNone(placed["ns/first"])
+        _, placed = place(nodes, [fake_pod("orphan", affinity=own)])
+        self.assertEqual(placed, {"ns/orphan": None})
+
+    def test_affinity_terms_look_at_their_own_namespace_unless_told(self):
+        near = lambda **more: {"podAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [
+            self.term("cache", key="zone", **more)]}}
+        nodes = self.HOSTS(("a", "z1"), ("b", "z2"))
+        cache = fake_pod("cache", node="b", labels={"app": "cache"}, namespace="other")
+        _, placed = place(nodes, [cache, fake_pod("web", affinity=near())])
+        self.assertEqual(placed, {"ns/web": None})
+        _, placed = place(nodes, [cache, fake_pod("web", affinity=near(namespaces=["other"]))])
+        self.assertEqual(placed, {"ns/web": "b"})
+        _, placed = place(nodes, [cache, fake_pod("web", affinity=near(namespaceSelector={}))])
+        self.assertEqual(placed, {"ns/web": "b"})
+
+    def test_topology_spread_evens_out_zones(self):
+        spread = [{"maxSkew": 1, "topologyKey": "zone", "whenUnsatisfiable": "DoNotSchedule",
+                   "labelSelector": {"matchLabels": {"app": "web"}}}]
+        nodes = self.HOSTS(("a", "z1"), ("b", "z2")) + [fake_node("keyless")]
+        pods = [fake_pod("w1", node="a", labels={"app": "web"}),
+                fake_pod("w2", node="a", labels={"app": "web"}),
+                fake_pod("w3", node="b", labels={"app": "web"}),
+                fake_pod("w4", labels={"app": "web"}, spread=spread, likes="a keyless")]
+        life, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/w4": "b"})
+        pods[3] = fake_pod("w4", labels={"app": "web"}, spread=spread, likes="a keyless",
+                           affinity={"nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": {
+                               "nodeSelectorTerms": [{"matchExpressions": [
+                                   {"key": "zone", "operator": "In", "values": ["z1"]}]}]}}})
+        life, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/w4": "a"}, life.lines)
+
+    def test_preferences_among_pods(self):
+        avoid = {"podAntiAffinity": {"preferredDuringSchedulingIgnoredDuringExecution": [
+            {"weight": 50, "podAffinityTerm": self.term("web")}]}}
+        nodes = self.HOSTS(("a", "z1"), ("b", "z1"))
+        pods = [fake_pod("w1", node="a", labels={"app": "web"}),
+                fake_pod("w2", labels={"app": "web"}, affinity=avoid)]
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/w2": "b"})
+        soft = [{"maxSkew": 1, "topologyKey": "kubernetes.io/hostname",
+                 "whenUnsatisfiable": "ScheduleAnyway", "labelSelector": {"matchLabels": {"app": "web"}}}]
+        pods[1] = fake_pod("w2", labels={"app": "web"}, spread=soft)
+        _, placed = place(nodes, pods)
+        self.assertEqual(placed, {"ns/w2": "b"})
+
     def test_requests_count_init_containers_like_the_kubelet(self):
         def box(cpu, always=False):
             c = {"resources": {"requests": {"cpu": cpu}}}
@@ -1048,6 +1142,7 @@ class LiveScheduler(unittest.TestCase):
                         'case "$1 $2 $3" in\n'
                         f'  "get nodes "*) cat {d}/nodes.json ;;\n'
                         f'  "get pods "*) cat {d}/pods.json ;;\n'
+                        '  "get namespaces "*) echo \'{"items": [{"metadata": {"name": "ns"}}]}\' ;;\n'
                         f'  "get leases.coordination.k8s.io "*) cat {d}/lease.json 2>/dev/null; true ;;\n'
                         f'  "create --raw "*/events) echo "$(cat)" >> {d}/events ;;\n'
                         f'  "create --raw "*/leases) cat > {d}/lease.json ;;\n'

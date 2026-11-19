@@ -44,7 +44,7 @@ metadata:
   name: taintednetes-scheduler
 rules:
   - apiGroups: [""]
-    resources: [pods, nodes]
+    resources: [pods, nodes, namespaces]
     verbs: [get, list]
   - apiGroups: [""]
     resources: [bindings, pods/binding]
