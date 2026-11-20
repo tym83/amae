@@ -620,6 +620,21 @@ kubectl --context <ctx> apply -f kube/deploy.yaml
 kubectl --context <ctx> -n amaenetes logs -f deploy/scheduler
 ```
 
+### Conformance
+
+Amaenetes проходит conformance Kubernetes v1.35.6 единственным планировщиком
+кластера. Прогон шёл на официальном образе
+`registry.k8s.io/conformance:v1.35.6` (фокус `[Conformance]`, без
+`[Disruptive]` и `NoExecuteTaintManager`, как в сертификационном режиме
+sonobuoy): 439 тестов подряд на кластере из трёх нод, где control plane
+по-прежнему запускает kube-scheduler, а `kube/default-scheduler.yaml`
+держит его в стороне. Lease весь прогон держала одна копия Amaenetes.
+Прошли 437. Одно падение — настройка самого кластера, а не планировщика: на
+нодах оставалась аннотация `amaenetes.io/seats: "12"`, которую Amaenetes
+соблюдает, а kube-scheduler нет; без неё тест проходит. Второе,
+`API chunking ... compacted away`, касается хранилища и на том же кластере
+падает и с kube-scheduler.
+
 ## Примеры
 
 | Файл | Что происходит |
