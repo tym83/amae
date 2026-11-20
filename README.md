@@ -587,6 +587,21 @@ kubectl --context <ctx> apply -f kube/deploy.yaml
 kubectl --context <ctx> -n amaenetes logs -f deploy/scheduler
 ```
 
+### Conformance
+
+Amaenetes passes the Kubernetes v1.35.6 conformance suite as the only
+scheduler of a cluster. The run used the upstream image
+`registry.k8s.io/conformance:v1.35.6` (focus `[Conformance]`, skipping
+`[Disruptive]` and `NoExecuteTaintManager` as sonobuoy's certified mode
+does): 439 specs, serial, on a three-node cluster whose control plane still
+runs kube-scheduler, held off by `kube/default-scheduler.yaml`. The lease
+stayed with one Amaenetes copy for the whole run. 437 passed. One failure
+was a configuration of that cluster, not of the scheduler: its nodes still
+carried `amaenetes.io/seats: "12"`, which Amaenetes honours and
+kube-scheduler does not; without it the spec passes. The other,
+`API chunking ... compacted away`, concerns the datastore and fails on the
+same cluster with kube-scheduler too.
+
 ## Examples
 
 | File | What happens |
