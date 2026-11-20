@@ -480,7 +480,16 @@ and on every pod it finds no home for (`FailedScheduling`), saying how many
 nodes turned it away and why: `0/3 nodes are available: 2 not enough cpu, 1
 taint role.` With `AMAENETES_LEASE=namespace/name`, several copies can run
 at once: the one holding that Lease binds and renews it every look, the others
-wait and take it over once it has not been renewed for three looks.
+wait and take it over once it has not been renewed for three looks (at
+least 15 seconds; `AMAENETES_LEASE_SECONDS` sets it, and it must outlast the
+slowest look).
+
+Amaenetes can be the default scheduler of a cluster whose control plane still
+runs kube-scheduler: `kube/default-scheduler.yaml` makes it answer
+`schedulerName: default-scheduler` and hold kube-scheduler's own Lease
+`kube-system/kube-scheduler` (120 seconds), so kube-scheduler stays a
+candidate that never leads while Amaenetes lives. The Lease is handed over
+once by hand, as the manifest says.
 
 A pod with nowhere to live may preempt, as in kube-scheduler: it asks the node
 where the going of pods of lower priority would make room to let go of the

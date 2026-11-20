@@ -135,6 +135,8 @@ spec:
       labels: {app: amaenetes-scheduler}
     spec:
       serviceAccountName: scheduler
+      # Conformance and preemption must never choose the scheduler as a victim.
+      priorityClassName: system-cluster-critical
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

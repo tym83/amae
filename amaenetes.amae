@@ -1072,6 +1072,11 @@ ritual lead
     if span < 15
         span = 15
     end
+    # A look of a busy cluster can outlast three intervals; the lease must
+    # outlast the longest look, or another scheduler takes it mid-look.
+    if world "AMAENETES_LEASE_SECONDS" != ""
+        span = number of world "AMAENETES_LEASE_SECONDS"
+    end
     endure
         perform hold_lease with both[1], both[2], note "who", span into holder
         note "holder" = holder

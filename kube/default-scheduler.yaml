@@ -1,0 +1,82 @@
+# Amaenetes as the default scheduler of a cluster whose control plane still
+# runs kube-scheduler: Amaenetes answers schedulerName default-scheduler and
+# holds kube-scheduler's own lease, so kube-scheduler stays a candidate that
+# never leads while Amaenetes lives. Apply after kube/deploy.yaml (the
+# ServiceAccount, kubeconfig and ClusterRole are shared), then hand the lease
+# over once, naming one of the pods below:
+#
+#   kubectl --context <ctx> -n kube-system patch lease kube-scheduler --type=merge \
+#     -p '{"spec":{"holderIdentity":"<amaenetes-default pod>","renewTime":"<now, RFC 3339 micro>"}}'
+#
+# kube-scheduler fails to renew, stops leading and comes back as a candidate.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: amaenetes-default-lease
+  namespace: kube-system
+rules:
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    resourceNames: [kube-scheduler]
+    verbs: [get, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: amaenetes-default-lease
+  namespace: kube-system
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: amaenetes-default-lease}
+subjects:
+  - {kind: ServiceAccount, name: scheduler, namespace: amaenetes}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amaenetes-default
+  namespace: amaenetes
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: amaenetes-default}
+  template:
+    metadata:
+      labels: {app: amaenetes-default}
+    spec:
+      # Placed by the Amaenetes that answers its own name, not by the one
+      # it is about to replace.
+      schedulerName: amaenetes
+      serviceAccountName: scheduler
+      # Conformance and preemption must never choose the scheduler as a victim.
+      priorityClassName: system-cluster-critical
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels: {app: amaenetes-default}
+      containers:
+        - name: scheduler
+          image: ghcr.io/tym83/amae:latest
+          imagePullPolicy: Always
+          command: [/opt/amae/bin/amaenetes, --patience=0]
+          env:
+            - {name: KUBECONFIG, value: /etc/amaenetes/config}
+            - {name: KUBE_CONTEXT, value: in-cluster}
+            - {name: AMAENETES_NAME, value: default-scheduler}
+            - {name: AMAENETES_INTERVAL, value: "2"}
+            - {name: AMAENETES_LEASE, value: kube-system/kube-scheduler}
+            # kube-scheduler honours the holder's duration: a long lease keeps
+            # it waiting through the slowest look of a busy cluster.
+            - {name: AMAENETES_LEASE_SECONDS, value: "120"}
+            - name: HOSTNAME
+              valueFrom: {fieldRef: {fieldPath: metadata.name}}
+            - {name: HOME, value: /tmp}
+          volumeMounts:
+            - {name: kubeconfig, mountPath: /etc/amaenetes}
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+      volumes:
+        - name: kubeconfig
+          configMap: {name: amaenetes-kubeconfig}
