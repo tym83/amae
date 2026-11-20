@@ -89,7 +89,7 @@ class Life:
                     "left": ", left" in m[9]}
 
 
-def run(source, runs=0, given="", flags=(), env=None):
+def run(source, runs=0, given="", flags=(), env=None, timeout=None):
     program, failed = compile_source(source)
     if failed:
         return Life(failed[0], "", failed[1])
@@ -99,7 +99,7 @@ def run(source, runs=0, given="", flags=(), env=None):
             with open(history, "w") as f:
                 json.dump({source_key(source): runs}, f)
         res = subprocess.run([program, "--feelings", *flags], input=given, capture_output=True,
-                             text=True, env=dict(os.environ, AMAE_HISTORY=history, **(env or {})))
+                             text=True, timeout=timeout, env=dict(os.environ, AMAE_HISTORY=history, **(env or {})))
     return Life(res.returncode, res.stdout, res.stderr)
 
 
@@ -1251,7 +1251,8 @@ end
 class LiveScheduler(unittest.TestCase):
     """The scheduler of a cluster, talking to a kubectl that only imagines one."""
 
-    def live(self, nodes, pods, looks, lease=None, env=None, fresh_nodes=None, recovered_nodes=None):
+    def live(self, nodes, pods, looks, lease=None, env=None, fresh_nodes=None, recovered_nodes=None,
+             lose_lease=False, bind_delay=0, consume_bindings=False):
         with tempfile.TemporaryDirectory() as d:
             if lease is not None:
                 with open(os.path.join(d, "lease.json"), "w") as f:
@@ -1267,9 +1268,18 @@ class LiveScheduler(unittest.TestCase):
                 with open(os.path.join(d, "recovered-" + node["metadata"]["name"] + ".json"), "w") as f:
                     json.dump(node, f)
             fake = os.path.join(d, "kubectl")
+            steal = (f"jq '.spec.holderIdentity = \"other\"' {d}/lease.json > {d}/stolen; "
+                     f"mv {d}/stolen {d}/lease.json; " if lose_lease else "")
+            consume = (f'printf "%s" "$body" > {d}/bound.json; '
+                       f"jq --slurpfile bound {d}/bound.json "
+                       "'.items |= map(select(.metadata.name != $bound[0].metadata.name or "
+                       ".metadata.namespace != $bound[0].metadata.namespace))' "
+                       f'{d}/pods.json > {d}/remaining.json; mv {d}/remaining.json {d}/pods.json; '
+                       if consume_bindings else "")
             with open(fake, "w") as f:
                 f.write('#!/bin/sh\n'
                         '[ "$1 $2" = "--context imagined" ] || { echo "no context" >&2; exit 1; }\n'
+                        f'echo "$*" >> {d}/calls\n'
                         'shift 2\n'
                         '[ "$1" = "-n" ] && shift 2\n'
                         'case "$1 $2 $3" in\n'
@@ -1284,14 +1294,20 @@ class LiveScheduler(unittest.TestCase):
                         f'  "create --raw "*/leases) cat > {d}/lease.json ;;\n'
                         f'  "replace --raw "*/leases/*) cat > {d}/lease.json ;;\n'
                         f'  "patch pod "*) echo "$3 $(cat)" >> {d}/patched ;;\n'
-                        f'  "create --raw "*) echo "$3 $(cat)" >> {d}/asked ;;\n'
+                        f'  "create --raw "*) body=$(cat); echo "$3 $body" >> {d}/asked; {consume}{steal}sleep {bind_delay} ;;\n'
                         '  *) exit 1 ;;\n'
                         'esac\n')
             os.chmod(fake, 0o755)
-            life = run(scheduler_source(), flags=("--patience=0",),
+            source = scheduler_source().replace('        perform look_once', '        note "benchmark start" = now\n        perform look_once\n        say "look seconds: " + (now - note "benchmark start")')
+            life = run(source, flags=("--patience=0",), timeout=30,
                        env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined",
                             "AMAENETES_LOOKS": str(looks), "AMAENETES_INTERVAL": "0",
                             **(env or {})})
+            self.assertEqual(life.code, 0, life.err)
+            with open(os.path.join(d, "calls")) as f:
+                self.calls = f.read().splitlines()
+            self.elapsed = [float(line.split(": ")[1]) for line in life.lines
+                            if line.startswith("look seconds: ")]
             self.gets = []
             if os.path.exists(os.path.join(d, "gets")):
                 with open(os.path.join(d, "gets")) as f:
@@ -1315,6 +1331,103 @@ class LiveScheduler(unittest.TestCase):
                         path, body = line.split(" ", 1)
                         asked.append((path, json.loads(body)))
         return life, asked
+
+    def test_direct_matching_agrees_with_deferred_acceptance(self):
+        source = scheduler_source().split("soul cluster\n", 1)[0] + '''
+soul cluster
+    hear world into line
+    let data = meaning of line
+    note "look" = data
+    perform match_live with data, "#1" into matched
+    let data = note "look"
+    let homes = {}
+    let i = 1
+    while i <= words of data["pods"]
+        let pn = word i of data["pods"]
+        homes[pn] = note ("home " + pn + "#1")
+        recall data homes
+        i = i + 1
+    end
+    say json of homes
+end
+'''
+        rng = random.Random(83)
+        for _ in range(40):
+            ps = ["p" + str(i) for i in range(rng.randint(1, 30))]
+            ns = ["n" + str(i) for i in range(rng.randint(1, 10))]
+            pods = {p: rng.sample(ns, rng.randint(0, len(ns))) for p in ps}
+            nodes = {n: rng.sample(ps, rng.randint(0, len(ps))) for n in ns}
+            seats = {n: rng.randint(0, 5) for n in ns}
+            data = {"pods": " ".join(ps), "nodes": " ".join(ns), "seats": seats,
+                    "likes": {k: " ".join(v) for k, v in {**pods, **nodes}.items()}}
+            life = run(source, given=json.dumps(data) + "\n", timeout=10)
+            self.assertEqual(life.code, 0, life.err)
+            homes = {k: (None if v == "nowhere" else v) for k, v in json.loads(life.lines[-1]).items()}
+            self.assertEqual(homes, gale_shapley(pods, nodes, seats))
+
+    def test_renewal_between_bindings(self):
+        life, asked = self.live([fake_node("a")], [fake_pod("p" + str(i)) for i in range(3)],
+                                looks=1, env={**self.LEASE_ENV, "AMAENETES_LEASE_SECONDS": "1"},
+                                bind_delay=0.4)
+        self.assertEqual(len(asked), 3)
+        binds = [i for i, call in enumerate(self.calls) if "/binding " in call]
+        for left, right in zip(binds, binds[1:]):
+            self.assertTrue(any("replace --raw" in c and "/leases/" in c
+                                for c in self.calls[left:right]))
+
+    def test_losing_lease_ends_the_look(self):
+        life, asked = self.live([fake_node("a")], [fake_pod("p" + str(i)) for i in range(3)],
+                                looks=1, env={**self.LEASE_ENV, "AMAENETES_LEASE_SECONDS": "1"},
+                                bind_delay=0.4, lose_lease=True)
+        self.assertEqual(len(asked), 1)
+        self.assertTrue(any("lease lost" in line for line in life.lines))
+        self.assertEqual(self.lease["spec"]["holderIdentity"], "other")
+
+    def test_renewal_and_loss_between_preemption_evictions(self):
+        pods = [fake_pod("low-a", node="a", requests={"cpu": "1"}),
+                fake_pod("low-b", node="a", requests={"cpu": "1"}),
+                fake_pod("high", requests={"cpu": "2"}, priority=10)]
+        for lose in (False, True):
+            with self.subTest(lose=lose):
+                life, asked = self.live([fake_node("a", extra={"cpu": "2"})], pods, looks=1,
+                                        env={**self.LEASE_ENV, "AMAENETES_LEASE_SECONDS": "1"},
+                                        bind_delay=0.4, lose_lease=lose)
+                self.assertEqual(len(asked), 1 if lose else 2)
+                self.assertTrue(all(path.endswith("/eviction") for path, _ in asked))
+                if lose:
+                    self.assertEqual(self.patched, [])
+                    self.assertTrue(any("lease lost" in line for line in life.lines))
+                else:
+                    evictions = [i for i, call in enumerate(self.calls) if "/eviction " in call]
+                    self.assertTrue(any("replace --raw" in c and "/leases/" in c
+                                        for c in self.calls[evictions[0]:evictions[1]]))
+
+    def test_batch_selects_oldest_and_skips_interval(self):
+        pods = [fake_pod("new", created="2026-11-19T00:00:00Z"),
+                fake_pod("old", created="2026-11-16T00:00:00Z"), fake_pod("middle")]
+        life, asked = self.live([fake_node("a")], pods, looks=2,
+                                env={"AMAENETES_BATCH": "2", "AMAENETES_INTERVAL": "60"}, consume_bindings=True)
+        self.assertEqual([body["metadata"]["name"] for _, body in asked],
+                         ["old", "middle", "new"])
+
+    def test_unplaceable_batch_does_not_starve_remaining_pods(self):
+        pods = [fake_pod("old", created="2026-11-16T00:00:00Z", requests={"cpu": "100"}),
+                fake_pod("new", created="2026-11-19T00:00:00Z")]
+        life, asked = self.live([fake_node("a")], pods, looks=2,
+                                env={"AMAENETES_BATCH": "1", "AMAENETES_INTERVAL": "60"})
+        self.assertEqual([body["metadata"]["name"] for _, body in asked], ["new"])
+
+    def test_large_cluster_look_finishes_within_budget(self):
+        for count in (3, 10):
+            for batch in (50, 100):
+                with self.subTest(nodes=count, batch=batch):
+                    env = {} if batch == 50 else {"AMAENETES_BATCH": str(batch)}
+                    life, asked = self.live([fake_node("node-" + str(i)) for i in range(count)],
+                                            [fake_pod("p" + str(i)) for i in range(100)], looks=1, env=env)
+                    self.assertEqual(len(asked), batch)
+                    self.assertLess(self.elapsed[0], 10)
+                    self.assertLessEqual(len(self.calls), 2 * batch + 4 + count)
+                    self.assertEqual(len(self.gets), len(set(self.gets)))
 
     def test_fresh_node_refuses_then_another_node_accepts(self):
         fresh = fake_node("a")
@@ -1397,8 +1510,7 @@ class LiveScheduler(unittest.TestCase):
         self.assertEqual(life.lines.count(
             "ns/web has nowhere to live: 0/1 nodes are available: 1 taint role."), 1)
 
-    def test_nodes_live_between_looks(self):
-        """Every look brings new pod souls, but the nodes are the same souls."""
+    def test_pods_are_reconsidered_on_later_looks(self):
         life, asked = self.live([fake_node("a"), fake_node("b")],
                                 [fake_pod("web"), fake_pod("db")], looks=2)
         self.assertEqual(life.code, 0, life.err)

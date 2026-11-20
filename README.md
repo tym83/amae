@@ -472,17 +472,22 @@ spread with `DoNotSchedule`. Preferred pod affinity and anti-affinity and
 `ScheduleAnyway` spread make it lean. Two pods of one look that would break
 these rules for each other do not both move in: the second waits for the next
 look. A node offers as many seats as it can hold of
-the largest pod that wants it. The nodes are souls that live as long as the
-scheduler does; the pods of every look are souls of that look.
+the largest pod that wants it. Live looks execute the same pod-proposing
+deferred acceptance directly in Amae, without simulated message delays;
+snapshot mode retains the pod and node souls.
 
 Like kube-scheduler, it leaves an Event on every pod it places (`Scheduled`)
 and on every pod it finds no home for (`FailedScheduling`), saying how many
 nodes turned it away and why: `0/3 nodes are available: 2 not enough cpu, 1
 taint role.` With `AMAENETES_LEASE=namespace/name`, several copies can run
-at once: the one holding that Lease binds and renews it every look, the others
-wait and take it over once it has not been renewed for three looks (at
-least 15 seconds; `AMAENETES_LEASE_SECONDS` sets it, and it must outlast the
-slowest look).
+at once: the holder renews at the start and inside each look once more than
+one third of its duration has elapsed, including before every binding and
+preemption eviction. Losing the Lease or failing to renew ends scheduling
+for that look. Others may take over after its duration without renewal
+(default: three intervals, at least 15 seconds; `AMAENETES_LEASE_SECONDS`
+overrides it). `AMAENETES_BATCH` limits each live look to 50 pending pods by
+default, oldest creation timestamp first. When more remain, the next look
+starts immediately without waiting for `AMAENETES_INTERVAL`.
 
 Amaenetes can be the default scheduler of a cluster whose control plane still
 runs kube-scheduler: `kube/default-scheduler.yaml` makes it answer

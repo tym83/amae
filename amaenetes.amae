@@ -5,8 +5,9 @@
 # the pods and the nodes find each other, binds every pod to the node it
 # settled on, and looks again. Pods choose it with schedulerName:
 # amaenetes (or AMAENETES_NAME). It looks every AMAENETES_INTERVAL
-# seconds (5 if not set) and, if AMAENETES_LOOKS is set, rests after
-# that many looks. With AMAENETES_LEASE set to namespace/name, several
+# seconds (5 if not set), handles at most AMAENETES_BATCH pending pods
+# (50 by default), and immediately looks again when more remain. With
+# AMAENETES_LOOKS set it rests after that many looks. With AMAENETES_LEASE set to namespace/name, several
 # copies may run and only the one holding that lease binds; the others
 # wait for it to stop renewing. Every pod it binds, and every pod it finds
 # nowhere to live for, gets an Event, as kube-scheduler gives them.
@@ -45,8 +46,8 @@
 # Nobody compares the cluster with a desired state. When every soul is
 # waiting and nobody has anything left to say, the cluster hears the silence,
 # asks every pod where it lives and lets everyone rest. That silence is a
-# stable matching. The nodes stay: every look at the cluster is one more
-# meeting with them. The pods of one look are souls of that look.
+# stable matching. Live mode computes the same deferred acceptance directly,
+# avoiding simulated message distance as the number of pods grows.
 #
 # Everything that has to survive a wait is written down with note:
 # a soul that waits forgets, and a scheduler that forgets loses its pods.
@@ -266,6 +267,96 @@ ritual match
     end
 end
 
+# The same deferred acceptance in live mode, without simulated message
+# distance. A full node's worst accepted rank only moves towards its best,
+# so finding displaced pods takes linear work across all proposals.
+ritual match_live look, tail
+    let filter_ = "def names: split(\" \") | map(select(length > 0)); .pods |= names | .nodes |= names | .likes |= with_entries(.value |= names)"
+    ask world "jq -c '" + filter_ + "'" telling json of {"pods": look["pods"], "nodes": look["nodes"], "likes": look["likes"], "seats": look["seats"]} into shaped
+    let data = meaning of shaped
+    let ranks = {}
+    let held = {}
+    let counts = {}
+    let worst = {}
+    let homes = {}
+    let nexts = {}
+    let i = 1
+    while i <= length of data["nodes"]
+        let nn = data["nodes"][i]
+        counts[nn] = 0
+        worst[nn] = 0
+        let j = 1
+        while j <= length of data["likes"][nn]
+            ranks[nn + " " + data["likes"][nn][j]] = j
+            recall data ranks held counts worst homes nexts tail i nn
+            j = j + 1
+        end
+        recall data ranks held counts worst homes nexts tail
+        i = i + 1
+    end
+    i = 1
+    while i <= length of data["pods"]
+        let pn = data["pods"][i]
+        while pn != ""
+            perform keep_leading into leading
+            if not leading
+                give back 0
+            end
+            perform field with nexts, pn, 1 into proposal
+            homes[pn] = "nowhere"
+            if proposal > length of data["likes"][pn]
+                pn = ""
+            else
+                let nn = data["likes"][pn][proposal]
+                nexts[pn] = proposal + 1
+                perform field with ranks, nn + " " + pn, 0 into rank
+                let room = data["seats"][nn]
+                let accepted = rank > 0 and counts[nn] < room
+                let displaced = ""
+                if not accepted and room > 0 and rank > 0
+                    if rank < worst[nn]
+                        displaced = data["likes"][nn][worst[nn]]
+                        held[nn + " " + displaced] = 0
+                        accepted = 1
+                    end
+                end
+                if accepted
+                    homes[pn] = nn
+                    held[nn + " " + pn] = 1
+                    if displaced == ""
+                        counts[nn] = counts[nn] + 1
+                    end
+                    if rank > worst[nn]
+                        worst[nn] = rank
+                    end
+                    if displaced != ""
+                        let last = worst[nn]
+                        perform field with held, nn + " " + data["likes"][nn][last], 0 into occupied
+                        while last > 0 and not occupied
+                            last = last - 1
+                            perform field with held, nn + " " + data["likes"][nn][last], 0 into occupied
+                            recall data ranks held counts worst homes nexts tail i pn nn rank room accepted displaced
+                        end
+                        worst[nn] = last
+                    end
+                    pn = displaced
+                end
+            end
+            recall data ranks held counts worst homes nexts tail i pn
+        end
+        recall data ranks held counts worst homes nexts tail
+        i = i + 1
+    end
+    i = 1
+    while i <= length of data["pods"]
+        let pn = data["pods"][i]
+        note ("home " + pn + tail) = homes[pn]
+        recall data homes tail
+        i = i + 1
+    end
+    give back 1
+end
+
 # The relationships counsel keeps (amae.io/v1), by namespace, partner
 # and node.
 ritual bonds_of all
@@ -279,6 +370,7 @@ ritual bonds_of all
             let partner = r["spec"]["partner"]
             bonds[r["metadata"]["namespace"] + " " + partner["kind"] + "/" + partner["name"] + " " + r["spec"]["node"]] = st
         end
+        perform keep_leading
         recall all bonds
         i = i + 1
     end
@@ -341,6 +433,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
             machines[name] = all_nodes[i]
             dying[name] = 0
         end
+        perform keep_leading
         recall all_nodes all_pods scheduler free ports ours up_nodes residents machines dying placed guarded spaces bonds
         i = i + 1
     end
@@ -376,8 +469,20 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
         if where == "" and stage == "Pending" and going == "" and chosen == scheduler
             put p into pending
         end
+        perform keep_leading
         recall all_nodes all_pods scheduler free ports ours up_nodes pending residents machines dying placed guarded spaces bonds
         i = i + 1
+    end
+
+    if world "KUBE_CONTEXT" != ""
+        # Continue the oldest-first sweep even if an earlier batch cannot
+        # fit. Otherwise unschedulable old pods would starve the remainder.
+        let filter_ = "def age: [.metadata.creationTimestamp, .metadata.namespace, .metadata.name]; .batch as $batch | .after as $after | (.pods | sort_by(age)) as $all | ($all | map(select(age > $after))) as $rest | (if ($rest | length) == 0 then $all else $rest end) | {pods: .[:$batch], more: (length > $batch), after: (if length > $batch then .[$batch - 1] | age else [] end)}"
+        ask world "jq -c '" + filter_ + "'" telling json of {"pods": pending, "batch": note "batch", "after": note "batch after"} into selected
+        let selection = meaning of selected
+        note "more work" = selection["more"]
+        note "batch after" = selection["after"]
+        pending = selection["pods"]
     end
 
     # Who fits where, and why not.
@@ -415,6 +520,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
             j = j + 1
         end
         why[pn] = reasons
+        perform keep_leading
         recall pending up_nodes free ports ours pods objects wants fits why all_nodes residents machines dying placed guarded spaces around bonds
         i = i + 1
     end
@@ -422,8 +528,8 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
     # What every pod likes, best first.
     let likes = {}
     i = 1
-    while i <= words of pods
-        let pn = word i of pods
+    while i <= length of pending
+        let pn = pending[i]["metadata"]["namespace"] + "/" + pending[i]["metadata"]["name"]
         perform annotation with objects[pn], "amaenetes.io/likes" into wanted
         let candidates = []
         let order = []
@@ -447,7 +553,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
                 put nn into candidates
                 put [rank, 0 - lean, wary, 0 - cores / 1000, hash of ("pod:" + pn + " node:" + nn)] into order
             end
-            recall pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around bonds
+            recall pending pn wanted candidates order i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         perform sorted with candidates, order into best
@@ -455,11 +561,12 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
         j = 1
         while j <= length of best
             line = line + " " + best[j]
-            recall best line pn i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around bonds
+            recall pending best line pn i pods objects up_nodes free fits likes ours wants why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         likes[pn] = line
-        recall pods objects up_nodes free fits likes why all_nodes residents machines dying ports placed guarded spaces around bonds
+        perform keep_leading
+        recall pending pods objects up_nodes free fits likes why all_nodes residents machines dying ports placed guarded spaces around bonds
         i = i + 1
     end
 
@@ -475,8 +582,8 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
         let suitors = []
         let order = []
         let j = 1
-        while j <= words of pods
-            let pn = word j of pods
+        while j <= length of pending
+            let pn = pending[j]["metadata"]["namespace"] + "/" + pending[j]["metadata"]["name"]
             if fits[pn + " " + nn]
                 let rank = place of pn in wanted
                 if rank == 0
@@ -486,7 +593,7 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
                 put pn into suitors
                 put [rank, 0 - priority, objects[pn]["metadata"]["creationTimestamp"], pn] into order
             end
-            recall node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
+            recall pending node nn wanted suitors order i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         perform sorted with suitors, order into best
@@ -512,10 +619,10 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
                         room = has / r[names[k]]
                     end
                 end
-                recall r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
+                recall pending r names left room j best line node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
                 k = k + 1
             end
-            recall best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
+            recall pending best line left room node nn i up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
             j = j + 1
         end
         if room < 0
@@ -523,7 +630,8 @@ ritual describe all_nodes, all_pods, scheduler, spaces, bonds
         end
         likes[nn] = line
         seats[nn] = room
-        recall up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
+        perform keep_leading
+        recall pending up_nodes pods objects wants fits free ours nodes seats likes why all_nodes residents machines dying ports placed guarded spaces around bonds
         i = i + 1
     end
     give back {"pods": pods, "nodes": nodes, "likes": likes, "seats": seats, "objects": objects, "why": why, "count": length of all_nodes, "down": length of all_nodes - length of up_nodes, "wants": wants, "free": free, "ports": ports, "residents": residents, "machines": machines, "dying": dying, "around": around}
@@ -716,6 +824,7 @@ ritual rescue look, pn
                 end
             end
         end
+        perform keep_leading
         recall look pn mine chosen chosen_key
         i = i + 1
     end
@@ -829,6 +938,10 @@ ritual let_go look, pn, saved, binding
     while i <= length of note "victims"
         let victim = (note "victims")[i]
         let vn = victim["metadata"]["namespace"] + "/" + victim["metadata"]["name"]
+        perform keep_leading into leading
+        if not leading
+            give back 0
+        end
         endure
             perform evict with vn
             say vn + " lets go of " + note "on" + " for " + note "for"
@@ -837,6 +950,10 @@ ritual let_go look, pn, saved, binding
             say vn + " cannot let go yet: " + pain
         end
         i = i + 1
+    end
+    perform keep_leading into leading
+    if not leading
+        give back 0
     end
     endure
         perform nominate with note "rescued", note "on"
@@ -894,6 +1011,10 @@ ritual tell_homes look, tail, binding
     note "around" = look["around"]
     let i = 1
     while i <= words of look["pods"]
+        perform keep_leading into leading
+        if binding and not leading
+            give back bound
+        end
         let pn = word i of look["pods"]
         let home = note ("home " + pn + tail)
         perform host_ports with look["objects"][pn] into mine
@@ -957,6 +1078,10 @@ ritual tell_homes look, tail, binding
                     perform settle_near with look["objects"][pn], home
                     if binding
                         let pod = look["objects"][pn]
+                        perform keep_leading into leading
+                        if not leading
+                            give back bound
+                        end
                         endure
                             perform bind with pod["metadata"]["namespace"], pod["metadata"]["name"], home into said
                             say pn + " lives on " + home
@@ -982,6 +1107,63 @@ ritual tell_homes look, tail, binding
         i = i + 1
     end
     give back bound
+end
+
+# Leading, or waiting for the one who leads: only one scheduler of a name
+# binds at a time. Renew at the start and throughout every look.
+ritual lead
+    perform namespaced with note "lease" into both
+    let span = 3 * number of ("" + note "every")
+    if span < 15
+        span = 15
+    end
+    # Override the default lease duration, independently of the interval.
+    if world "AMAENETES_LEASE_SECONDS" != ""
+        span = number of world "AMAENETES_LEASE_SECONDS"
+    end
+    note "lease span" = span
+    note "renewal started" = now
+    endure
+        perform hold_lease with both[1], both[2], note "who", span into holder
+        note "holder" = holder
+    when it hurts as pain
+        cry "amaenetes: the lease " + note "lease" + ": " + pain
+        note "holder" = ""
+    end
+    if note "holder" == note "who"
+        note "last renewal" = note "renewal started"
+    end
+    if note "holder" != note "leader"
+        if note "holder" == note "who"
+            say note "who" + " leads"
+        else
+            if note "holder" != ""
+                say note "who" + " waits: " + note "holder" + " leads"
+            end
+            note "story" = ""
+        end
+        note "leader" = note "holder"
+    end
+end
+
+# A failed renewal latches for the whole look: never reacquire mid-look.
+# Check the clock cheaply even when no cluster request is due.
+ritual keep_leading
+    if world "KUBE_CONTEXT" == "" or note "lease" == ""
+        give back 1
+    end
+    if note "lease lost"
+        give back 0
+    end
+    if now - note "last renewal" > note "lease span" / 3.0
+        perform lead
+        if note "leader" != note "who"
+            note "lease lost" = 1
+            say "amaenetes: lease lost; ending this look without further bindings or evictions"
+            give back 0
+        end
+    end
+    give back 1
 end
 
 soul cluster
@@ -1043,7 +1225,17 @@ soul cluster
     if note "who" == ""
         note "who" = note "scheduler"
     end
+    note "more work" = 0
+    note "lease lost" = 0
     note "leader" = ""
+    note "batch after" = []
+    note "batch" = 50
+    if world "AMAENETES_BATCH" != ""
+        note "batch" = number of world "AMAENETES_BATCH"
+    end
+    if note "batch" < 1
+        note "batch" = 50
+    end
     say "amaenetes schedules the pods that choose " + note "scheduler"
     mark looking
     if note "lease" != ""
@@ -1059,62 +1251,37 @@ soul cluster
             goodbye
         end
     end
-    wait number of ("" + note "every") seconds
+    if not note "more work" or note "lease lost"
+        wait number of ("" + note "every") seconds
+    end
     return to looking
-end
-
-# Leading, or waiting for the one who leads: only one scheduler of a name
-# binds at a time. Every look renews the lease; one that has not been
-# renewed for three looks may be taken.
-ritual lead
-    perform namespaced with note "lease" into both
-    let span = 3 * number of ("" + note "every")
-    if span < 15
-        span = 15
-    end
-    # A look of a busy cluster can outlast three intervals; the lease must
-    # outlast the longest look, or another scheduler takes it mid-look.
-    if world "AMAENETES_LEASE_SECONDS" != ""
-        span = number of world "AMAENETES_LEASE_SECONDS"
-    end
-    endure
-        perform hold_lease with both[1], both[2], note "who", span into holder
-        note "holder" = holder
-    when it hurts as pain
-        cry "amaenetes: the lease " + note "lease" + ": " + pain
-        note "holder" = ""
-    end
-    if note "holder" != note "leader"
-        if note "holder" == note "who"
-            say note "who" + " leads"
-        else
-            if note "holder" != ""
-                say note "who" + " waits: " + note "holder" + " leads"
-            end
-            note "story" = ""
-        end
-        note "leader" = note "holder"
-    end
 end
 
 # One look at the cluster, told if it has something new to tell.
 ritual look_once
+    note "lease lost" = 0
+    note "more work" = 0
     note "looks" = note "looks" + 1
     perform prune_refused
     endure
+        perform keep_leading
         perform get_all with "nodes" into all_nodes
+        perform keep_leading
         perform get_all with "pods -A" into all_pods
+        perform keep_leading
         perform get_all with "namespaces" into all_spaces
         let spaces = {}
         let i = 1
         while i <= length of all_spaces
             perform labels_of with all_spaces[i] into sl
             spaces[all_spaces[i]["metadata"]["name"]] = sl
+            perform keep_leading
             recall all_spaces spaces all_nodes all_pods
             i = i + 1
         end
         note "bonds" = {}
         endure
+            perform keep_leading
             perform get_all with "relationships.amae.io -A" into all_bonds
             perform bonds_of with all_bonds into bonds
             note "bonds" = bonds
@@ -1131,12 +1298,14 @@ ritual look_once
     if words of look["pods"] == 0
         note "story" = ""
     else
-        let story = hash of json of [look["likes"], look["seats"]]
-        if story != note "story"
-            perform prepare with note "look", "#" + note "looks"
-            perform match
+        note "new story" = hash of json of [look["likes"], look["seats"]]
+        if note "new story" != note "story"
+            perform match_live with note "look", "#" + note "looks" into matched
+            if not matched
+                give back 0
+            end
             perform tell_homes with note "look", "#" + note "looks", 1 into bound
-            note "story" = story
+            note "story" = note "new story"
             if bound > 0 or note "waiting" > 0
                 note "story" = ""
             end

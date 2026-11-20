@@ -575,46 +575,43 @@ ritual earlier a, b
 end
 
 # The items in the order of their keys; keys[i] is the key of items[i].
+# Stable bottom-up merge sort: O(n log n), including already sorted inputs.
 ritual sorted items, keys_
-    let order = []
-    let order_keys = []
-    let i = 1
-    while i <= length of items
-        let j = length of order + 1
-        let at = 1
-        let found = 0
-        while at <= length of order and not found
-            perform earlier with keys_[i], order_keys[at] into goes
-            if goes
-                j = at
-                found = 1
+    let width = 1
+    while width < length of items
+        let ordered = []
+        let ordered_keys = []
+        let start = 1
+        while start <= length of items
+            let middle = start + width
+            let finish = start + 2 * width
+            let left = start
+            let right = middle
+            while left < middle and left <= length of items or right < finish and right <= length of items
+                let take_left = right >= finish or right > length of items
+                if not take_left and left < middle and left <= length of items
+                    perform earlier with keys_[right], keys_[left] into precedes
+                    take_left = not precedes
+                end
+                if take_left
+                    put items[left] into ordered
+                    put keys_[left] into ordered_keys
+                    left = left + 1
+                else
+                    put items[right] into ordered
+                    put keys_[right] into ordered_keys
+                    right = right + 1
+                end
+                recall items keys_ width start middle finish left right ordered ordered_keys
             end
-            recall items keys_ order order_keys i j found
-            at = at + 1
+            start = finish
+            recall items keys_ width ordered ordered_keys
         end
-        let left = []
-        let left_keys = []
-        let k = 1
-        while k <= length of order
-            if k == j
-                put items[i] into left
-                put keys_[i] into left_keys
-            end
-            put order[k] into left
-            put order_keys[k] into left_keys
-            recall items keys_ order order_keys i j left left_keys
-            k = k + 1
-        end
-        if j > length of order
-            put items[i] into left
-            put keys_[i] into left_keys
-        end
-        order = left
-        order_keys = left_keys
-        recall items keys_
-        i = i + 1
+        items = ordered
+        keys_ = ordered_keys
+        width = width * 2
     end
-    give back order
+    give back items
 end
 
 # What is left of `left` once `r` is held there, and one pod fewer.
