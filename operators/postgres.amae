@@ -1,0 +1,554 @@
+# Pod-per-instance PostgreSQL controller. Durable intent precedes every transition.
+written by "amae"
+deterministic
+learn "kube.amae"
+
+ritual pg_quote value
+    ask world "jq -r @sh" telling json of value into quoted
+    give back quoted
+end
+
+ritual pg_json filter_, value
+    perform pg_quote with filter_ into quoted
+    ask world "jq -c " + quoted telling json of value into raw
+    give back meaning of raw
+end
+
+ritual pg_get resource, name
+    perform kubectl with "get " + resource + " " + name + " -n " + note "ns" + " --ignore-not-found -o json --request-timeout=10s" into raw
+    if raw == ""
+        give back {}
+    end
+    give back meaning of raw
+end
+
+# Revalidate leadership and the journal before each side effect. A stale process
+# cannot continue an older step after another controller advanced the journal.
+ritual pg_guard
+    perform hold_lease with note "lease ns", "postgres", note "identity", 120 into holder
+    if holder != note "identity"
+        ask world "echo 'postgres: leadership lost' >&2; exit 1" into unused
+    end
+    perform pg_get with "clusters.postgres.amae.io", note "name" into fresh
+    perform field with fresh, "status", {} into st
+    perform pg_json with ".[0] == .[1]", [st, note "st"] into equal
+    let object = note "object"
+    if not equal or fresh["metadata"]["uid"] != object["metadata"]["uid"]
+        ask world "echo 'postgres: journal changed' >&2; exit 1" into unused
+    end
+    note "object" = fresh
+end
+
+ritual pg_do command_
+    perform pg_guard
+    perform kubectl with command_ + " -n " + note "ns" + " --request-timeout=10s" into raw
+    give back raw
+end
+
+ritual pg_patch resource, name, body
+    perform pg_guard
+    perform kubectl_telling with "patch " + resource + " " + name + " -n " + note "ns" + " --type=merge --patch-file=/dev/stdin --request-timeout=10s", json of body into raw
+end
+
+ritual pg_save st
+    perform pg_guard
+    let object = note "object"
+    let body = {"metadata": {"resourceVersion": object["metadata"]["resourceVersion"]}, "status": st}
+    perform kubectl_telling with "patch clusters.postgres.amae.io " + note "name" + " -n " + note "ns" + " --subresource=status --type=merge --patch-file=/dev/stdin -o json --request-timeout=10s", json of body into raw
+    note "object" = meaning of raw
+    note "st" = (meaning of raw)["status"]
+end
+
+ritual pg_phase stage
+    let st = note "st"
+    st["phase"] = stage
+    perform stamp_of with now into stamp
+    st["phaseStartedAt"] = stamp
+    st["conditions"] = [{"type": "Ready", "status": "False", "reason": "Transition", "message": stage, "lastTransitionTime": stamp}]
+    if stage == "Healthy"
+        st["unhealthySince"] = 0
+        st["conditions"] = [{"type": "Ready", "status": "True", "reason": "ClusterReady", "message": stage, "lastTransitionTime": stamp}]
+    end
+    perform pg_save with st
+    endure
+        perform tell_event with note "object", "Normal", "Transition", stage, "postgres"
+    when it hurts as pain
+        cry "postgres event: " + pain
+    end
+end
+
+ritual pg_exec name, script
+    perform pg_quote with script into quoted
+    perform kubectl with "exec -n " + note "ns" + " " + name + " --request-timeout=15s -- timeout 12 gosu postgres sh -ec " + quoted into raw
+    give back raw
+end
+
+ritual pg_act name, script
+    perform pg_guard
+    perform pg_exec with name, script into raw
+    give back raw
+end
+
+ritual pg_sql name, sql
+    perform pg_quote with sql into quoted
+    perform pg_exec with name, "psql -XAt -v ON_ERROR_STOP=1 -U postgres -d postgres -c " + quoted into raw
+    give back raw
+end
+
+ritual pg_probe name
+    let result = {"name": name, "ready": 0, "role": "unknown", "receivedLSN": "0/0", "replayedLSN": "0/0", "lag": -1}
+    perform pg_get with "pods", name into pod
+    if length of pod == 0
+        give back result
+    end
+    perform field with pod["metadata"], "deletionTimestamp", "" into deleting
+    perform field with pod, "status", {} into ps
+    perform field with ps, "phase", "" into stage
+    perform condition_of with pod, "Ready" into healthy
+    if deleting != "" or stage != "Running" or not healthy
+        give back result
+    end
+    endure
+        perform pg_exec with name, "pg_isready -q -t 2 -U postgres" into unused
+        perform pg_sql with name, "SELECT json_build_object('recovery',pg_is_in_recovery(),'receivedLSN',coalesce(pg_last_wal_receive_lsn()::text,'0/0'),'replayedLSN',coalesce(pg_last_wal_replay_lsn()::text,'0/0'),'flushLSN',CASE WHEN pg_is_in_recovery() THEN '0/0' ELSE pg_current_wal_flush_lsn()::text END)" into raw
+        let info = meaning of raw
+        result["ready"] = 1
+        result["role"] = "primary"
+        if info["recovery"]
+            result["role"] = "replica"
+        end
+        result["receivedLSN"] = info["receivedLSN"]
+        result["replayedLSN"] = info["replayedLSN"]
+        result["flushLSN"] = info["flushLSN"]
+        result["uid"] = pod["metadata"]["uid"]
+    when it hurts as pain
+        result["ready"] = 0
+    end
+    give back result
+end
+
+# LSNs are compared as two 32-bit words, never a lossy floating point uint64.
+ritual pg_lsn lsn
+    perform pg_json with "split(\"/\") | map(explode | reduce .[] as $c (0; . * 16 + (if $c <= 57 then $c-48 else $c-55 end)))", lsn into parts_
+    give back parts_
+end
+
+ritual pg_observe
+    let object = note "object"
+    let items = []
+    let i = 1
+    while i <= object["spec"]["instances"]
+        perform pg_probe with note "name" + "-" + i into item
+        put item into items
+        recall object items
+        i = i + 1
+    end
+    let st = note "st"
+    perform pg_probe with st["currentPrimary"] into primary
+    if primary["ready"] and primary["role"] == "primary"
+        perform pg_lsn with primary["flushLSN"] into head
+        let j = 1
+        while j <= length of items
+            let entry = items[j]
+            if entry["ready"]
+                perform pg_lsn with entry["replayedLSN"] into pos
+                entry["lag"] = (head[1] - pos[1]) * 4294967296 + head[2] - pos[2]
+                if entry["lag"] < 0 or entry["role"] == "primary"
+                    entry["lag"] = 0
+                end
+                items[j] = entry
+            end
+            recall st primary head items
+            j = j + 1
+        end
+    end
+    st["instances"] = items
+    perform pg_save with st
+    give back items
+end
+
+ritual pg_create body
+    perform pg_guard
+    # jq restores the native API booleans without roundtripping them through Amae.
+    ask world "jq -c 'if .metadata.ownerReferences then .metadata.ownerReferences |= map(.controller=true | .blockOwnerDeletion=true) else . end | if .kind == \"Pod\" then .spec.automountServiceAccountToken=false else . end'" telling json of body into raw
+    perform kubectl_telling with "create -f - -n " + note "ns" + " --request-timeout=10s", raw into unused
+end
+
+ritual pg_meta name
+    let object = note "object"
+    give back {"name": name, "namespace": note "ns", "labels": {"postgres.amae.io/cluster": note "name"}, "ownerReferences": [{"apiVersion": "postgres.amae.io/v1", "kind": "Cluster", "name": note "name", "uid": object["metadata"]["uid"]}]}
+end
+
+ritual pg_resources
+    perform pg_get with "secret", note "name" + "-auth" into secret
+    if length of secret == 0
+        ask world "openssl rand -hex 24" into password
+        perform pg_meta with note "name" + "-auth" into meta
+        perform pg_create with {"apiVersion": "v1", "kind": "Secret", "metadata": meta, "type": "Opaque", "stringData": {"password": password}}
+    end
+    let roles = ["rw", "ro"]
+    let i = 1
+    while i <= 2
+        let suffix = roles[i]
+        perform pg_get with "service", note "name" + "-" + suffix into service
+        if length of service == 0
+            let role = "primary"
+            if suffix == "ro"
+                role = "replica"
+            end
+            perform pg_meta with note "name" + "-" + suffix into meta
+            perform pg_create with {"apiVersion": "v1", "kind": "Service", "metadata": meta, "spec": {"selector": {"postgres.amae.io/cluster": note "name", "role": role}, "ports": [{"name": "postgres", "port": 5432, "targetPort": 5432}]}}
+        end
+        recall roles
+        i = i + 1
+    end
+end
+
+ritual pg_pod name, primary
+    perform pg_get with "pods", name into existing
+    if length of existing > 0
+        give back 0
+    end
+    perform pg_meta with name into meta
+    let st = note "st"
+    meta["annotations"] = {"postgres.amae.io/upstream": primary}
+    let labels = meta["labels"]
+    labels["role"] = "replica"
+    if name == primary
+        labels["role"] = "primary"
+    end
+    meta["labels"] = labels
+    let boot = "set -eu; mkdir -p /data/pg; chown -R postgres:postgres /data; chmod 700 /data/pg; "
+    let inner = "set -eu; if [ -e /data/fenced ]; then exec sleep infinity; fi; "
+    if name == primary
+        inner = inner + "if [ ! -s $PGDATA/PG_VERSION ]; then initdb -D $PGDATA --auth-local=trust --auth-host=scram-sha-256 --pwfile=/auth/password; printf \"host all all all scram-sha-256\\nhost replication all all scram-sha-256\\n\" >> $PGDATA/pg_hba.conf; fi; "
+    else
+        inner = inner + "if [ ! -s $PGDATA/PG_VERSION ]; then rm -rf /data/backup; pg_basebackup -h " + note "name" + "-rw -U postgres -D /data/backup -R -X stream --checkpoint=fast; rmdir $PGDATA; mv /data/backup $PGDATA; fi; "
+    end
+    inner = inner + "pg_ctl -D $PGDATA -l /data/postgres.log -o \"-c listen_addresses=* -c wal_keep_size=256MB -c max_wal_senders=10\" -w start; trap \"pg_ctl -D \\$PGDATA -m fast -w stop; exit 0\" TERM INT; while :; do sleep 2 & wait $!; done"
+    perform pg_quote with inner into quoted
+    boot = boot + "exec gosu postgres sh -ec " + quoted
+    let object = note "object"
+    let container = {"name": "postgres", "image": object["spec"]["image"], "command": ["sh", "-ec", boot], "env": [{"name": "PGDATA", "value": "/data/pg"}, {"name": "PGPASSWORD", "valueFrom": {"secretKeyRef": {"name": note "name" + "-auth", "key": "password"}}}], "volumeMounts": [{"name": "data", "mountPath": "/data"}, {"name": "auth", "mountPath": "/auth"}], "readinessProbe": {"exec": {"command": ["sh", "-ec", "test ! -e /data/fenced && pg_isready -q -U postgres"]}, "periodSeconds": 2}, "resources": {"requests": {"cpu": "50m", "memory": "64Mi"}, "limits": {"memory": "256Mi"}}}
+    perform pg_create with {"apiVersion": "v1", "kind": "Pod", "metadata": meta, "spec": {"terminationGracePeriodSeconds": 30, "containers": [container], "volumes": [{"name": "data", "emptyDir": {}}, {"name": "auth", "secret": {"secretName": note "name" + "-auth"}}]}}
+end
+
+ritual pg_annotate key_, value
+    perform pg_patch with "clusters.postgres.amae.io", note "name", {"metadata": {"annotations": {key_: value}}}
+end
+
+ritual pg_choose items, requested
+    let chosen = {}
+    let best = [0, 0]
+    let i = 1
+    while i <= length of items
+        let item = items[i]
+        if item["ready"] and item["role"] == "replica" and (requested == "" or requested == item["name"])
+            perform pg_lsn with item["receivedLSN"] into received
+            perform pg_lsn with item["replayedLSN"] into replayed
+            perform earlier with received, replayed into less
+            if less
+                received = replayed
+            end
+            perform earlier with best, received into newer
+            if newer or length of chosen == 0
+                chosen = item
+                best = received
+            end
+        end
+        recall items requested chosen best
+        i = i + 1
+    end
+    give back chosen
+end
+
+ritual pg_begin items, requested
+    perform pg_choose with items, requested into candidate
+    if length of candidate == 0
+        give back 0
+    end
+    let st = note "st"
+    st["oldPrimary"] = st["currentPrimary"]
+    st["targetPrimary"] = ""
+    st["requestedPrimary"] = requested
+    st["barrierLSN"] = ""
+    st["fenceConfirmed"] = 0
+    st["operation"] = "" + whole of (now * 1000000)
+    perform pg_save with st
+    perform pg_phase with "Failover: fencing"
+end
+
+ritual pg_fence
+    let st = note "st"
+    let old = st["oldPrimary"]
+    perform pg_annotate with "postgres.amae.io/fencedInstances", json of [old]
+    perform pg_get with "pods", old into pod
+    if length of pod > 0
+        perform pg_patch with "pods", old, {"metadata": {"labels": {"role": "fenced"}}}
+        perform field with pod, "status", {} into pod_status
+        perform field with pod_status, "phase", "" into pod_stage
+        if pod_stage == "Failed" or pod_stage == "Succeeded" or pod_stage == "Pending"
+            # Wait for ordinary deletion acknowledgement; never force deletion.
+            perform pg_do with "delete pod " + old + " --wait=false" into unused
+            give back 0
+        end
+        # The on-disk fence survives container restarts. Never force-delete an
+        # unreachable server: removing an API object is not proof it stopped.
+        let script = "touch /data/fenced; if pg_ctl -D $PGDATA status >/dev/null 2>&1; then "
+        if st["requestedPrimary"] != ""
+            script = script + "if [ ! -s /data/barrier ]; then printf \"local all all trust\\nhost replication all all scram-sha-256\\nhost all all all reject\\n\" > $PGDATA/pg_hba.conf; pg_ctl -D $PGDATA reload >/dev/null; sleep 1; psql -XAt -v ON_ERROR_STOP=1 -U postgres -c \"SELECT pg_terminate_backend(pid, 5000) FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid()\" >/dev/null; test \"$(psql -XAt -v ON_ERROR_STOP=1 -U postgres -c \"SELECT count(*) FROM pg_stat_activity WHERE backend_type = 'client backend' AND pid <> pg_backend_pid()\")\" = 0; psql -XAt -v ON_ERROR_STOP=1 -U postgres -c CHECKPOINT >/dev/null; psql -XAt -v ON_ERROR_STOP=1 -U postgres -c 'SELECT pg_current_wal_flush_lsn()' > /data/barrier.tmp; mv /data/barrier.tmp /data/barrier; fi; "
+        end
+        script = script + "pg_ctl -D $PGDATA -m fast -t 8 -w stop >/dev/null; fi; if pg_ctl -D $PGDATA status >/dev/null 2>&1; then exit 1; fi; if [ -s /data/barrier ]; then cat /data/barrier; fi"
+        perform pg_act with old, script into barrier
+        if st["requestedPrimary"] != ""
+            if barrier == ""
+                give back 0
+            end
+            st["barrierLSN"] = barrier
+        end
+    else
+        if st["requestedPrimary"] != "" and st["barrierLSN"] == ""
+            # A lost source cannot establish a lossless switchover barrier.
+            give back 0
+        end
+    end
+    st["fenceConfirmed"] = 1
+    perform pg_save with st
+    perform pg_observe into items
+    st = note "st"
+    perform pg_choose with items, st["requestedPrimary"] into target
+    if length of target == 0
+        give back 0
+    end
+    st["targetPrimary"] = target["name"]
+    st["targetUID"] = target["uid"]
+    st["targetLSN"] = target["receivedLSN"]
+    perform pg_save with st
+    perform pg_phase with "Failover: promoting"
+end
+
+ritual pg_promote
+    let st = note "st"
+    if not st["fenceConfirmed"]
+        give back 0
+    end
+    let target = st["targetPrimary"]
+    perform pg_get with "pods", target into pod
+    if length of pod == 0 or pod["metadata"]["uid"] != st["targetUID"]
+        give back 0
+    end
+    perform pg_sql with target, "SELECT pg_is_in_recovery()" into recovery
+    if recovery == "t"
+        if st["barrierLSN"] != ""
+            perform pg_quote with "SELECT pg_last_wal_replay_lsn() >= '" + st["barrierLSN"] + "'::pg_lsn" into sql
+            perform pg_exec with target, "psql -XAt -U postgres -c " + sql into caught
+            if caught != "t"
+                give back 0
+            end
+        end
+        perform pg_act with target, "pg_ctl -D $PGDATA -t 8 -w promote" into unused
+        perform pg_sql with target, "SELECT pg_is_in_recovery()" into recovery
+    end
+    if recovery == "f"
+        perform pg_phase with "Failover: switching"
+    end
+end
+
+ritual pg_switch
+    let st = note "st"
+    perform pg_sql with st["targetPrimary"], "SELECT pg_is_in_recovery()" into recovery
+    if recovery != "f"
+        give back 0
+    end
+    perform pg_patch with "pods", st["targetPrimary"], {"metadata": {"labels": {"role": "primary"}}}
+    st["currentPrimary"] = st["targetPrimary"]
+    perform pg_save with st
+    perform pg_phase with "Failover: rebuilding"
+end
+
+ritual pg_rebuild
+    let st = note "st"
+    let object = note "object"
+    let i = 1
+    while i <= object["spec"]["instances"]
+        let name = note "name" + "-" + i
+        if name != st["currentPrimary"]
+            perform pg_get with "pods", name into pod
+            if length of pod > 0
+                perform annotation with pod, "postgres.amae.io/upstream" into upstream
+                perform field with pod["metadata"], "deletionTimestamp", "" into deleting
+                if deleting != ""
+                    give back 0
+                end
+                perform labels_of with pod into labels
+                if name == st["oldPrimary"] and labels["role"] != "replica"
+                    perform pg_do with "delete pod " + name + " --wait=false" into unused
+                    give back 0
+                end
+                if upstream != st["currentPrimary"]
+                    # Persist primary_conninfo and restart the WAL receiver on the new timeline.
+                    let reconnect = "psql -XAt -v ON_ERROR_STOP=1 -U postgres -c \"ALTER SYSTEM SET primary_conninfo = 'host=" + note "name" + "-rw user=postgres password=$PGPASSWORD connect_timeout=5'\" >/dev/null; pg_ctl -D $PGDATA -m fast -t 8 -w restart -l /data/postgres.log"
+                    perform pg_act with name, reconnect into unused
+                    perform pg_patch with "pods", name, {"metadata": {"annotations": {"postgres.amae.io/upstream": st["currentPrimary"]}}}
+                end
+            else
+                perform pg_pod with name, st["currentPrimary"]
+                give back 0
+            end
+        end
+        recall st object
+        i = i + 1
+    end
+    perform pg_observe into items
+    let healthy = 0
+    i = 1
+    while i <= length of items
+        if items[i]["ready"] and ((items[i]["name"] == st["currentPrimary"] and items[i]["role"] == "primary") or (items[i]["name"] != st["currentPrimary"] and items[i]["role"] == "replica"))
+            healthy = healthy + 1
+        end
+        recall items healthy st
+        i = i + 1
+    end
+    object = note "object"
+    if healthy == object["spec"]["instances"]
+        perform pg_annotate with "postgres.amae.io/fencedInstances", "[]"
+        perform pg_annotate with "postgres.amae.io/switchover-to", ""
+        perform pg_phase with "Healthy"
+    end
+end
+
+ritual pg_reconcile object
+    note "object" = object
+    note "name" = object["metadata"]["name"]
+    note "ns" = object["metadata"]["namespace"]
+    perform field with object, "status", {} into st
+    note "st" = st
+    if length of st == 0
+        perform pg_save with {"phase": "Initializing", "currentPrimary": note "name" + "-1", "targetPrimary": "", "unhealthySince": 0}
+        give back 0
+    end
+    let stage = st["phase"]
+    if stage == "Failover: fencing"
+        perform pg_fence
+        give back 0
+    end
+    if stage == "Failover: promoting"
+        perform pg_promote
+        give back 0
+    end
+    if stage == "Failover: switching"
+        perform pg_switch
+        give back 0
+    end
+    if stage == "Failover: rebuilding"
+        perform pg_rebuild
+        give back 0
+    end
+    perform pg_resources
+    if stage == "Initializing"
+        perform pg_pod with st["currentPrimary"], st["currentPrimary"]
+        perform pg_probe with st["currentPrimary"] into primary
+        if not primary["ready"]
+            give back 0
+        end
+        let i = 2
+        while i <= object["spec"]["instances"]
+            perform pg_pod with note "name" + "-" + i, st["currentPrimary"]
+            recall object st
+            i = i + 1
+        end
+        perform pg_observe into boot_items
+        let all_ready = 1
+        i = 1
+        while i <= length of boot_items
+            if not boot_items[i]["ready"]
+                all_ready = 0
+            end
+            recall boot_items all_ready
+            i = i + 1
+        end
+        if all_ready
+            perform pg_phase with "Healthy"
+        end
+        give back 0
+    end
+    perform pg_observe into items
+    st = note "st"
+    perform pg_probe with st["currentPrimary"] into primary
+    if not primary["ready"] or primary["role"] != "primary"
+        if st["unhealthySince"] == 0
+            st["unhealthySince"] = whole of now
+            perform pg_save with st
+        end
+        if now - st["unhealthySince"] >= note "delay"
+            perform pg_begin with items, ""
+        end
+        give back 0
+    end
+    let j = 1
+    while j <= object["spec"]["instances"]
+        let child = note "name" + "-" + j
+        if child != st["currentPrimary"]
+            perform pg_pod with child, st["currentPrimary"]
+        end
+        recall object st items primary
+        j = j + 1
+    end
+    st["unhealthySince"] = 0
+    perform stamp_of with now into stamp
+    st["conditions"] = [{"type": "Ready", "status": "True", "reason": "PrimaryReady", "message": st["currentPrimary"], "lastTransitionTime": stamp}]
+    perform pg_save with st
+    perform annotation with object, "postgres.amae.io/switchover-to" into requested
+    if requested != "" and requested != st["currentPrimary"]
+        perform pg_begin with items, requested
+    end
+end
+
+soul postgres
+    note "identity" = world "HOSTNAME" + "-" + whole of (now * 1000000)
+    note "lease ns" = "amaenetes"
+    if world "PG_LEASE_NAMESPACE" != ""
+        note "lease ns" = world "PG_LEASE_NAMESPACE"
+    end
+    note "delay" = 10
+    if world "PG_FAILOVER_DELAY" != ""
+        note "delay" = number of world "PG_FAILOVER_DELAY"
+    end
+    note "interval" = 2
+    if world "PG_INTERVAL" != ""
+        note "interval" = number of world "PG_INTERVAL"
+    end
+    note "looks" = 0
+    mark looking
+    endure
+        perform hold_lease with note "lease ns", "postgres", note "identity", 120 into holder
+        if holder == note "identity"
+            let scope = "-A"
+            if world "PG_NAMESPACE" != ""
+                scope = "-n " + world "PG_NAMESPACE"
+            end
+            perform get_all with "clusters.postgres.amae.io " + scope into objects
+            let i = 1
+            while i <= length of objects
+                endure
+                    perform pg_reconcile with objects[i]
+                when it hurts as pain
+                    cry "postgres reconcile: " + pain
+                end
+                recall objects
+                i = i + 1
+            end
+        end
+    when it hurts as pain
+        cry "postgres: " + pain
+    end
+    note "looks" = note "looks" + 1
+    if world "PG_LOOKS" != "" and note "looks" >= number of world "PG_LOOKS"
+        goodbye
+    end
+    if note "interval" > 10
+        note "interval" = 10
+    end
+    wait note "interval" seconds
+    return to looking
+end
