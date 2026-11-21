@@ -1,0 +1,711 @@
+# ACME HTTP-01 reconciler. Protocol/state decisions live in Amae; shell only
+# encodes bytes, signs, makes HTTP requests and constructs typed JSON.
+written by "amae"
+deterministic
+learn "kube.amae"
+
+ritual acme_clock
+    if world "ACME_NOW" != ""
+        read file world "ACME_NOW" into value
+        give back whole of number of value
+    end
+    give back whole of now
+end
+
+ritual acme_setting name, default_
+    if world name != ""
+        give back number of world name
+    end
+    give back default_
+end
+
+# Quote arbitrary strings, including URLs and private paths, for POSIX sh.
+ritual acme_quote value
+    ask world "jq -r @sh" telling json of value into quoted
+    give back quoted
+end
+
+ritual acme_json filter_, value
+    perform acme_quote with filter_ into quoted
+    ask world "jq -c " + quoted telling json of value into raw
+    give back raw
+end
+
+# Reads and declarative patches can be retried after an ambiguous transport
+# failure. Event creates and lease CAS writes use their own handling instead.
+ritual acme_kubectl what
+    let tries = 0
+    while tries < 3
+        endure
+            perform kubectl with what into raw
+            give back raw
+        when it hurts as pain
+            cry "acme API retry: " + pain
+        end
+        recall what
+        tries = tries + 1
+    end
+    ask world "echo KubernetesRequestFailed >&2; exit 1" into ignored
+end
+
+ritual acme_kubectl_telling what, body
+    let tries = 0
+    while tries < 3
+        endure
+            perform kubectl_telling with what, body into raw
+            give back raw
+        when it hurts as pain
+            cry "acme API retry: " + pain
+        end
+        recall what body
+        tries = tries + 1
+    end
+    ask world "echo KubernetesRequestFailed >&2; exit 1" into ignored
+end
+
+ritual acme_get resource, name, ns
+    perform acme_kubectl with "get " + resource + " " + name + " -n " + ns + " --ignore-not-found -o json" into raw
+    if words of raw == 0
+        give back {}
+    end
+    give back meaning of raw
+end
+
+ritual acme_apply body
+    perform acme_json with ".metadata.ownerReferences //= [] | .metadata.ownerReferences |= map(.controller = true)", body into raw
+    perform acme_kubectl_telling with "apply --server-side --validate=false --field-manager=amae-acme -f -", raw into said
+    give back meaning of "{}"
+end
+
+ritual acme_child parent, kind_, name, spec
+    let meta = parent["metadata"]
+    let owner = {"apiVersion": parent["apiVersion"], "kind": parent["kind"], "name": meta["name"], "uid": meta["uid"]}
+    give back {"apiVersion": "acme.amae.io/v1", "kind": kind_, "metadata": {"name": name, "namespace": meta["namespace"], "ownerReferences": [owner]}, "spec": spec}
+end
+
+ritual acme_event object, state_, message
+    let key_ = object["metadata"]["namespace"] + "/" + object["kind"] + "/" + object["metadata"]["name"]
+    let seen = note "events"
+    perform field with seen, key_, "" into previous
+    if previous == state_ + message
+        give back 0
+    end
+    let type_ = "Normal"
+    if state_ == "Failed"
+        type_ = "Warning"
+    end
+    endure
+        perform tell_event with object, type_, state_, message, "acme"
+    when it hurts as pain
+        # Event transport must not turn a successful ACME operation into failure.
+        cry "acme event queued: " + pain
+        let serial = note "eventSerial" + 1
+        note "eventSerial" = serial
+        let pending = note "pendingEvents"
+        pending[serial] = {"object": object, "type": type_, "state": state_, "message": message}
+        note "pendingEvents" = pending
+    end
+    seen = note "events"
+    seen[key_] = state_ + message
+    note "events" = seen
+end
+
+# Retry queued transitions independently, retaining their original order.
+ritual acme_flush_events
+    let names = keys of (note "pendingEvents")
+    let i = 1
+    while i <= length of names
+        let pending = note "pendingEvents"
+        let event = pending[names[i]]
+        endure
+            perform tell_event with event["object"], event["type"], event["state"], event["message"], "acme"
+            pending = note "pendingEvents"
+            remove names[i] from pending
+            note "pendingEvents" = pending
+        when it hurts as pain
+            cry "acme event retry: " + pain
+            give back 0
+        end
+        recall names
+        i = i + 1
+    end
+end
+
+ritual acme_status object, st
+    let resource = object["kind"] + "s.acme.amae.io"
+    ask world "tr '[:upper:]' '[:lower:]'" telling resource into resource
+    perform acme_kubectl_telling with "patch " + resource + " " + object["metadata"]["name"] + " -n " + object["metadata"]["namespace"] + " --subresource=status --type=merge --patch-file=/dev/stdin", json of {"status": st}
+    perform field with st, "state", "Changed" into state_
+    perform field with st, "reason", state_ into message
+    perform acme_event with object, state_, message
+end
+
+ritual acme_ready cert, st, ready_, reason
+    perform acme_clock into at
+    perform stamp_of with at into stamp
+    let condition_reason = reason
+    if reason == "Failed"
+        perform field with st, "reason", reason into condition_reason
+    end
+    st["conditions"] = [{"type": "Ready", "status": ready_, "reason": condition_reason, "message": condition_reason, "lastTransitionTime": stamp, "observedGeneration": cert["metadata"]["generation"]}]
+    st["state"] = reason
+    if reason != "Failed"
+        st["reason"] = reason
+    end
+    perform acme_status with cert, st
+end
+
+ritual acme_key
+    ask world "openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 2>/dev/null" into pem
+    give back pem
+end
+
+ritual acme_b64 text
+    ask world "openssl base64 -A" telling text into encoded
+    give back encoded
+end
+
+ritual acme_unb64 text
+    ask world "openssl base64 -d -A" telling text into decoded
+    give back decoded
+end
+
+ritual acme_secret parent, name, data_, type_
+    perform acme_child with parent, "Secret", name, {} into body
+    body["apiVersion"] = "v1"
+    remove "spec" from body
+    body["data"] = data_
+    body["type"] = type_
+    perform acme_apply with body
+end
+
+# Each HTTP exchange has bounded latency. Never follow redirects with a JWS.
+ritual acme_http url, method_, body
+    perform acme_leader into leader
+    if not leader
+        ask world "echo LeaseLost >&2; exit 1" into ignored
+    end
+    perform acme_quote with url into qurl
+    perform acme_quote with note "work" into dir
+    perform acme_setting with "ACME_HTTP_TIMEOUT", 20 into timeout_
+    let cmd = "curl -sS --connect-timeout 10 --max-time " + timeout_ + " --proto '=http,https' "
+    if note "insecure"
+        cmd = cmd + "-k "
+    end
+    cmd = cmd + "-D " + dir + "/headers -o " + dir + "/body -w '%{http_code}' "
+    if method_ == "POST"
+        cmd = cmd + "-H 'Content-Type: application/jose+json' --data-binary @- "
+    end
+    if method_ == "HEAD"
+        cmd = cmd + "-I "
+    end
+    ask world cmd + qurl telling body into code
+    read file (note "work") + "/headers" into headers
+    read file (note "work") + "/body" into response
+    ask world "awk 'tolower($1)==\"replay-nonce:\" {gsub(/\\r/,\"\",$2); n=$2} END {printf \"%s\",n}'" telling headers into nonce
+    note "nonce" = nonce
+    ask world "awk 'tolower($1)==\"location:\" {gsub(/\\r/,\"\",$2); n=$2} END {printf \"%s\",n}'" telling headers into location
+    give back {"code": number of code, "body": response, "location": location}
+end
+
+ritual acme_post url, payload, use_jwk
+    let tries = 0
+    while tries < 4
+        if note "nonce" == ""
+            perform acme_http with (note "directory")["newNonce"], "HEAD", "" into nonce_response
+        end
+        let protected = {"alg": "RS256", "nonce": note "nonce", "url": url}
+        if use_jwk
+            protected["jwk"] = note "jwk"
+        else
+            protected["kid"] = note "kid"
+        end
+        note "nonce" = ""
+        perform acme_sign with protected, payload into signed
+        perform acme_http with url, "POST", signed into response
+        if response["code"] >= 200 and response["code"] < 300
+            give back response
+        end
+        let problem = meaning of response["body"]
+        perform field with problem, "type", "" into type_
+        if type_ != "urn:ietf:params:acme:error:badNonce"
+            # Return protocol problems to the state machine, without key material.
+            give back response
+        end
+        recall url payload use_jwk
+        tries = tries + 1
+    end
+    give back response
+end
+
+ritual acme_sign protected, payload
+    ask world "set -eu\nx=$(cat); d=$(printf '%s' \"$x\" | jq -r .dir)\nb64() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }\np=$(printf '%s' \"$x\" | jq -cj .protected | b64)\nv=$(printf '%s' \"$x\" | jq -rj .payload | b64)\nprintf '%s' \"$p.$v\" > \"$d/input\"\nopenssl dgst -sha256 -sign \"$d/account.key\" -out \"$d/sig\" \"$d/input\"\ns=$(b64 < \"$d/sig\")\njq -cn --arg p \"$p\" --arg v \"$v\" --arg s \"$s\" '{protected:$p,payload:$v,signature:$s}' " telling json of {"dir": note "work", "protected": protected, "payload": payload} into raw
+    give back raw
+end
+
+ritual acme_jwk pem
+    ask world "set -eu\nd=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\ncat > \"$d/key\"\nopenssl rsa -in \"$d/key\" -text -noout > \"$d/text\" 2>/dev/null\n# This controller generates RSA keys with exponent 65537; reject other exponents.\ngrep -q 'publicExponent: 65537 ' \"$d/text\"\nopenssl rsa -in \"$d/key\" -noout -modulus > \"$d/modulus\" 2>/dev/null\nn=$(sed 's/^Modulus=//' \"$d/modulus\" | awk '{h=\"0123456789ABCDEF\"; for(i=1;i<=length($0);i+=2) printf \"%c\", (index(h,substr($0,i,1))-1)*16+index(h,substr($0,i+1,1))-1}' | openssl base64 -A | tr '+/' '-_' | tr -d '=')\njq -cn --arg n \"$n\" '{e:\"AQAB\",kty:\"RSA\",n:$n}' " telling pem into raw
+    give back raw
+end
+
+ritual acme_csr pem, names
+    ask world "set -eu\nx=$(cat); d=$(printf '%s' \"$x\" | jq -r .dir)\nprintf '%s' \"$x\" | jq -rj .pem > \"$d/tls.key\"\nsan=$(printf '%s' \"$x\" | jq -r '.names | map(\"DNS:\"+.) | join(\",\")')\nopenssl req -new -key \"$d/tls.key\" -subj / -addext \"subjectAltName=$san\" -outform DER -out \"$d/csr\"\nopenssl base64 -A -in \"$d/csr\" | tr '+/' '-_' | tr -d '=' " telling json of {"dir": note "work", "pem": pem, "names": names} into raw
+    give back raw
+end
+
+ritual acme_dates chain
+    ask world "set -eu\nexport TZ=UTC\nd=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\ncat > \"$d/cert\"\nopenssl x509 -in \"$d/cert\" -noout -dates > \"$d/dates\"\njq -Rsc 'split(\"\\n\") | map(select(length>0) | split(\"=\")[1] | strptime(\"%b %e %H:%M:%S %Y %Z\") | mktime) | {start:.[0],finish:.[1]}' < \"$d/dates\" " telling chain into raw
+    give back raw
+end
+
+# Account registration is idempotent for the persisted key, even after a crash
+# between newAccount and writing accountURL. The CA returns the existing account.
+ritual acme_account issuer
+    let config = issuer["spec"]["acme"]
+    perform field with config, "skipTLSVerify", 0 into insecure
+    note "insecure" = insecure
+    perform acme_http with config["server"], "GET", "" into response
+    if response["code"] != 200
+        give back 0
+    end
+    note "directory" = meaning of response["body"]
+    let ns = issuer["metadata"]["namespace"]
+    let name = config["privateKeySecretRef"]["name"]
+    perform acme_get with "secrets", name, ns into secret
+    if length of secret == 0
+        perform acme_key into pem
+        perform acme_b64 with pem into encoded
+        perform acme_secret with issuer, name, {"tls.key": encoded}, "Opaque"
+        perform acme_get with "secrets", name, ns into secret
+    end
+    perform acme_unb64 with secret["data"]["tls.key"] into pem
+    write pem to file (note "work") + "/account.key"
+    perform acme_jwk with pem into raw
+    note "jwk" = meaning of raw
+    ask world "openssl dgst -sha256 -binary | openssl base64 -A | tr '+/' '-_' | tr -d '='" telling raw into thumb
+    note "thumb" = thumb
+    perform field with secret["data"], "accountURL", "" into encoded
+    perform field with secret["data"], "server", "" into server
+    perform acme_unb64 with server into server
+    note "kid" = ""
+    if encoded != "" and server == config["server"]
+        perform acme_unb64 with encoded into kid
+        note "kid" = kid
+        give back 1
+    end
+    perform acme_json with ". + {termsOfServiceAgreed:true}", {"contact": ["mailto:" + config["email"]]} into payload
+    perform acme_post with (note "directory")["newAccount"], payload, 1 into response
+    if response["code"] != 200 and response["code"] != 201
+        give back 0
+    end
+    note "kid" = response["location"]
+    perform acme_b64 with note "kid" into encoded
+    perform acme_b64 with config["server"] into server
+    let data_ = secret["data"]
+    data_["accountURL"] = encoded
+    data_["server"] = server
+    perform acme_secret with issuer, name, data_, "Opaque"
+    perform acme_status with issuer, {"state": "Registered", "uri": note "kid"}
+    give back 1
+end
+
+# A separate service per Certificate, shared by all its authorization tokens.
+# DNS/routing must direct the requested names to this service on port 80.
+ritual acme_solver cert, tokens
+    let name = "acme-" + part 1 23 of cert["metadata"]["uid"]
+    perform acme_child with cert, "ConfigMap", name, {} into cm
+    cm["apiVersion"] = "v1"
+    remove "spec" from cm
+    cm["data"] = tokens
+    perform acme_apply with cm
+    let labels = {"acme.amae.io/solver": name}
+    let spec = {"selector": labels, "ports": [{"port": 80, "targetPort": 8080}]}
+    perform acme_child with cert, "Service", name, spec into svc
+    svc["apiVersion"] = "v1"
+    perform acme_apply with svc
+    let container = {"name": "solver", "image": "busybox:1.37.0", "command": ["httpd", "-f", "-p", "8080", "-h", "/www"], "ports": [{"containerPort": 8080}], "volumeMounts": [{"name": "tokens", "mountPath": "/www/.well-known/acme-challenge", "readOnly": 1}], "resources": {"requests": {"cpu": "10m", "memory": "8Mi"}, "limits": {"memory": "32Mi"}}}
+    let token_names = keys of tokens
+    container["readinessProbe"] = {"httpGet": {"path": "/.well-known/acme-challenge/" + token_names[1], "port": 8080}, "periodSeconds": 1}
+    let podspec = {"containers": [container], "volumes": [{"name": "tokens", "configMap": {"name": name}}], "automountServiceAccountToken": 0}
+    let deployspec = {"replicas": 1, "strategy": {"type": "RollingUpdate", "rollingUpdate": {"maxSurge": 0, "maxUnavailable": 1}}, "selector": {"matchLabels": labels}, "template": {"metadata": {"labels": labels, "annotations": {"acme.amae.io/tokens": hash of json of tokens}}, "spec": podspec}}
+    perform acme_child with cert, "Deployment", name, deployspec into deploy
+    deploy["apiVersion"] = "apps/v1"
+    perform acme_json with ".spec.template.spec.automountServiceAccountToken = false | .spec.template.spec.containers[0].volumeMounts[0].readOnly = true | .metadata.ownerReferences |= map(.controller = true)", deploy into raw
+    perform acme_kubectl_telling with "apply --server-side --validate=false --field-manager=amae-acme -f -", raw
+end
+
+ritual acme_failure cert, order, reason
+    perform acme_leader into leader
+    if not leader
+        give back 0
+    end
+    perform field with cert, "status", {} into st
+    perform field with st, "failures", 0 into failures
+    failures = failures + 1
+    perform acme_setting with "ACME_RETRY_BASE", 60 into delay
+    perform acme_setting with "ACME_RETRY_CAP", 3600 into cap
+    let i = 1
+    while i < failures and delay < cap
+        delay = delay * 2
+        recall cert order reason st failures cap
+        i = i + 1
+    end
+    if delay > cap
+        delay = cap
+    end
+    perform acme_clock into at
+    st["failures"] = failures
+    st["retryAt"] = at + delay
+    st["reason"] = reason
+    if length of order > 0
+        perform field with order, "status", {} into ost
+        ost["state"] = "Failed"
+        ost["reason"] = reason
+        perform acme_status with order, ost
+    end
+    perform acme_ready with cert, st, "False", "Failed"
+end
+
+ritual acme_poll_later object, st
+    perform field with st, "pollDelay", 1 into delay
+    perform acme_setting with "ACME_POLL_BASE", 2 into base
+    perform acme_setting with "ACME_POLL_CAP", 30 into cap
+    delay = delay * 2
+    if delay < base
+        delay = base
+    end
+    if delay > cap
+        delay = cap
+    end
+    perform acme_clock into at
+    st["pollDelay"] = delay
+    st["nextPoll"] = at + delay
+    perform acme_status with object, st
+end
+
+ritual acme_begin cert, st
+    perform field with st, "attempt", 0 into attempt
+    attempt = attempt + 1
+    let name = "acme-" + part 1 23 of cert["metadata"]["uid"] + "-" + attempt
+    perform acme_child with cert, "Order", name, {"dnsNames": cert["spec"]["dnsNames"], "issuerRef": cert["spec"]["issuerRef"]} into order
+    perform acme_apply with order
+    perform acme_status with order, {"state": "New"}
+    st["attempt"] = attempt
+    st["orderRef"] = name
+    st["retryAt"] = 0
+    st["observedGeneration"] = cert["metadata"]["generation"]
+    perform acme_ready with cert, st, "False", "Issuing"
+end
+
+ritual acme_challenges cert, order, ost
+    let urls = ost["authorizations"]
+    note "tokens" = {}
+    note "challenges" = []
+    let i = 1
+    while i <= length of urls
+        perform acme_post with urls[i], "", 0 into response
+        if response["code"] != 200
+            perform acme_failure with cert, order, "AuthorizationRequestFailed"
+            give back 0
+        end
+        let auth = meaning of response["body"]
+        perform acme_json with "[.challenges[] | select(.type == \"http-01\")][0]", auth into raw
+        let challenge = meaning of raw
+        if length of challenge == 0
+            perform acme_failure with cert, order, "HTTP01Unavailable"
+            give back 0
+        end
+        let name = order["metadata"]["name"] + "-" + i
+        let spec = {"url": challenge["url"], "authorizationURL": urls[i], "token": challenge["token"], "dnsName": auth["identifier"]["value"], "keyAuthorization": challenge["token"] + "." + note "thumb"}
+        perform acme_child with cert, "Challenge", name, spec into object
+        perform acme_apply with object
+        let tokens = note "tokens"
+        tokens[challenge["token"]] = spec["keyAuthorization"]
+        note "tokens" = tokens
+        let children = note "challenges"
+        put name into children
+        note "challenges" = children
+        perform acme_status with object, {"state": "Presented", "authorizationState": auth["status"]}
+        recall cert order ost urls
+        i = i + 1
+    end
+    perform acme_solver with cert, note "tokens"
+    ost["challenges"] = note "challenges"
+    ost["state"] = "Presented"
+    # Let the Deployment start and ConfigMap projection become visible.
+    perform acme_setting with "ACME_PRESENT_DELAY", 10 into delay
+    perform acme_clock into at
+    ost["nextPoll"] = at + delay
+    perform acme_status with order, ost
+end
+
+ritual acme_validate cert, order, ost
+    let names = ost["challenges"]
+    let all_valid = 1
+    let i = 1
+    while i <= length of names
+        perform acme_get with "challenges.acme.amae.io", names[i], cert["metadata"]["namespace"] into child
+        let cst = child["status"]
+        if cst["state"] != "Valid"
+            perform acme_post with child["spec"]["authorizationURL"], "", 0 into response
+            if response["code"] != 200
+                perform acme_failure with cert, order, "AuthorizationPollFailed"
+                give back 0
+            end
+            let auth = meaning of response["body"]
+            if auth["status"] == "invalid" or auth["status"] == "expired" or auth["status"] == "revoked" or auth["status"] == "deactivated"
+                perform acme_status with child, {"state": "Failed", "reason": "InvalidAuthorization"}
+                perform acme_failure with cert, order, "InvalidAuthorization"
+                give back 0
+            end
+            if auth["status"] == "valid"
+                perform acme_status with child, {"state": "Valid"}
+            else
+                all_valid = 0
+                if cst["state"] == "Presented"
+                    perform acme_post with child["spec"]["url"], "{}", 0 into response
+                    if response["code"] != 200
+                        perform acme_failure with cert, order, "ChallengeResponseFailed"
+                        give back 0
+                    end
+                    perform acme_status with child, {"state": "Processing"}
+                end
+            end
+        end
+        recall cert order ost names all_valid
+        i = i + 1
+    end
+    if all_valid
+        ost["state"] = "Authorized"
+    end
+    perform acme_poll_later with order, ost
+end
+
+ritual acme_check_chain chain, pem, names
+    ask world "set -eu\nx=$(cat); d=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\nprintf '%s' \"$x\" | jq -rj .chain > \"$d/chain\"\nprintf '%s' \"$x\" | jq -rj .pem > \"$d/key\"\nopenssl x509 -in \"$d/chain\" -pubkey -noout > \"$d/cert.pub\"\nopenssl pkey -in \"$d/key\" -pubout > \"$d/key.pub\"\ncmp \"$d/cert.pub\" \"$d/key.pub\"\nprintf '%s' \"$x\" | jq -r '.names[]' > \"$d/names\"\nwhile IFS= read -r name; do openssl x509 -in \"$d/chain\" -noout -checkhost \"$name\" > \"$d/check\"; grep -q 'does match certificate' \"$d/check\"; done < \"$d/names\"\nn=$(awk -v d=\"$d\" '/-----BEGIN CERTIFICATE-----/{n++} n {print > (d \"/cert-\" n)} END {print n}' \"$d/chain\")\nlast=\"$d/cert-$n\"\nsubject=$(openssl x509 -in \"$last\" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')\nissuer=$(openssl x509 -in \"$last\" -noout -issuer -nameopt RFC2253 | sed 's/^issuer=//')\nif [ \"$subject\" = \"$issuer\" ] && openssl verify -check_ss_sig -CAfile \"$last\" \"$last\" >/dev/null 2>&1; then cat \"$last\"; fi\n" telling json of {"chain": chain, "pem": pem, "names": names} into root
+    give back root
+end
+
+ritual acme_finish cert, order, ost, result
+    perform acme_post with result["certificate"], "", 0 into response
+    if response["code"] != 200
+        perform acme_failure with cert, order, "CertificateDownloadFailed"
+        give back 0
+    end
+    let chain = response["body"]
+    perform acme_dates with chain into raw
+    let dates = meaning of raw
+    perform acme_get with "secrets", cert["spec"]["secretName"], cert["metadata"]["namespace"] into secret
+    let data_ = secret["data"]
+    perform acme_b64 with chain into encoded
+    data_["tls.crt"] = encoded
+    perform acme_unb64 with data_["tls.key"] into pem
+    perform acme_check_chain with chain, pem, cert["spec"]["dnsNames"] into root
+    if place of "ca.crt" in data_ > 0
+        remove "ca.crt" from data_
+    end
+    if root != ""
+        perform acme_b64 with root into encoded
+        data_["ca.crt"] = encoded
+    end
+    # Only an included, verified self-signed root is exposed as ca.crt.
+    perform acme_secret with cert, cert["spec"]["secretName"], data_, "kubernetes.io/tls"
+    let st = cert["status"]
+    perform stamp_of with dates["start"] into stamp
+    st["notBefore"] = stamp
+    perform stamp_of with dates["finish"] into stamp
+    st["notAfter"] = stamp
+    perform acme_renew_before with cert into renew
+    perform stamp_of with dates["finish"] - renew into stamp
+    st["renewalTime"] = stamp
+    st["failures"] = 0
+    st["retryAt"] = 0
+    ost["state"] = "Valid"
+    perform acme_status with order, ost
+    perform acme_ready with cert, st, "True", "Issued"
+end
+
+ritual acme_renew_before cert
+    perform field with cert["spec"], "renewBefore", "720h" into duration
+    ask world "jq -er 'capture(\"^(?<n>[0-9]+)(?<u>[smhd])$\") | (.n|tonumber) * ({s:1,m:60,h:3600,d:86400}[.u])'" telling json of duration into amount
+    give back number of amount
+end
+
+ritual acme_advance cert, order
+    perform field with order, "status", {"state": "New"} into ost
+    perform field with ost, "nextPoll", 0 into due
+    perform acme_clock into at
+    if at < due
+        give back 0
+    end
+    let ns = cert["metadata"]["namespace"]
+    perform acme_get with "issuers.acme.amae.io", cert["spec"]["issuerRef"]["name"], ns into issuer
+    if length of issuer == 0
+        perform acme_failure with cert, order, "IssuerNotFound"
+        give back 0
+    end
+    perform acme_account with issuer into ok
+    if not ok
+        perform acme_failure with cert, order, "AccountRegistrationFailed"
+        give back 0
+    end
+    let state_ = ost["state"]
+    if state_ == "New"
+        perform acme_get with "secrets", cert["spec"]["secretName"], ns into secret
+        if length of secret == 0
+            perform acme_key into pem
+            perform acme_b64 with pem into encoded
+            perform acme_secret with cert, cert["spec"]["secretName"], {"tls.key": encoded, "tls.crt": ""}, "kubernetes.io/tls"
+        end
+        perform acme_json with "{identifiers: map({type:\"dns\",value:.})}", cert["spec"]["dnsNames"] into payload
+        perform acme_post with (note "directory")["newOrder"], payload, 0 into response
+        if response["code"] != 201
+            perform acme_failure with cert, order, "NewOrderFailed"
+            give back 0
+        end
+        let result = meaning of response["body"]
+        ost = {"state": "Pending", "url": response["location"], "finalize": result["finalize"], "authorizations": result["authorizations"], "createdAt": at}
+        perform acme_status with order, ost
+        give back 0
+    end
+    perform field with ost, "createdAt", at into created
+    perform acme_setting with "ACME_ORDER_TIMEOUT", 1800 into timeout_
+    if at > created + timeout_
+        perform acme_failure with cert, order, "OrderTimeout"
+        give back 0
+    end
+    if state_ == "Pending"
+        perform acme_challenges with cert, order, ost
+        give back 0
+    end
+    if state_ == "Presented" or state_ == "Processing"
+        ost["state"] = "Processing"
+        perform acme_validate with cert, order, ost
+        give back 0
+    end
+    perform acme_post with ost["url"], "", 0 into response
+    if response["code"] != 200
+        perform acme_failure with cert, order, "OrderPollFailed"
+        give back 0
+    end
+    let result = meaning of response["body"]
+    if result["status"] == "invalid"
+        perform acme_failure with cert, order, "InvalidOrder"
+        give back 0
+    end
+    if result["status"] == "valid"
+        perform acme_finish with cert, order, ost, result
+        give back 0
+    end
+    if result["status"] == "ready"
+        perform acme_get with "secrets", cert["spec"]["secretName"], ns into secret
+        perform acme_unb64 with secret["data"]["tls.key"] into pem
+        perform acme_csr with pem, cert["spec"]["dnsNames"] into csr
+        perform acme_post with ost["finalize"], json of {"csr": csr}, 0 into response
+        if response["code"] != 200
+            perform acme_failure with cert, order, "FinalizeFailed"
+            give back 0
+        end
+        ost["state"] = "Finalizing"
+    end
+    perform acme_poll_later with order, ost
+end
+
+ritual acme_reconcile cert
+    perform field with cert, "status", {} into st
+    perform field with st, "retryAt", 0 into retry
+    perform acme_clock into at
+    if retry > at
+        give back 0
+    end
+    perform field with st, "state", "" into state_
+    if state_ == "Issued"
+        perform acme_get with "secrets", cert["spec"]["secretName"], cert["metadata"]["namespace"] into secret
+        perform seconds_of with st["notAfter"] into expiry
+        perform acme_renew_before with cert into renew
+        if length of secret > 0 and at < expiry - renew and st["observedGeneration"] == cert["metadata"]["generation"]
+            give back 0
+        end
+    end
+    if state_ != "Issuing" or st["observedGeneration"] != cert["metadata"]["generation"]
+        perform acme_begin with cert, st
+        give back 0
+    end
+    perform acme_get with "orders.acme.amae.io", st["orderRef"], cert["metadata"]["namespace"] into order
+    if length of order == 0
+        perform acme_begin with cert, st
+        give back 0
+    end
+    endure
+        perform acme_advance with cert, order
+    when it hurts as pain
+        cry "acme reconcile: " + pain
+        perform acme_failure with cert, order, "ReconcileError"
+    end
+end
+
+# Renew during long multi-SAN reconciliations as well as between looks.
+ritual acme_leader
+    if world "ACME_NO_LEASE" == "1"
+        give back 1
+    end
+    perform hold_lease with "amaenetes", "acme", note "identity", 120 into holder
+    give back holder == note "identity"
+end
+
+ritual acme_once
+    let scope = "-A"
+    if world "ACME_NAMESPACE" != ""
+        scope = "-n " + world "ACME_NAMESPACE"
+    end
+    perform get_all with "certificates.acme.amae.io " + scope into certs
+    let i = 1
+    while i <= length of certs
+        if world "ACME_NO_LEASE" != "1"
+            perform hold_lease with "amaenetes", "acme", note "identity", 120 into holder
+            if holder != note "identity"
+                give back 0
+            end
+        end
+        endure
+            perform acme_reconcile with certs[i]
+        when it hurts as pain
+            cry "acme: " + pain
+        end
+        recall certs
+        i = i + 1
+    end
+end
+
+soul acme
+    ask world "umask 077; mktemp -d /tmp/amae-acme.XXXXXXXX" into work
+    note "work" = work
+    note "events" = {}
+    note "pendingEvents" = {}
+    note "eventSerial" = 0
+    note "nonce" = ""
+    note "identity" = world "HOSTNAME" + "-" + whole of (now * 1000000)
+    note "look" = 0
+    perform acme_setting with "ACME_INTERVAL", 5 into every
+    if every > 10
+        every = 10
+    end
+    note "every" = every
+    mark looking
+    endure
+        perform acme_flush_events
+        perform acme_once
+    when it hurts as pain
+        cry "acme look: " + pain
+    end
+    # Private keys are removed after every look, also after caught errors.
+    perform acme_quote with note "work" into quoted
+    ask world "rm -f " + quoted + "/*" into ignored
+    note "look" = note "look" + 1
+    if world "ACME_LOOKS" != "" and note "look" >= number of world "ACME_LOOKS"
+        ask world "rmdir " + quoted into ignored
+        goodbye
+    end
+    wait note "every" seconds
+    return to looking
+end

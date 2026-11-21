@@ -80,3 +80,8 @@ $(BUILD)/mediator: kube/mediator.amae lib/kube.amae $(BUILD)/tc-core
 
 $(BUILD)/cronjob: operators/cronjob.amae lib/kube.amae $(BUILD)/tc-core
 	AMAE_MEMORY=$(abspath $(BUILD))/compiler-memory.json AMAE_HISTORY=$(HISTORY) bin/tc $< -o $@
+
+kube: $(BUILD)/acme
+
+$(BUILD)/acme: operators/acme.amae lib/kube.amae $(BUILD)/tc-core
+	AMAE_MEMORY=$(abspath $(BUILD))/compiler-memory.json AMAE_HISTORY=$(HISTORY) bin/tc $< -o $@

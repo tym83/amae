@@ -10,8 +10,11 @@ RUN make && mkdir -p /out \
  && bin/tc kube/counsel.amae -o /out/counsel \
  && bin/tc kube/mediator.amae -o /out/mediator \
  && bin/tc operators/cronjob.amae -o /out/cronjob \
+ && bin/tc operators/acme.amae -o /out/acme \
  && cp build/tc-core /out/tc-core
 
 FROM alpine/k8s:1.35.9
+RUN apk add --no-cache openssl curl jq \
+ && openssl version && curl --version && jq --version
 COPY --from=build /out /opt/amae/bin
 ENV HOME=/tmp

@@ -468,6 +468,87 @@ API Amae оставляет заданные в этой реализации `a
 из учебного примера. Это сравнение размера исходников, а не утверждение об
 идентичной инфраструктуре или производительности.
 
+### ACME certificates
+
+`operators/acme.amae` реализует выпуск ACME-сертификатов через ресурсы
+`Issuer`, `Certificate`, `Order` и `Challenge` группы `acme.amae.io/v1`,
+ограниченные namespace. [Манифест](kube/operators/acme.yaml) устанавливает CRD
+со status subresources, RBAC и Deployment `amaenetes-acme`; нужны namespace
+`amaenetes` и ConfigMap с kubeconfig из `kube/deploy.yaml`. `make kube` и
+Dockerfile собирают `/opt/amae/bin/acme`. Образ явно устанавливает и проверяет
+OpenSSL, curl и jq.
+
+```yaml
+apiVersion: acme.amae.io/v1
+kind: Issuer
+metadata: {name: ca, namespace: demo}
+spec:
+  acme:
+    server: https://acme.example/directory
+    email: admin@example.com
+    privateKeySecretRef: {name: ca-account}
+    solvers: [{http01: {standalone: true}}]
+    # skipTLSVerify: true  # Local Pebble only.
+---
+apiVersion: acme.amae.io/v1
+kind: Certificate
+metadata: {name: site, namespace: demo}
+spec:
+  secretName: site-tls
+  dnsNames: [site.example.com]
+  issuerRef: {name: ca}
+  renewBefore: 720h
+```
+
+HTTP-01 работает без ingress: каждому Certificate принадлежат HTTP Deployment
+с BusyBox, Service на порту 80 и ConfigMap с токенами под именем
+`acme-<первые 23 символа UID Certificate>`. **Настройте DNS и маршрутизацию так,
+чтобы CA обращался ко всем запрошенным именам через этот Service на порту 80.**
+Для Pebble внутри кластера подходят кластерные DNS-имена. Контроллер не создаёт
+публичные DNS-записи, ingress или балансировщик. Wildcard и DNS-01 не поддерживаются.
+Хеш набора токенов запускает обновление solver Pod, а readiness probe проверяет
+challenge-файл: продление не зависит от задержки обновления тома ConfigMap.
+
+Протокол и reconciliation написаны ритуалами Amae; OpenSSL, curl и jq выполняют
+двоичное кодирование, RSA-подписи, HTTP и обработку типизированного JSON через
+POSIX sh. Ключ аккаунта — RS256 (RSA/65537), thumbprint JWK вычисляется из
+канонического JSON по RFC 7638. Преобразование ECDSA DER не требуется: здесь RSA.
+Secret аккаунта хранит ключ, directory и URL аккаунта; `newAccount` также
+находит существующий аккаунт по ключу. Запросы подписываются сначала с `jwk`,
+затем с `kid`; используются одноразовые nonce, ограниченные повторы `badNonce`
+и пустой payload для POST-as-GET. Ключ сертификата сохраняется в целевом Secret типа `kubernetes.io/tls`:
+`tls.key` записывается сразу, изначально пустой `tls.crt` заполняется скачанной
+цепочкой. Тип Secret не меняется: Kubernetes запрещает его изменение.
+Ключ и DNS-имена сверяются со скачанным сертификатом. Если цепочка включает
+проверенный самоподписанный корень, он записывается в `ca.crt`; обычно ACME
+не включает корень.
+
+Order и Challenge принадлежат Certificate. Их status показывает подготовку,
+валидацию, финализацию и ошибки; status Certificate содержит Ready, notBefore,
+notAfter, renewalTime и retryAt. Каждый переход создаёт Event; повторные
+наблюдения подавляются через note. Неотправленные Events остаются в очереди
+в note и повторяются независимо от выпуска, пока контроллер работает.
+Идемпотентные чтения и декларативные записи Kubernetes повторяются до трёх
+раз перед переходом в backoff. Незавершённая работа и экспоненциальная
+задержка после ошибок (60, 120, 240 секунд до 3600) переживают перезапуск.
+Продление начинается в `notAfter - renewBefore` (по умолчанию 30 дней;
+целое число с суффиксом `s`, `m`, `h` или `d`). Интервал продления должен быть
+короче срока действия, заданного CA. Потеря Secret запускает новый выпуск.
+Неизменённый сертификат до срока продления не создаёт ACME-трафик или записи
+status. Старые Order и Challenge доступны до удаления их владельца.
+
+Лидера выбирает Lease `amaenetes/acme`, продлеваемый и во время обмена с CA.
+`KUBECTL` и `KUBE_CONTEXT` работают как у остальных операторов.
+`ACME_NAMESPACE` ограничивает reconciliation; `ACME_NO_LEASE=1` предназначен
+только для одного локального контроллера (на изолированном стенде без изменений
+кластерных Lease). Значения по умолчанию, в секундах: `ACME_HTTP_TIMEOUT=20`, `ACME_INTERVAL=5`,
+`ACME_PRESENT_DELAY=10`, `ACME_POLL_BASE=2`, `ACME_POLL_CAP=30`,
+`ACME_ORDER_TIMEOUT=1800`, `ACME_RETRY_BASE=60`, `ACME_RETRY_CAP=3600`.
+Для тестов `ACME_LOOKS` ограничивает число проходов, `ACME_NOW` задаёт файл
+с Unix-временем. `tests/test_acme.py:LiveACME` запускает скомпилированный
+контроллер с fake kubectl и локальным ACME-сервером, проверяющим RSA-подписи,
+повторное использование nonce, POST-as-GET и key authorization HTTP-01.
+
 ## Компилятор, написанный на Amae
 
 `compiler.amae` и есть компилятор, и другой реализации у языка нет. Он
