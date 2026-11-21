@@ -1,0 +1,458 @@
+# The kubebuilder book's CronJob reconciler, including its UTC cron parser.
+written by "amae"
+deterministic
+learn "kube.amae"
+
+# Only short cron tokens are assembled character by character.
+ritual split_token text, separator
+    let pieces = []
+    let piece = ""
+    let i = 1
+    while i <= length of text
+        if text[i] == separator
+            put piece into pieces
+            piece = ""
+        else
+            piece = piece + text[i]
+        end
+        recall text separator pieces piece
+        i = i + 1
+    end
+    put piece into pieces
+    give back pieces
+end
+
+ritual cron_number text, names
+    if place of text in names > 0
+        give back names[text]
+    end
+    if length of text == 0
+        give back -1
+    end
+    let i = 1
+    while i <= length of text
+        if text[i] < "0" or text[i] > "9"
+            give back -1
+        end
+        recall text names
+        i = i + 1
+    end
+    if length of text > 9
+        give back -1
+    end
+    give back number of text
+end
+
+ritual cron_field text, low, high, names
+    perform split_token with text, "," into pieces
+    let selected = {}
+    let star = 0
+    let i = 1
+    while i <= length of pieces
+        perform split_token with pieces[i], "/" into stepped
+        if length of stepped > 2
+            give back {}
+        end
+        let stride = 1
+        if length of stepped == 2
+            perform cron_number with stepped[2], {} into stride
+        end
+        if stride <= 0
+            give back {}
+        end
+        let a = low
+        let b = high
+        if stepped[1] == "*"
+            star = 1
+        else
+            perform split_token with stepped[1], "-" into bounds
+            if length of bounds > 2
+                give back {}
+            end
+            perform cron_number with bounds[1], names into a
+            b = a
+            if length of bounds == 2
+                perform cron_number with bounds[2], names into b
+            else
+                if length of stepped == 2
+                    b = high
+                end
+            end
+        end
+        if a < low or b > high or b < a
+            give back {}
+        end
+        recall text low high names pieces selected star i
+        let n = a
+        while n <= b
+            selected["" + n] = 1
+            recall text low high names pieces selected star i b stride
+            n = n + stride
+        end
+        recall text low high names pieces selected star
+        i = i + 1
+    end
+    give back {"values": selected, "star": star}
+end
+
+ritual cron_parse expression
+    perform lowered with expression into expression
+    let macros = {"@hourly": "0 * * * *", "@daily": "0 0 * * *", "@midnight": "0 0 * * *", "@weekly": "0 0 * * 0", "@monthly": "0 0 1 * *", "@yearly": "0 0 1 1 *", "@annually": "0 0 1 1 *"}
+    if place of expression in macros > 0
+        expression = macros[expression]
+    end
+    if words of expression != 5
+        give back []
+    end
+    let limits = [[0, 59], [0, 23], [1, 31], [1, 12], [0, 6]]
+    let months = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+    let weekdays = {"sun": 0, "mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6}
+    let parsed = []
+    let i = 1
+    while i <= 5
+        let names = {}
+        if i == 4
+            names = months
+        end
+        if i == 5
+            names = weekdays
+        end
+        perform cron_field with word i of expression, limits[i][1], limits[i][2], names into item
+        if length of item == 0
+            give back []
+        end
+        put item into parsed
+        recall expression limits months weekdays parsed
+        i = i + 1
+    end
+    give back parsed
+end
+
+# Advance by days/hours/minutes, never scan every minute of a distant year.
+# Eight years includes the leap day gap across a non-leap century.
+ritual cron_next parsed, after_
+    let candidate = (after_ / 60 + 1) * 60
+    let limit = candidate + 366 * 86400 * 8
+    while candidate <= limit
+        perform stamp_of with candidate into stamp
+        let month_ = number of part 6 7 of stamp
+        let day_ = number of part 9 10 of stamp
+        let weekday = (candidate / 86400 + 4) % 7
+        let dom = place of ("" + day_) in parsed[3]["values"] > 0
+        let dow = place of ("" + weekday) in parsed[5]["values"] > 0
+        let matches = dom or dow
+        if parsed[3]["star"] or parsed[5]["star"]
+            matches = dom and dow
+        end
+        if place of ("" + month_) in parsed[4]["values"] == 0 or not matches
+            candidate = (candidate / 86400 + 1) * 86400
+        else
+            let hour_ = candidate % 86400 / 3600
+            let minute_ = candidate % 3600 / 60
+            if place of ("" + hour_) in parsed[2]["values"] == 0
+                candidate = (candidate / 3600 + 1) * 3600
+            else
+                if place of ("" + minute_) in parsed[1]["values"] > 0
+                    give back candidate
+                end
+                candidate = candidate + 60
+            end
+        end
+        recall parsed candidate limit
+    end
+    give back 0
+end
+
+ritual cron_clock
+    if world "CRONJOB_NOW" != ""
+        read file world "CRONJOB_NOW" into text
+        give back whole of number of text
+    end
+    give back whole of now
+end
+
+ritual cron_event object, kind_, reason, message
+    endure
+        perform tell_event with object, kind_, reason, message, "cronjob"
+    when it hurts as pain
+        cry "cronjob event: " + pain
+    end
+end
+
+ritual delete_job job
+    perform kubectl with "delete jobs.batch " + job["metadata"]["name"] + " -n " + job["metadata"]["namespace"] + " --cascade=background --wait=false --ignore-not-found"
+end
+
+ritual trim_jobs jobs, limit
+    let order = []
+    let i = 1
+    while i <= length of jobs
+        perform field with jobs[i], "status", {} into st
+        perform field with st, "startTime", "" into started
+        let at = 0
+        if started != ""
+            perform scheduled_seconds with started into at
+        end
+        put [at] into order
+        recall jobs limit order
+        i = i + 1
+    end
+    perform sorted with jobs, order into jobs
+    i = 1
+    while i <= length of jobs - limit
+        endure
+            perform delete_job with jobs[i]
+        when it hurts as pain
+            cry "cronjob history: " + pain
+        end
+        recall jobs limit
+        i = i + 1
+    end
+end
+
+# RFC3339 offsets and fractions are normalized before comparing instants.
+ritual scheduled_seconds stamp
+    ask world "jq -er 'capture(\"^(?<base>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(?:[.][0-9]+)?(?<zone>Z|[+-][0-9]{2}:[0-9]{2})$\")'" telling json of stamp into checked
+    let parts_ = meaning of checked
+    perform seconds_of with parts_["base"] into at
+    perform stamp_of with at into normalized
+    if normalized != parts_["base"] + "Z"
+        give back -1
+    end
+    let zone = parts_["zone"]
+    if zone != "Z"
+        let hours_ = number of part 2 3 of zone
+        let minutes_ = number of part 5 6 of zone
+        if hours_ > 23 or minutes_ > 59
+            give back -1
+        end
+        let offset = hours_ * 3600 + minutes_ * 60
+        if zone[1] == "+"
+            at = at - offset
+        else
+            at = at + offset
+        end
+    end
+    give back at
+end
+
+ritual classify_jobs jobs
+    let active = []
+    let successful = []
+    let failed = []
+    let refs = []
+    let latest = 0
+    let i = 1
+    while i <= length of jobs
+        let job = jobs[i]
+        perform field with job, "status", {} into st
+        job["status"] = st
+        perform condition_of with job, "Complete" into complete
+        perform condition_of with job, "Failed" into failure
+        if complete
+            put job into successful
+        else
+            if failure
+                put job into failed
+            else
+                put job into active
+                let meta = job["metadata"]
+                put {"apiVersion": "batch/v1", "kind": "Job", "namespace": meta["namespace"], "name": meta["name"], "uid": meta["uid"]} into refs
+            end
+        end
+        perform annotation with job, "batch.tutorial.kubebuilder.io/scheduled-at" into stamp
+        if stamp != ""
+            endure
+                perform scheduled_seconds with stamp into at
+                if at > latest
+                    latest = at
+                end
+            when it hurts as pain
+                cry "cronjob annotation: " + pain
+            end
+        end
+        recall jobs active successful failed refs latest
+        i = i + 1
+    end
+    give back {"active": active, "successful": successful, "failed": failed, "refs": refs, "latest": latest}
+end
+
+ritual publish_status object, classified
+    let st = {"active": classified["refs"]}
+    if classified["latest"] > 0
+        perform stamp_of with classified["latest"] into stamp
+        st["lastScheduleTime"] = stamp
+    end
+    perform field with object, "status", {} into old
+    # jq compares objects independent of key order, and treats missing active as [].
+    ask world "jq -r 'map(.active = ((.active // []) | sort_by(.namespace, .name, .uid)) | with_entries(select(.value != null))) | .[0] == .[1]'" telling json of [old, st] into equal
+    if equal != "true"
+        let payload = {"status": st}
+        ask world "jq -c '.status.lastScheduleTime //= null'" telling json of payload into raw
+        perform kubectl_telling with "patch cronjobs.batch.tutorial.kubebuilder.io " + object["metadata"]["name"] + " -n " + object["metadata"]["namespace"] + " --subresource=status --type=merge --patch-file=/dev/stdin", raw
+    end
+end
+
+ritual create_job object, scheduled
+    perform stamp_of with scheduled into stamp
+    let name = object["metadata"]["name"] + "-" + scheduled
+    # The template is a raw JSON string, never passed through Amae's JSON decoder.
+    let input_ = {"template": object["spec"]["jobTemplate"], "parent": object["metadata"], "name": name, "stamp": stamp}
+    let filter_ = ". as $x | ($x.template | fromjson) as $t | "
+    filter_ = filter_ + "{apiVersion: \"batch/v1\", kind: \"Job\", metadata: {"
+    filter_ = filter_ + "name: $x.name, namespace: $x.parent.namespace, labels: ($t.metadata.labels // {}), "
+    filter_ = filter_ + "annotations: (($t.metadata.annotations // {}) + {\"batch.tutorial.kubebuilder.io/scheduled-at\": $x.stamp}), "
+    filter_ = filter_ + "ownerReferences: [{apiVersion: \"batch.tutorial.kubebuilder.io/v1\", kind: \"CronJob\", "
+    filter_ = filter_ + "name: $x.parent.name, uid: $x.parent.uid, controller: true, blockOwnerDeletion: true}]}, spec: $t.spec}"
+    ask world "jq -c '" + filter_ + "'" telling json of input_ into body
+    endure
+        perform kubectl_telling with "create --raw /apis/batch/v1/namespaces/" + object["metadata"]["namespace"] + "/jobs -f -", body
+    when it hurts as pain
+        # kubectl errors contain a Status reason. Other failures must retry.
+        perform split_token with pain, " " into tokens
+        if place of "(AlreadyExists):" in tokens == 0 and place of "AlreadyExists" in tokens == 0
+            cry "cronjob create: " + pain
+        end
+        give back 0
+    end
+    perform cron_event with object, "Normal", "SuccessfulCreate", "Created job " + name
+end
+
+ritual reconcile_cronjob object, jobs
+    perform classify_jobs with jobs into classified
+    perform publish_status with object, classified
+    perform field with object["spec"], "successfulJobsHistoryLimit", 3 into limit
+    perform trim_jobs with classified["successful"], limit
+    perform field with object["spec"], "failedJobsHistoryLimit", 1 into limit
+    perform trim_jobs with classified["failed"], limit
+    perform field with object["spec"], "suspend", 0 into suspended
+    if suspended
+        give back 0
+    end
+    perform cron_parse with object["spec"]["schedule"] into parsed
+    if length of parsed == 0
+        perform cron_event with object, "Warning", "InvalidSchedule", "Cannot parse cron schedule"
+        give back 0
+    end
+    perform cron_clock into at
+    let earliest = classified["latest"]
+    if earliest == 0
+        perform scheduled_seconds with object["metadata"]["creationTimestamp"] into earliest
+    end
+    perform field with object["spec"], "startingDeadlineSeconds", -1 into deadline
+    if deadline >= 0 and earliest < at - deadline
+        earliest = at - deadline
+    end
+    perform cron_next with parsed, at into upcoming
+    if upcoming == 0
+        perform cron_event with object, "Warning", "InvalidSchedule", "No matching time in the next eight years"
+        give back 0
+    end
+    if upcoming - at < note "sleep"
+        note "sleep" = upcoming - at
+    end
+    let missed = 0
+    let count_ = 0
+    perform cron_next with parsed, earliest into candidate
+    while candidate > 0 and candidate <= at
+        missed = candidate
+        count_ = count_ + 1
+        if count_ > 100
+            perform cron_event with object, "Warning", "TooManyMissedTimes", "More than 100 missed start times; set startingDeadlineSeconds"
+            give back 0
+        end
+        perform cron_next with parsed, candidate into candidate
+        recall object classified parsed at earliest deadline upcoming missed count_
+    end
+    if missed == 0 or (deadline >= 0 and missed + deadline < at)
+        give back 0
+    end
+    perform field with object["spec"], "concurrencyPolicy", "Allow" into policy
+    if policy == "Forbid" and length of classified["active"] > 0
+        perform cron_event with object, "Normal", "JobAlreadyActive", "Skipping run because a Job is active"
+        give back 0
+    end
+    if policy == "Replace"
+        let active = classified["active"]
+        let i = 1
+        while i <= length of active
+            perform delete_job with active[i]
+            recall active object missed
+            i = i + 1
+        end
+    end
+    perform create_job with object, missed
+end
+
+ritual cronjob_once
+    perform kubectl with "get cronjobs.batch.tutorial.kubebuilder.io -A -o json" into raw
+    ask world "jq -c '.items |= map(.spec.jobTemplate |= tojson)'" telling raw into protected
+    note "cronjobs" = (meaning of protected)["items"]
+    perform get_all with "jobs.batch -A" into jobs
+    note "grouped" = {}
+    let i = 1
+    while i <= length of jobs
+        perform field with jobs[i]["metadata"], "ownerReferences", [] into owners
+        let j = 1
+        while j <= length of owners
+            let owner = owners[j]
+            perform field with owner, "controller", 0 into controller
+            if controller and owner["kind"] == "CronJob" and owner["apiVersion"] == "batch.tutorial.kubebuilder.io/v1"
+                let key_ = jobs[i]["metadata"]["namespace"] + "/" + owner["uid"]
+                let grouped = note "grouped"
+                perform field with grouped, key_, [] into children
+                put jobs[i] into children
+                grouped = note "grouped"
+                grouped[key_] = children
+                note "grouped" = grouped
+            end
+            recall jobs i owners
+            j = j + 1
+        end
+        recall jobs
+        i = i + 1
+    end
+    let objects = note "cronjobs"
+    i = 1
+    while i <= length of objects
+        let object = objects[i]
+        let key_ = object["metadata"]["namespace"] + "/" + object["metadata"]["uid"]
+        perform field with note "grouped", key_, [] into children
+        endure
+            perform reconcile_cronjob with object, children
+        when it hurts as pain
+            cry "cronjob reconcile: " + pain
+        end
+        recall objects
+        i = i + 1
+    end
+end
+
+soul cronjob
+    note "every" = 10
+    if world "CRONJOB_INTERVAL" != ""
+        note "every" = number of world "CRONJOB_INTERVAL"
+    end
+    note "look" = 0
+    note "identity" = world "HOSTNAME" + "-" + whole of (now * 1000000)
+    mark looking
+    note "sleep" = note "every"
+    endure
+        perform hold_lease with "amaenetes", "cronjob", note "identity", 30 into holder
+        if holder == note "identity"
+            perform cronjob_once
+        end
+    when it hurts as pain
+        cry "cronjob: " + pain
+    end
+    note "look" = note "look" + 1
+    if world "CRONJOB_LOOKS" != "" and note "look" >= number of world "CRONJOB_LOOKS"
+        goodbye
+    end
+    # Renew even when the configured polling interval exceeds the lease span.
+    if note "sleep" > 10
+        note "sleep" = 10
+    end
+    wait note "sleep" seconds
+    return to looking
+end

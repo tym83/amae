@@ -413,6 +413,61 @@ Mediator читает `spec`, `data`, метки и аннотации; игно
 counsel и mediator. Добавление типов наблюдаемых ресурсов требует расширения
 ClusterRole mediator в `kube/deploy.yaml`.
 
+### CronJob
+
+`operators/cronjob.amae` реализует [учебный CronJob из kubebuilder](https://book.kubebuilder.io/cronjob-tutorial/cronjob-tutorial)
+для `batch.tutorial.kubebuilder.io/v1`. Каждый обход получает CronJobs и Jobs во
+всех пространствах имён, группирует дочерние Jobs по UID контроллера и namespace,
+восстанавливает `active` и `lastScheduleTime`, записывает изменившийся status
+через подресурс и удаляет старейшие завершённые Jobs сверх лимитов истории.
+Приостановка, дедлайн запуска, ограничение в 100 пропущенных запусков и политики
+`Allow` / `Forbid` / `Replace` управляют созданием последнего пропущенного Job.
+Имя и аннотация scheduled-at обозначают плановое время запуска; существующий
+Job не считается ошибкой. После ошибок API попытка повторяется при следующих
+обходах, а Kubernetes Events объясняют создание и пропуск запусков.
+
+Cron-парсер написан на Amae: пять полей, списки, диапазоны, шаги, названия месяцев
+и дней недели, часовые/суточные/недельные/месячные/годовые сокращения и правило
+Vixie для дня месяца и дня недели. Время — UTC. Контроллер использует
+`lib/kube.amae`, `kubectl` и `jq`; шаблон Job сохраняется как исходный JSON,
+чтобы не потерять boolean и null. Lease `amaenetes/cronjob` выбирает лидера.
+Ожидание ограничено `CRONJOB_INTERVAL` (по умолчанию 10 секунд) и следующим
+плановым запуском; обновление lease также ограничивает длинные интервалы
+10 секундами. `KUBECTL` и `KUBE_CONTEXT` работают как у других компонентов.
+Для тестов `CRONJOB_NOW` задаёт файл с Unix-временем в секундах, перечитываемый
+при каждой сверке; `CRONJOB_LOOKS` ограничивает число обходов.
+
+[Манифест](kube/operators/cronjob.yaml) содержит namespaced CRD, подресурс status,
+RBAC, ServiceAccount и Deployment `amaenetes-cronjob`. Он использует namespace
+`amaenetes` и ConfigMap `amaenetes-kubeconfig` из `kube/deploy.yaml`.
+`make kube` и Dockerfile собирают `/opt/amae/bin/cronjob` для образа.
+
+```sh
+make kube
+kubectl --context <ctx> apply -f kube/operators/cronjob.yaml
+# Либо локальный запуск с установленной CRD:
+KUBE_CONTEXT=<ctx> build/cronjob --patience=0
+```
+
+Сравнение размера без комментариев и пустых строк, ревизия kubebuilder
+[`9d0f6d095986`](https://github.com/kubernetes-sigs/kubebuilder/tree/9d0f6d0959861473730bbd19e9fcf2f47a3a44ae/docs/book/src/cronjob-tutorial/testdata/project):
+
+| Исходник | Строк кода |
+|---|---:|
+| `operators/cronjob.amae` | 433 |
+| Go `api/v1/cronjob_types.go` | 44 |
+| Go `internal/controller/cronjob_controller.go` | 430 |
+| Go всего | 474 |
+
+Считаются физические строки исходников; комментарии Go исключены его сканером.
+Amae включает свой cron-парсер; Go использует `robfig/cron`.
+В обоих случаях не считаются общие библиотеки, сгенерированный код и манифесты;
+схема CRD Amae находится в YAML и не входит в число строк исходника. Полученная
+ревизия Go также содержит status conditions и дополнительные записи status;
+API Amae оставляет заданные в этой реализации `active` и `lastScheduleTime`
+из учебного примера. Это сравнение размера исходников, а не утверждение об
+идентичной инфраструктуре или производительности.
+
 ## Компилятор, написанный на Amae
 
 `compiler.amae` и есть компилятор, и другой реализации у языка нет. Он
