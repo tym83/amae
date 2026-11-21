@@ -12,6 +12,7 @@ RUN make && mkdir -p /out \
  && bin/tc operators/cronjob.amae -o /out/cronjob \
  && bin/tc operators/external-dns.amae -o /out/external-dns \
  && bin/tc operators/acme.amae -o /out/acme \
+ && bin/tc operators/postgres.amae -o /out/postgres \
  && cp build/tc-core /out/tc-core
 
 FROM alpine/k8s:1.35.9

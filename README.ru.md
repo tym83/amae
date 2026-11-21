@@ -617,6 +617,75 @@ status. Старые Order и Challenge доступны до удаления �
 контроллер с fake kubectl и локальным ACME-сервером, проверяющим RSA-подписи,
 повторное использование nonce, POST-as-GET и key authorization HTTP-01.
 
+### Postgres failover
+
+`operators/postgres.amae` управляет Cluster `postgres.amae.io/v1`: два или три
+отдельных Pod, Secret с паролем и Service `<name>-rw` / `<name>-ro`.
+Первый экземпляр выполняет `initdb`, реплики — `pg_basebackup -R` и потоковую
+репликацию. `spec.image` фиксирует минорную версию PostgreSQL 17 с вариантом
+`-bookworm`, например `postgres:17.9-bookworm`. Сейчас поддерживается только
+**emptyDir**: удаление всех экземпляров уничтожает базу. Постоянное хранилище
+и резервное копирование не входят в эту реализацию для стенда.
+
+Оператор записывает начало отказа primary в `status.unhealthySince` и ждёт
+`PG_FAILOVER_DELAY` (10 секунд). Изменения выполняет только владелец Lease
+`amaenetes/postgres`. Перед каждым переходом намерение сохраняется через
+подресурс status: `Failover: fencing` → `Failover: promoting` →
+`Failover: switching` → `Failover: rebuilding`. Fencing записывает аннотацию
+`postgres.amae.io/fencedInstances`, исключает старый primary из селектора rw,
+создаёт файл блокировки, переживающий перезапуск контейнера, и останавливает
+PostgreSQL. Если существующий primary недоступен, promotion блокируется:
+одного изменения метки недостаточно. Проверки готовности Pod и exec также
+обнаруживают недоступность узла без прав на Node.
+
+После fencing выбирается доступная реплика с наибольшим полученным или
+применённым WAL LSN. Её имя и UID Pod сохраняются вместе с `targetPrimary`;
+после перезапуска оператор продолжает с той же целью, даже если promotion
+успел выполниться, но ответ потерялся. Когда `pg_is_in_recovery()` возвращает
+false, меняются метка primary и `currentPrimary`, у остальных реплик
+обновляется `primary_conninfo` и перезапускается PostgreSQL. Старый primary
+восстанавливается из нового base backup. Fencing снимается после готовности
+всех экземпляров в ожидаемых ролях. Status содержит роли, готовность, LSN и
+отставание replay в байтах (`-1`, если неизвестно), conditions и время фаз;
+Events фиксируют переходы. При асинхронном failover возможна потеря записей,
+не дошедших до сохранившихся реплик.
+
+Плановое переключение использует тот же журнал: запрещает новые клиентские
+подключения, завершает существующие сессии, выполняет checkpoint, сохраняет
+барьер flush LSN и останавливает primary до promotion. Целевая реплика должна
+применить WAL до барьера. Недоступность исходного сервера или отставание цели
+блокируют переход. После восстановления реплик аннотация очищается:
+
+```sh
+kubectl --context <ctx> annotate clusters.postgres.amae.io demo \
+  postgres.amae.io/switchover-to=demo-2 --overwrite
+```
+
+[Манифест](kube/operators/postgres.yaml) содержит CRD, колонки вывода,
+подресурс status, ServiceAccount, RBAC (включая pods/exec и create/patch для
+Events) и Deployment `amaenetes-postgres`. Нужны namespace `amaenetes` и
+ConfigMap `amaenetes-kubeconfig` из `kube/deploy.yaml`. `make kube` и Dockerfile
+собирают `/opt/amae/bin/postgres`; для работы нужны kubectl, jq и OpenSSL
+(генерация случайных паролей). Минимальный Cluster:
+
+```yaml
+apiVersion: postgres.amae.io/v1
+kind: Cluster
+metadata: {name: demo, namespace: pg-e2e}
+spec: {instances: 3, image: 'postgres:17.9-bookworm', storage: emptyDir}
+```
+
+Для локального запуска задайте `KUBECTL` / `KUBE_CONTEXT`, как у других
+операторов, `PG_NAMESPACE=pg-e2e` для ограничения наблюдения и
+`PG_LEASE_NAMESPACE=pg-e2e` для Lease стенда. По умолчанию наблюдаются все
+namespace, Lease находится в `amaenetes`. `PG_INTERVAL` — 2 секунды, максимум
+10; `PG_LOOKS` ограничивает число итераций в тестах. Lease действует 120 секунд
+и продлевается перед изменениями; после гибели контроллера новый процесс ждёт
+истечения срока. Ошибки API приводят к повтору записанного шага.
+`tests/test_postgres.py` проверяет перезапуски, fencing и лидерство через
+fake kubectl с сохраняемым состоянием и потерей ответов после отдельных шагов.
+
+
 ## Компилятор, написанный на Amae
 
 `compiler.amae` и есть компилятор, и другой реализации у языка нет. Он

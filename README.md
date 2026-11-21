@@ -586,6 +586,72 @@ Defaults: `ACME_HTTP_TIMEOUT=20`, `ACME_INTERVAL=5`,
 runs the compiled controller with fake kubectl and a local ACME peer that checks
 RSA signatures, nonce reuse, POST-as-GET and HTTP-01 key authorization.
 
+### Postgres failover
+
+`operators/postgres.amae` manages `postgres.amae.io/v1` Clusters with two or
+three bare Pods, a password Secret, and `<name>-rw` / `<name>-ro` Services.
+Instance 1 runs `initdb`; replicas use `pg_basebackup -R` and streaming
+replication. `spec.image` must pin a PostgreSQL 17 minor version with the
+`-bookworm` variant, for example `postgres:17.9-bookworm`. The current storage
+implementation is **emptyDir**: deleting every instance loses the database.
+Keep durable storage and backups outside this stand implementation's scope.
+
+The operator records primary health failures in `status.unhealthySince` and
+waits `PG_FAILOVER_DELAY` (10 seconds). Only the `amaenetes/postgres` Lease
+holder acts. Every transition is journaled through the status subresource:
+`Failover: fencing` → `Failover: promoting` → `Failover: switching` →
+`Failover: rebuilding`. Fencing records `postgres.amae.io/fencedInstances`,
+removes the old primary from the rw selector, writes a restart-resistant fence
+file, and stops PostgreSQL. An unreachable existing primary blocks promotion;
+removing its routing label alone is insufficient. Pod readiness and exec
+failures also cover unavailable nodes without requiring Node permissions.
+
+After fencing, the most advanced available replica is chosen by received and
+replayed WAL LSN. Its name and Pod UID become the persistent `targetPrimary`;
+a restart resumes that target, including when promotion succeeded but its
+reply was lost. Once `pg_is_in_recovery()` is false, the operator switches the
+primary label and `currentPrimary`, updates other replicas' `primary_conninfo`
+and restarts them, and rebuilds the old primary using a fresh base backup.
+The fence is lifted after all instances are ready in their expected roles.
+Status exposes each instance's role, readiness, LSNs and replay lag in bytes
+(`-1` when unknown), plus conditions and phase timestamps; Events record
+transitions. Asynchronous failover can lose writes not received by a survivor.
+
+A planned switchover uses the same journal. It rejects new client connections,
+terminates existing client sessions, checkpoints the primary, saves a flush
+LSN barrier and stops the primary before promotion. The requested replica must
+replay that barrier; an unavailable source or lagging target blocks progress.
+The annotation is cleared when rebuilding completes:
+
+```sh
+kubectl --context <ctx> annotate clusters.postgres.amae.io demo \
+  postgres.amae.io/switchover-to=demo-2 --overwrite
+```
+
+The [manifest](kube/operators/postgres.yaml) includes the CRD, printer columns,
+status subresource, ServiceAccount, RBAC (including pods/exec and Event
+create/patch), and `amaenetes-postgres` Deployment. It uses `amaenetes` and the
+`amaenetes-kubeconfig` ConfigMap from `kube/deploy.yaml`. `make kube` and the
+Dockerfile build `/opt/amae/bin/postgres`; runtime tools are kubectl, jq and
+OpenSSL (for random passwords). A minimal Cluster is:
+
+```yaml
+apiVersion: postgres.amae.io/v1
+kind: Cluster
+metadata: {name: demo, namespace: pg-e2e}
+spec: {instances: 3, image: 'postgres:17.9-bookworm', storage: emptyDir}
+```
+
+For local operation, set `KUBECTL` / `KUBE_CONTEXT` as for other operators,
+`PG_NAMESPACE=pg-e2e` to limit watched Clusters, and
+`PG_LEASE_NAMESPACE=pg-e2e` to keep the Lease on the stand. Defaults watch all
+namespaces and use `amaenetes` for the Lease. `PG_INTERVAL` defaults to 2
+seconds (capped at 10); `PG_LOOKS` optionally bounds test runs. The Lease lasts
+120 seconds and is renewed before mutations; a killed controller's replacement
+waits for expiry. API failures retry without skipping the recorded step.
+`tests/test_postgres.py` uses persistent fake kubectl state and lost replies
+after individual steps to exercise restart, fencing and leadership failures.
+
 ## The compiler written in Amae
 
 `compiler.amae` is the compiler, and it is the only implementation of the

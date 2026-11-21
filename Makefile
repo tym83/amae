@@ -70,7 +70,7 @@ clean:
 
 # Long-lived cluster components, also shipped in the container image.
 .PHONY: kube
-kube: $(BUILD)/counsel $(BUILD)/mediator $(BUILD)/cronjob $(BUILD)/external-dns
+kube: $(BUILD)/counsel $(BUILD)/mediator $(BUILD)/cronjob $(BUILD)/external-dns $(BUILD)/acme $(BUILD)/postgres
 
 $(BUILD)/counsel: kube/counsel.amae lib/kube.amae $(BUILD)/tc-core
 	AMAE_MEMORY=$(abspath $(BUILD))/compiler-memory.json AMAE_HISTORY=$(HISTORY) bin/tc $< -o $@
@@ -84,7 +84,9 @@ $(BUILD)/cronjob: operators/cronjob.amae lib/kube.amae $(BUILD)/tc-core
 $(BUILD)/external-dns: operators/external-dns.amae lib/kube.amae $(BUILD)/tc-core
 	AMAE_MEMORY=$(abspath $(BUILD))/compiler-memory.json AMAE_HISTORY=$(HISTORY) bin/tc $< -o $@
 
-kube: $(BUILD)/acme
 
 $(BUILD)/acme: operators/acme.amae lib/kube.amae $(BUILD)/tc-core
+	AMAE_MEMORY=$(abspath $(BUILD))/compiler-memory.json AMAE_HISTORY=$(HISTORY) bin/tc $< -o $@
+
+$(BUILD)/postgres: operators/postgres.amae lib/kube.amae $(BUILD)/tc-core
 	AMAE_MEMORY=$(abspath $(BUILD))/compiler-memory.json AMAE_HISTORY=$(HISTORY) bin/tc $< -o $@
