@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import shlex
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -209,6 +210,41 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.reply((s.directory/('cert-'+ident+'.pem')).read_text()+(s.directory/'ca.pem').read_text(),pem=True)
         else:
             raise AssertionError(self.path)
+
+class AccountJWK(unittest.TestCase):
+    def test_modulus_bytes_in_c_and_utf8_locales(self):
+        # Execute the controller's actual shell, comparing bytes independently
+        # of its hex conversion and base64 pipeline (including the high bit).
+        source = (ROOT/'operators/acme.amae').read_text()
+        ritual = source.split('ritual acme_jwk pem\n', 1)[1]
+        command, _ = json.JSONDecoder().raw_decode(ritual.split('ask world ', 1)[1])
+        available = subprocess.check_output(['locale', '-a'], text=True).splitlines()
+        locales = ['C'] + [name for name in available
+                           if name.lower().replace('-', '') in
+                           ('c.utf8', 'en_us.utf8')]
+        shells = ['/bin/sh']
+        if shutil.which('dash'):
+            shells.append(shutil.which('dash'))
+        pem = subprocess.check_output(
+            ['openssl', 'genpkey', '-algorithm', 'RSA',
+             '-pkeyopt', 'rsa_keygen_bits:2048'], stderr=subprocess.DEVNULL)
+        modulus = subprocess.check_output(
+            ['openssl', 'rsa', '-noout', '-modulus'], input=pem,
+            stderr=subprocess.DEVNULL).decode().strip().split('=', 1)[1]
+        expected = bytes.fromhex(modulus)
+        self.assertEqual(len(expected), 256)
+        self.assertGreaterEqual(expected[0], 128)
+        for shell in shells:
+            for locale in locales:
+                with self.subTest(shell=shell, locale=locale):
+                    result = subprocess.run(
+                        [shell, '-c', command], input=pem, capture_output=True,
+                        check=True, env=dict(os.environ, LC_ALL=locale))
+                    jwk = json.loads(result.stdout)
+                    self.assertEqual(jwk['kty'], 'RSA')
+                    self.assertEqual(unb64(jwk['e']), b'\x01\x00\x01')
+                    self.assertEqual(unb64(jwk['n']), expected)
+
 
 class CertificateDates(unittest.TestCase):
     def test_one_and_two_digit_days(self):

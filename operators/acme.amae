@@ -243,8 +243,10 @@ ritual acme_sign protected, payload
     give back raw
 end
 
+# Force byte-oriented awk output: UTF-8-aware implementations can encode %c
+# values above 127 as multiple bytes, corrupting the unsigned RSA modulus.
 ritual acme_jwk pem
-    ask world "set -eu\nd=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\ncat > \"$d/key\"\nopenssl rsa -in \"$d/key\" -text -noout > \"$d/text\" 2>/dev/null\n# This controller generates RSA keys with exponent 65537; reject other exponents.\ngrep -q 'publicExponent: 65537 ' \"$d/text\"\nopenssl rsa -in \"$d/key\" -noout -modulus > \"$d/modulus\" 2>/dev/null\nn=$(sed 's/^Modulus=//' \"$d/modulus\" | awk '{h=\"0123456789ABCDEF\"; for(i=1;i<=length($0);i+=2) printf \"%c\", (index(h,substr($0,i,1))-1)*16+index(h,substr($0,i+1,1))-1}' | openssl base64 -A | tr '+/' '-_' | tr -d '=')\njq -cn --arg n \"$n\" '{e:\"AQAB\",kty:\"RSA\",n:$n}' " telling pem into raw
+    ask world "set -eu\nd=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\ncat > \"$d/key\"\nopenssl rsa -in \"$d/key\" -text -noout > \"$d/text\" 2>/dev/null\n# This controller generates RSA keys with exponent 65537; reject other exponents.\ngrep -q 'publicExponent: 65537 ' \"$d/text\"\nopenssl rsa -in \"$d/key\" -noout -modulus > \"$d/modulus\" 2>/dev/null\nn=$(sed 's/^Modulus=//' \"$d/modulus\" | LC_ALL=C awk '{h=\"0123456789ABCDEF\"; for(i=1;i<=length($0);i+=2) printf \"%c\", (index(h,substr($0,i,1))-1)*16+index(h,substr($0,i+1,1))-1}' | openssl base64 -A | tr '+/' '-_' | tr -d '=')\njq -cn --arg n \"$n\" '{e:\"AQAB\",kty:\"RSA\",n:$n}' " telling pem into raw
     give back raw
 end
 
