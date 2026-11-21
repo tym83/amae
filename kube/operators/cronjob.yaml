@@ -1,0 +1,124 @@
+# Requires namespace amaenetes and amaenetes-kubeconfig from kube/deploy.yaml.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: cronjobs.batch.tutorial.kubebuilder.io
+spec:
+  group: batch.tutorial.kubebuilder.io
+  scope: Namespaced
+  names: {plural: cronjobs, singular: cronjob, kind: CronJob}
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [schedule, jobTemplate]
+              properties:
+                schedule: {type: string, minLength: 1}
+                startingDeadlineSeconds: {type: integer, format: int64, minimum: 0}
+                concurrencyPolicy: {type: string, enum: [Allow, Forbid, Replace], default: Allow}
+                suspend: {type: boolean}
+                jobTemplate:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                successfulJobsHistoryLimit: {type: integer, format: int32, minimum: 0, default: 3}
+                failedJobsHistoryLimit: {type: integer, format: int32, minimum: 0, default: 1}
+            status:
+              type: object
+              properties:
+                active:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      apiVersion: {type: string}
+                      kind: {type: string}
+                      namespace: {type: string}
+                      name: {type: string}
+                      uid: {type: string}
+                      resourceVersion: {type: string}
+                      fieldPath: {type: string}
+                lastScheduleTime: {type: string, format: date-time}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cronjob
+  namespace: amaenetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-cronjob
+rules:
+  - apiGroups: [batch.tutorial.kubebuilder.io]
+    resources: [cronjobs]
+    verbs: [get, list]
+  - apiGroups: [batch.tutorial.kubebuilder.io]
+    resources: [cronjobs/status]
+    verbs: [get, patch, update]
+  # blockOwnerDeletion on the child controller reference needs this permission.
+  - apiGroups: [batch.tutorial.kubebuilder.io]
+    resources: [cronjobs/finalizers]
+    verbs: [update]
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [get, list, create, delete]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [create]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    resourceNames: [cronjob]
+    verbs: [get, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amaenetes-cronjob
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: amaenetes-cronjob}
+subjects:
+  - {kind: ServiceAccount, name: cronjob, namespace: amaenetes}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amaenetes-cronjob
+  namespace: amaenetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: amaenetes-cronjob}
+  template:
+    metadata:
+      labels: {app: amaenetes-cronjob}
+    spec:
+      serviceAccountName: cronjob
+      containers:
+        - name: cronjob
+          image: ghcr.io/tym83/amae:latest
+          imagePullPolicy: Always
+          command: [/opt/amae/bin/cronjob, --patience=0]
+          env:
+            - {name: KUBECONFIG, value: /etc/amaenetes/config}
+            - {name: KUBE_CONTEXT, value: in-cluster}
+            - {name: CRONJOB_INTERVAL, value: "10"}
+            - {name: HOME, value: /tmp}
+          volumeMounts:
+            - {name: kubeconfig, mountPath: /etc/amaenetes}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+      volumes:
+        - name: kubeconfig
+          configMap: {name: amaenetes-kubeconfig}

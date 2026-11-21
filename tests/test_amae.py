@@ -2897,5 +2897,331 @@ esac
             self.assertIn("list refused", life.err)
 
 
+CRONJOB_FAKE_KUBECTL = r'''#!/usr/bin/env python3
+import json, os, sys
+p = os.environ['FAKE_STATE']
+s = json.load(open(p))
+a = sys.argv[1:]
+assert a[:2] == ['--context', 'imagined'], a
+a = a[2:]
+s.setdefault('calls', []).append(a)
+fail = s.get('fail_once')
+if fail and ((fail == 'list' and a[:2] == ['get', 'jobs.batch']) or
+             (fail == 'patch' and a[0] == 'patch') or
+             (fail == 'delete' and a[0] == 'delete') or
+             (fail == 'create' and a[0] == 'create' and '/jobs' in a[a.index('--raw') + 1])):
+    s.pop('fail_once')
+    json.dump(s, open(p, 'w'))
+    print('injected failure', file=sys.stderr)
+    sys.exit(1)
+result = {}
+if 'get' in a:
+    resource = a[a.index('get') + 1]
+    if resource == 'leases.coordination.k8s.io':
+        result = s.get('lease')
+    elif resource == 'cronjobs.batch.tutorial.kubebuilder.io':
+        s['looks'] = s.get('looks', 0) + 1
+        if s.get('clocks'):
+            with open(os.environ['CRONJOB_NOW'], 'w') as f:
+                f.write(str(s['clocks'][min(s['looks'] - 1, len(s['clocks']) - 1)]))
+        result = {'items': s['cronjobs']}
+    elif resource == 'jobs.batch':
+        result = {'items': s['jobs']}
+    else:
+        raise AssertionError(a)
+elif a[0] in ('create', 'replace'):
+    body = json.load(sys.stdin)
+    kind = body['kind']
+    if kind == 'Lease':
+        s['lease'] = body
+    elif kind == 'Event':
+        s.setdefault('events', []).append(body)
+    elif kind == 'Job':
+        s.setdefault('attempts', []).append(body)
+        if s.get('already_exists') or any(j['metadata']['name'] == body['metadata']['name'] and
+                j['metadata']['namespace'] == body['metadata']['namespace'] for j in s['jobs']):
+            json.dump(s, open(p, 'w'))
+            print('Error from server (AlreadyExists): jobs.batch already exists', file=sys.stderr)
+            sys.exit(1)
+        body['metadata']['uid'] = 'created-' + body['metadata']['name']
+        s['jobs'].append(body)
+        s.setdefault('creates', []).append(body)
+        s.setdefault('actions', []).append('create:' + body['metadata']['name'])
+    else:
+        raise AssertionError(body)
+elif a[0] == 'patch':
+    assert '--subresource=status' in a, a
+    body = json.load(sys.stdin)
+    s.setdefault('patches', []).append(body)
+    parent = next(c for c in s['cronjobs'] if c['metadata']['name'] == a[2] and
+                  c['metadata']['namespace'] == a[a.index('-n') + 1])
+    parent['status'] = {k: v for k, v in body['status'].items() if v is not None}
+elif a[0] == 'delete':
+    assert '--cascade=background' in a and '--wait=false' in a, a
+    ns = a[a.index('-n') + 1]
+    s.setdefault('deletes', []).append(a[2])
+    s.setdefault('actions', []).append('delete:' + a[2])
+    s['jobs'] = [j for j in s['jobs'] if (j['metadata']['namespace'], j['metadata']['name']) != (ns, a[2])]
+else:
+    raise AssertionError(a)
+json.dump(s, open(p, 'w'))
+print('' if result is None else json.dumps(result))
+'''
+
+
+class LiveCronJob(unittest.TestCase):
+    """Run the real controller with a persistent API fake and a file clock."""
+
+    @staticmethod
+    def source():
+        with open(os.path.join(ROOT, 'operators', 'cronjob.amae')) as f:
+            return f.read()
+
+    def parent(self, **spec):
+        return {'apiVersion': 'batch.tutorial.kubebuilder.io/v1', 'kind': 'CronJob',
+                'metadata': {'name': 'hello', 'namespace': 'demo', 'uid': 'parent-uid',
+                             'creationTimestamp': '2024-01-01T00:00:00Z'},
+                'spec': dict(schedule='* * * * *', jobTemplate={
+                    'metadata': {'labels': {'app': 'hello'}, 'annotations': {'keep': 'true'}},
+                    'spec': {'template': {'spec': {'restartPolicy': 'Never',
+                        'hostNetwork': False, 'securityContext': None,
+                        'containers': [{'name': 'hello', 'image': 'busybox',
+                                        'command': ['echo', 'amae-json:true']}]}}}}, **spec)}
+
+    def child(self, name='old', condition=None, scheduled=None, start=None):
+        job = {'apiVersion': 'batch/v1', 'kind': 'Job',
+               'metadata': {'name': name, 'namespace': 'demo', 'uid': 'uid-' + name,
+                            'ownerReferences': [{'apiVersion': 'batch.tutorial.kubebuilder.io/v1',
+                                'kind': 'CronJob', 'uid': 'parent-uid', 'name': 'hello', 'controller': True}]},
+               'status': {}}
+        if condition:
+            job['status']['conditions'] = [{'type': condition, 'status': 'True'}]
+        if scheduled:
+            job['metadata']['annotations'] = {'batch.tutorial.kubebuilder.io/scheduled-at': scheduled}
+        if start:
+            job['status']['startTime'] = start
+        return job
+
+    def reconcile(self, parent=None, jobs=(), looks=1, clock=1704067260, expected_error='', **extra):
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, 'kubectl')
+            with open(fake, 'w') as f:
+                f.write(CRONJOB_FAKE_KUBECTL)
+            os.chmod(fake, 0o755)
+            state = os.path.join(d, 'state.json')
+            with open(state, 'w') as f:
+                json.dump(dict(cronjobs=parent if isinstance(parent, list) else [parent or self.parent()], jobs=list(jobs), **extra), f)
+            clock_file = os.path.join(d, 'clock')
+            with open(clock_file, 'w') as f:
+                f.write(str(clock))
+            life = run(self.source(), flags=('--patience=0',), timeout=60,
+                       env={'KUBECTL': fake, 'KUBE_CONTEXT': 'imagined', 'FAKE_STATE': state,
+                            'CRONJOB_NOW': clock_file, 'CRONJOB_LOOKS': str(looks),
+                            'CRONJOB_INTERVAL': '0.001'})
+            self.assertEqual(life.code, 0, life.err)
+            if expected_error:
+                self.assertIn(expected_error, life.err)
+            else:
+                self.assertEqual(life.err, '')
+            with open(state) as f:
+                return json.load(f)
+
+    def test_parser(self):
+        cases = [
+            ('*/15 * * * *', '2024-01-01T00:07:00Z', '2024-01-01T00:15:00Z'),
+            ('5,20,50 9-17/2 * * *', '2024-01-01T09:51:00Z', '2024-01-01T11:05:00Z'),
+            ('0 8 * JAN MON-FRI', '2024-01-05T08:00:00Z', '2024-01-08T08:00:00Z'),
+            ('@hourly', '2024-01-01T12:30:00Z', '2024-01-01T13:00:00Z'),
+            ('@daily', '2024-02-28T12:00:00Z', '2024-02-29T00:00:00Z'),
+            ('@midnight', '2024-01-31T00:00:00Z', '2024-02-01T00:00:00Z'),
+            ('@weekly', '2024-01-01T00:00:00Z', '2024-01-07T00:00:00Z'),
+            ('@monthly', '2024-02-01T00:00:00Z', '2024-03-01T00:00:00Z'),
+            ('@yearly', '2024-01-01T00:00:00Z', '2025-01-01T00:00:00Z'),
+            ('@annually', '2024-11-01T00:00:00Z', '2025-01-01T00:00:00Z'),
+            ('0 0 13 * fri', '2024-01-11T00:00:00Z', '2024-01-12T00:00:00Z'),
+            ('0 0 13 * fri', '2024-01-12T00:00:00Z', '2024-01-13T00:00:00Z'),
+            ('0 0 31 * *', '2024-04-01T00:00:00Z', '2024-05-31T00:00:00Z'),
+            ('0 0 29 feb *', '2023-03-01T00:00:00Z', '2024-02-29T00:00:00Z'),
+            ('0 0 29 feb *', '2096-02-29T00:00:00Z', '2104-02-29T00:00:00Z'),
+            ('0 0 */2 * mon', '2024-01-02T00:00:00Z', '2024-01-15T00:00:00Z'),
+        ]
+        source = self.source().split('soul cronjob\n')[0] + '''soul check_cron
+    hear world into text
+    let cases = meaning of text
+    let i = 1
+    while i <= length of cases
+        perform cron_parse with cases[i][1] into parsed
+        perform seconds_of with cases[i][2] into at
+        perform cron_next with parsed, at into next_
+        perform stamp_of with next_ into stamp
+        say stamp
+        recall cases
+        i = i + 1
+    end
+end
+'''
+        life = run(source, given=json.dumps(cases) + '\n', flags=('--patience=0',), timeout=60)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(life.lines, [c[2] for c in cases])
+
+    def test_invalid_parser(self):
+        cases = ['* * * *', '60 * * * *', '*/0 * * * *', '0 24 * * *',
+                 '0 0 0 * *', '0 0 * 13 *', '0 0 * * 7', '0 0 * * mo',
+                 '2-1 * * * *', '1,,2 * * * *', '*/-2 * * * *', '@every 1m']
+        source = self.source().split('soul cronjob\n')[0] + '''soul check_cron
+    hear world into text
+    let cases = meaning of text
+    let i = 1
+    while i <= length of cases
+        perform cron_parse with cases[i] into parsed
+        say length of parsed
+        recall cases
+        i = i + 1
+    end
+end
+'''
+        life = run(source, given=json.dumps(cases) + '\n', timeout=30)
+        self.assertEqual(life.code, 0, life.err)
+        self.assertEqual(life.lines, ['0'] * len(cases))
+
+    def test_due_and_second_look(self):
+        s = self.reconcile(looks=3)
+        job, = s['creates']
+        self.assertEqual(job['metadata']['name'], 'hello-1704067260')
+        self.assertEqual(job['metadata']['annotations'], {
+            'keep': 'true', 'batch.tutorial.kubebuilder.io/scheduled-at': '2024-01-01T00:01:00Z'})
+        self.assertEqual(job['metadata']['labels'], {'app': 'hello'})
+        self.assertEqual(job['metadata']['ownerReferences'], [{
+            'apiVersion': 'batch.tutorial.kubebuilder.io/v1', 'kind': 'CronJob',
+            'name': 'hello', 'uid': 'parent-uid', 'controller': True, 'blockOwnerDeletion': True}])
+        self.assertIs(job['spec']['template']['spec']['hostNetwork'], False)
+        self.assertIsNone(job['spec']['template']['spec']['securityContext'])
+        self.assertEqual(job['spec'], self.parent()['spec']['jobTemplate']['spec'])
+        st = s['cronjobs'][0]['status']
+        self.assertEqual(st['lastScheduleTime'], '2024-01-01T00:01:00Z')
+        self.assertEqual(st['active'][0]['uid'], job['metadata']['uid'])
+        self.assertEqual(len(s['patches']), 1)
+        self.assertEqual(len(s['attempts']), 1)
+        self.assertEqual([e['reason'] for e in s['events']], ['SuccessfulCreate'])
+        self.assertEqual(sum('jobs.batch' in c and 'get' in c for c in s['calls']), 3)
+
+    def test_history_and_status_while_suspended(self):
+        jobs = [self.child('success-' + str(i), 'Complete', start=f'2024-01-01T00:0{i}:00Z')
+                for i in [3, 1, 2]] + [self.child('failed-' + str(i), 'Failed',
+                start=f'2024-01-01T00:0{i}:00Z') for i in [2, 1]]
+        jobs += [self.child('active', scheduled='2024-01-01T00:01:00Z')]
+        s = self.reconcile(self.parent(suspend=True, successfulJobsHistoryLimit=1,
+                                      failedJobsHistoryLimit=0), jobs)
+        self.assertEqual(s['deletes'], ['success-1', 'success-2', 'failed-1', 'failed-2'])
+        self.assertEqual(s['cronjobs'][0]['status']['active'][0]['name'], 'active')
+        self.assertEqual(s['cronjobs'][0]['status']['lastScheduleTime'], '2024-01-01T00:01:00Z')
+        self.assertFalse(s.get('creates'))
+
+    def test_deadline_and_too_many(self):
+        s = self.reconcile(self.parent(startingDeadlineSeconds=10), clock=1704067290)
+        self.assertFalse(s.get('creates'))
+        s = self.reconcile(clock=1704073320)
+        self.assertFalse(s.get('creates'))
+        self.assertEqual(s['events'][0]['reason'], 'TooManyMissedTimes')
+        s = self.reconcile(self.parent(startingDeadlineSeconds=60), clock=1704073320)
+        self.assertEqual(len(s['creates']), 1)
+
+    def test_concurrency(self):
+        for policy in ['Forbid', 'Replace', 'Allow']:
+            with self.subTest(policy=policy):
+                s = self.reconcile(self.parent(concurrencyPolicy=policy), [self.child()])
+                if policy == 'Forbid':
+                    self.assertFalse(s.get('creates'))
+                    self.assertEqual(s['events'][0]['reason'], 'JobAlreadyActive')
+                elif policy == 'Replace':
+                    self.assertEqual(s['actions'], ['delete:old', 'create:hello-1704067260'])
+                else:
+                    self.assertEqual(len(s['jobs']), 2)
+                    self.assertFalse(s.get('deletes'))
+
+    def test_already_exists(self):
+        s = self.reconcile(already_exists=True)
+        self.assertEqual(len(s['attempts']), 1)
+        self.assertFalse(s.get('creates'))
+        self.assertFalse(s.get('events'))
+
+    def test_owner_uid_namespace_and_controller(self):
+        jobs = [self.child(str(i)) for i in range(4)]
+        jobs[0]['metadata']['ownerReferences'][0]['controller'] = False
+        jobs[1]['metadata']['ownerReferences'][0]['uid'] = 'stale-uid'
+        jobs[2]['metadata']['namespace'] = 'other'
+        jobs[3]['metadata']['ownerReferences'][0]['apiVersion'] = 'batch/v1'
+        s = self.reconcile(self.parent(concurrencyPolicy='Forbid'), jobs)
+        self.assertEqual(len(s['creates']), 1)
+
+    def test_offset_annotation_and_latest_finished(self):
+        jobs = [self.child('done', 'Complete', '2024-01-01T01:01:00.123+01:00'),
+                self.child('failed', 'Failed', '2024-01-01T00:00:00Z')]
+        s = self.reconcile(jobs=jobs)
+        self.assertFalse(s.get('creates'))
+        self.assertEqual(s['cronjobs'][0]['status']['lastScheduleTime'], '2024-01-01T00:01:00Z')
+
+    def test_other_leader(self):
+        s = self.reconcile(lease={'apiVersion': 'coordination.k8s.io/v1', 'kind': 'Lease',
+            'metadata': {'name': 'cronjob', 'namespace': 'amaenetes'}, 'spec': {
+                'holderIdentity': 'another', 'leaseDurationSeconds': 30,
+                'renewTime': '2099-01-01T00:00:00Z'}})
+        self.assertFalse(s.get('looks'))
+        self.assertFalse(s.get('creates'))
+
+    def test_failed_mutations_retry_and_failed_list_never_creates(self):
+        for operation in ['list', 'patch', 'delete', 'create']:
+            with self.subTest(operation=operation):
+                parent = self.parent(concurrencyPolicy='Replace')
+                s = self.reconcile(parent, [self.child()], looks=2,
+                                   fail_once=operation, expected_error='injected failure')
+                self.assertEqual(len(s['creates']), 1)
+                self.assertEqual(s['actions'], ['delete:old', 'create:hello-1704067260'])
+                self.assertEqual(s['looks'], 2)
+
+    def test_clock_file_advances_and_most_recent_missed_run(self):
+        s = self.reconcile(looks=3, clocks=[1704067380, 1704067380, 1704067440])
+        self.assertEqual([j['metadata']['name'] for j in s['creates']],
+                         ['hello-1704067380', 'hello-1704067440'])
+        self.assertEqual(len(s['attempts']), 2)
+
+    def test_many_parents_and_large_template(self):
+        parents = []
+        jobs = []
+        for i in range(12):
+            parent = self.parent(concurrencyPolicy='Forbid')
+            parent['metadata']['name'] = 'parent-' + str(i)
+            parent['metadata']['uid'] = 'uid-' + str(i)
+            parent['spec']['jobTemplate']['spec']['template']['spec']['containers'][0]['args'] = ['x' * 10000]
+            parents.append(parent)
+            if i % 2 == 0:
+                job = self.child(str(i))
+                job['metadata']['ownerReferences'][0]['uid'] = parent['metadata']['uid']
+                jobs.append(job)
+        s = self.reconcile(parents, jobs, looks=2)
+        self.assertEqual(len(s['creates']), 6)
+        self.assertEqual({j['metadata']['ownerReferences'][0]['uid'] for j in s['creates']},
+                         {'uid-' + str(i) for i in range(1, 12, 2)})
+        self.assertEqual(len(s['creates'][0]['spec']['template']['spec']['containers'][0]['args'][0]), 10000)
+
+    def test_status_order_does_not_cause_patch(self):
+        jobs = [self.child('a'), self.child('b')]
+        parent = self.parent(suspend=True)
+        parent['status'] = {'active': [{
+            'apiVersion': 'batch/v1', 'kind': 'Job', 'namespace': 'demo',
+            'name': j['metadata']['name'], 'uid': j['metadata']['uid']} for j in reversed(jobs)]}
+        s = self.reconcile(parent, jobs)
+        self.assertFalse(s.get('patches'))
+
+    def test_invalid_and_impossible_schedule(self):
+        for expression in ['*/0 * * * *', '0 0 31 feb *']:
+            with self.subTest(expression=expression):
+                parent = self.parent()
+                parent['spec']['schedule'] = expression
+                s = self.reconcile(parent)
+                self.assertFalse(s.get('creates'))
+                self.assertEqual(s['events'][0]['reason'], 'InvalidSchedule')
+
+
 if __name__ == "__main__":
     unittest.main()
