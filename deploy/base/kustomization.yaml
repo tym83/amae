@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- namespace
+- kubeconfig
+- crds/amae.io
+- crds/batch.tutorial.kubebuilder.io
+- crds/helm.amae.io
+- crds/postgres.amae.io
+- crds/acme.amae.io
+- scheduler
+- parting
+- counsel
+- mediator
+- cronjob
+- external-dns
+- acme
+- postgres
+- helm
+components:
+- ../images

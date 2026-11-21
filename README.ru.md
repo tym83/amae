@@ -217,6 +217,11 @@ bin/tc examples/multiply.amae && ./multiply   # c = 42
 программа живёт до тех пор, пока кластер с ней разговаривает, а с
 `--patience=0` — без всякого предела.
 
+В кластере parting держит Lease `amaenetes/parting` и проверяет владение перед
+действиями. События `Evicted` и `EvictionFailed` идут через `lib/kube.amae`;
+повторы объединяются счётчиком. RBAC разрешает create/patch для Events и работу
+с этим Lease. Python-мостов нет.
+
 `kube/parting.amae` — первый оператор, написанный на Amae. Нода с
 аннотацией `amaenetes.io/leaving: "true"` бережно уходит из кластера:
 перестаёт принимать новых и отпускает свои поды по одному, следующий — только
@@ -410,8 +415,9 @@ Mediator читает `spec`, `data`, метки и аннотации; игно
 `MEDIATOR_SWAPS=3`, `MEDIATOR_PATIENCE=6` наблюдений (окно смен втрое больше).
 `KUBE_CONTEXT` выбирает кластер; `KUBECTL` подменяет kubectl для тестов.
 `MEDIATOR_LOOKS` позволяет ограничить тестовый запуск. `make kube` собирает
-counsel и mediator. Добавление типов наблюдаемых ресурсов требует расширения
-ClusterRole mediator в `kube/deploy.yaml`.
+counsel и mediator. Чтобы наблюдать за другими типами ресурсов, расширьте
+ClusterRole mediator в `deploy/base/mediator/resources.yaml` и заново
+сгенерируйте манифесты совместимости.
 
 ### CronJob
 
@@ -525,7 +531,9 @@ TXT-префиксе apex-имена, чей TXT выходит за грани�
 [Манифест](kube/operators/external-dns.yaml) содержит ServiceAccount, права чтения
 источников и создания Events, namespaced RBAC для lease и Deployment
 `amaenetes-external-dns`. Нужны namespace и ConfigMap с kubeconfig из
-`kube/deploy.yaml`. Укажите URL API и фильтр доменов в манифесте, а Secret создайте
+`kube/deploy.yaml`. Укажите URL API и фильтр доменов в
+`deploy/base/external-dns/resources.yaml` и заново сгенерируйте манифесты
+совместимости либо задайте patch в своём overlay. Secret создайте
 отдельно (не добавляйте ключ API в git):
 
 ```sh
@@ -709,14 +717,15 @@ boolean/null. `interval` и `timeout` — целые секунды, по умо
 в `history`, число неуспешных серий `failures` (сбрасывается при успехе) и
 накопительные счётчики попыток `installFailures` / `upgradeFailures`.
 
-[Манифест](kube/operators/helm.yaml) устанавливает CRD, ServiceAccount,
-ClusterRole, RoleBinding внутри namespace и Deployment `amaenetes-helm` с
-бинарником `/opt/amae/bin/helm-controller`. Он рассчитан на `helm-e2e`: сначала
-создайте namespace либо замените все его упоминания вместе. Широкие права Helm
-на ресурсы chart ограничены RoleBinding этим namespace, включая `create, patch`
-для Events. Ресурсы chart уровня кластера не поддерживаются. На namespace должен
-работать ровно один контроллер. Стратегия `Recreate` исключает перекрытие при
-обновлении Deployment; распределённой блокировки долгих операций Helm нет.
+[Манифест](kube/operators/helm.yaml) устанавливает CRD и контроллер в
+`amaenetes`. Он читает HelmRelease во всех namespace и может создавать и
+обновлять Events. Права на ресурсы chart выдаёт компонент `helm-target`
+(см. [Установка](#установка)). Ресурсы chart уровня кластера не поддерживаются.
+Контроллер больше не использует фильтр `HELM_NAMESPACE`: перед finalizer и
+вызовом Helm он проверяет права и пишет Event `AccessDenied`, если прав нет.
+На все разрешённые namespace работает один экземпляр контроллера. Стратегия
+`Recreate` исключает перекрытие при обновлении Deployment; распределённой
+блокировки долгих операций Helm нет.
 `make kube` собирает бинарник; Dockerfile проверяет наличие `helm`, `jq` и `curl`
 в runtime-образе `alpine/k8s`.
 
@@ -733,11 +742,11 @@ spec:
   upgrade: {remediation: {retries: 1}}
 ```
 
-Для локального запуска задайте `KUBECONFIG`, `KUBE_CONTEXT`, `HELM_NAMESPACE` и
+Для локального запуска задайте `KUBECONFIG`, `KUBE_CONTEXT` и
 запустите `build/helm-controller --patience=0`. `HELM_LOOKS=1` ограничивает запуск
 одним обзором; `HELM_INTERVAL` задаёт период опроса, по умолчанию 10 секунд.
-`HELM` и `KUBECTL` заменяют CLI в детерминированных тестах. Без `HELM_NAMESPACE`
-контроллер читает все namespace и требует соответствующих прав. Стендовый скрипт
+`HELM` и `KUBECTL` заменяют CLI в детерминированных тестах. Для чтения HelmRelease
+во всех namespace нужны права на уровне кластера. Стендовый скрипт
 `tests/helm_stand.py --stand-root <checkout-with-.stand> --output <evidence-dir>`
 использует локальный [chart hello](tests/charts/hello), оставляет ресурсы для
 проверки, не разворачивает CI-образ и не выполняет очистку.
@@ -833,6 +842,70 @@ make seed            # the newest generation becomes the seed
 
 ## Amaenetes
 
+### Установка
+
+Из каталога репозитория все девять компонентов устанавливаются одной командой:
+
+```sh
+kubectl apply -k deploy/overlays/default
+```
+
+Достаточно kubectl. `default` включает namespace, общий kubeconfig, CRD и
+контроллеры. Права Helm на ресурсы chart нужно выдать отдельно; kube-scheduler
+продолжает работать. `kubectl apply -k deploy/overlays/minimal` устанавливает
+только scheduler и counsel. `kubectl apply -k deploy/overlays/default-scheduler`
+добавляет Deployment планировщика по умолчанию и Role для Lease в kube-system.
+Перед заменой работающего kube-scheduler прочитайте ниже о передаче Lease.
+Применение minimal поверх default не удаляет уже установленные компоненты.
+
+Тег образа задаётся в одном месте: `images[].newTag` в
+`deploy/images/kustomization.yaml`. Его также можно переопределить в своём overlay.
+Все компоненты используют `ghcr.io/tym83/amae`. Настройте credentials и фильтры
+доменов external-dns, а также остальные входные данные операторов по разделу
+«Операторы»: установка контроллера не создаёт их автоматически.
+
+Helm работает в одном экземпляре в `amaenetes`, читает HelmRelease во всех
+namespace и управляет ресурсами только там, где ему выдали права. Чтобы выдать
+права в существующем namespace `shop`, создайте
+`deploy/overlays/shop/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../default
+components:
+  - ../../components/helm-target
+patches:
+  - target:
+      kind: RoleBinding
+      name: amaenetes-helm
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: shop
+images:
+  - name: ghcr.io/tym83/amae
+    newTag: YOUR_TAG
+```
+
+Примените его командой `kubectl apply -k deploy/overlays/shop`. Параметр namespace
+компонента — `metadata.namespace` у RoleBinding: patch заменяет `helm-target`
+на `shop`. Namespace сервисного аккаунта в subjects должен остаться `amaenetes`.
+Для других namespace добавьте такие же RoleBinding с теми же roleRef и subjects.
+Не задавайте общий `namespace:` для всего overlay: он перенесёт и контроллеры,
+и Role для Lease из kube-system.
+
+Источник манифестов — `deploy/`. Файлы `kube/deploy.yaml`,
+`kube/default-scheduler.yaml` и `kube/operators/*.yaml` сохраняют прежние пути;
+их генерирует `python3 tools/render-deploy.py` через `kubectl kustomize`.
+После правок deploy, включая смену тега образа, запустите генерацию снова.
+Тесты проверяют совпадение файлов. `kube/deploy.yaml` теперь создаёт и namespace
+`amaenetes`. Манифесты операторов по-прежнему требуют основной манифест;
+манифест Helm не выдаёт права ни на один целевой namespace автоматически.
+`python3 tools/render-deploy.py --check` проверяет совпадение без записи файлов.
+
+
 `amaenetes.amae` — планировщик, написанный на Amae. Он слышит кластер
 со стандартного ввода, по строке на каждый под или ноду:
 
@@ -904,7 +977,15 @@ Amaenetes может быть планировщиком по умолчанию
 его отвечать на `schedulerName: default-scheduler` и держать собственный Lease
 kube-scheduler `kube-system/kube-scheduler` (120 секунд), так что
 kube-scheduler остаётся кандидатом и не ведёт, пока Amaenetes жив. Lease
-передаётся один раз вручную, как сказано в манифесте.
+передаётся один раз вручную. Подставьте имя пода `amaenetes-default` и текущее
+время UTC в формате RFC 3339 с микросекундами:
+
+```sh
+kubectl -n kube-system patch lease kube-scheduler --type=merge \
+  -p '{"spec":{"holderIdentity":"<под amaenetes-default>","renewTime":"<текущее время UTC>"}}'
+```
+
+После этого kube-scheduler перестаёт вести и возвращается как кандидат.
 
 Под, которому негде жить, может вытеснить других, как в kube-scheduler. Он
 просит ноду, где уход подов с меньшим приоритетом освободил бы место,
@@ -995,7 +1076,6 @@ kube-e2e-2/zonal lives on kubernetes-stand-md0-9g8nq-cw2gd
 который CI собирает из каждого коммита в main:
 
 ```
-kubectl --context <ctx> create namespace amaenetes
 kubectl --context <ctx> apply -f kube/deploy.yaml
 kubectl --context <ctx> -n amaenetes logs -f deploy/scheduler
 ```

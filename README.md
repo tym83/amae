@@ -212,7 +212,10 @@ to no controller has nowhere to come back from, so the node does not send it
 away and waits instead. When the node is empty it is marked
 `amaenetes.io/left: "true"`.
 
-It watches nodes and pods and looks at the cluster on every change and every
+Live parting holds Lease `amaenetes/parting`, checks ownership before actions,
+and emits aggregated `Evicted` / `EvictionFailed` Events through `lib/kube.amae`.
+Its RBAC includes Event create/patch and access to that Lease. No Python bridge
+is involved. It watches nodes and pods and looks at the cluster on every change and every
 few seconds. On standard input, without `KUBE_CONTEXT`, it hears the cluster as
 lines and says what it would do, which is how it is tested.
 
@@ -387,7 +390,8 @@ Defaults: `MEDIATOR_INTERVAL=10` seconds,
 patience). `KUBE_CONTEXT` selects the cluster; `KUBECTL` overrides
 kubectl for tests. `MEDIATOR_LOOKS` optionally bounds a test run. `make kube`
 builds counsel and mediator. Adding watched resource types also requires
-extending the mediator's ClusterRole in `kube/deploy.yaml`.
+extending the mediator's ClusterRole in `deploy/base/mediator/resources.yaml`
+and regenerating the compatibility manifests.
 
 ### CronJob
 
@@ -496,8 +500,9 @@ the zone require a parent zone and are not supported by this controller.
 The [manifest](kube/operators/external-dns.yaml) supplies a ServiceAccount,
 read-only source RBAC, Event creation, namespaced lease RBAC, and the
 `amaenetes-external-dns` Deployment. It requires the namespace and kubeconfig
-ConfigMap from `kube/deploy.yaml`. Set the API URL and domain filter in the
-manifest, and create the Secret separately (never commit the API key):
+ConfigMap from `kube/deploy.yaml`. Set the API URL and domain filter in
+`deploy/base/external-dns/resources.yaml` (then regenerate compatibility manifests)
+or patch them in your overlay. Create the Secret separately (never commit the API key):
 
 ```sh
 kubectl --context <ctx> -n amaenetes create secret generic amaenetes-external-dns \
@@ -675,15 +680,15 @@ retain it. Status includes `observedGeneration`, `lastAttemptedRevision`, up to
 ten observed revisions in `history`, failed batches in `failures` (reset on
 success), and cumulative `installFailures` / `upgradeFailures` attempt counts.
 
-The [manifest](kube/operators/helm.yaml) installs the CRD, ServiceAccount,
-ClusterRole, namespace-local RoleBinding and `amaenetes-helm` Deployment, whose
-binary is `/opt/amae/bin/helm-controller`. It targets `helm-e2e`; create that
-namespace first, or change all namespace references together. Helm's broad
-chart permissions are confined by the RoleBinding to that namespace (including
-Event `create, patch`); cluster-scoped chart resources are unsupported.
-Run exactly one controller per target namespace. Deployment strategy `Recreate`
-prevents rollout overlap; there is no distributed lock around blocking Helm
-operations. `make kube` builds the binary; the Dockerfile checks that the
+The [manifest](kube/operators/helm.yaml) installs the CRD and a controller in
+`amaenetes`, with cluster-wide HelmRelease read and Event create/patch permissions.
+The chart ClusterRole is bound only through the optional `helm-target` component
+(see [Installing](#installing)). Cluster-scoped chart resources are unsupported.
+The controller ignores the old `HELM_NAMESPACE` filter, checks target permissions
+before adding a finalizer or calling Helm, and emits `AccessDenied` Events where
+it cannot manage charts. Run exactly one controller across all bound namespaces;
+`Recreate` prevents rollout overlap, but there is no distributed lock around
+blocking Helm operations. `make kube` builds the binary; the Dockerfile checks the
 `alpine/k8s` runtime provides `helm`, `kubectl`'s companion `jq`, and `curl`.
 
 ```yaml
@@ -699,11 +704,11 @@ spec:
   upgrade: {remediation: {retries: 1}}
 ```
 
-For local execution, set `KUBECONFIG`, `KUBE_CONTEXT` and `HELM_NAMESPACE`, then
+For local execution, set `KUBECONFIG` and `KUBE_CONTEXT`, then
 run `build/helm-controller --patience=0`. `HELM_LOOKS=1` bounds a run;
 `HELM_INTERVAL` controls polling (default 10 seconds). `HELM` and `KUBECTL`
-replace the CLIs in deterministic tests. An unset `HELM_NAMESPACE` lists all
-namespaces and requires corresponding permissions. The stand runner
+replace the CLIs in deterministic tests. Listing HelmReleases across all
+namespaces requires cluster-wide read permissions. The stand runner
 `tests/helm_stand.py --stand-root <checkout-with-.stand> --output <evidence-dir>`
 uses the local [hello chart](tests/charts/hello), leaves resources for inspection,
 and never deploys the CI image or performs cleanup.
@@ -795,6 +800,69 @@ can no longer compile itself.
 
 ## Amaenetes
 
+### Installing
+
+From this checkout, install all nine components with kubectl alone:
+
+```sh
+kubectl apply -k deploy/overlays/default
+```
+
+`default` includes the namespace, shared kubeconfig, CRDs and controllers. It
+leaves Helm chart permissions unbound and does not replace kube-scheduler.
+`kubectl apply -k deploy/overlays/minimal` installs scheduler + counsel only.
+`kubectl apply -k deploy/overlays/default-scheduler` adds the default scheduler
+Deployment and its kube-system lease Role; see the lease handover instructions
+below before taking over an existing kube-scheduler.
+These overlays are installation choices: applying minimal after default does
+not remove components already installed.
+
+Pin the image once in `deploy/images/kustomization.yaml` (`images[].newTag`),
+or override `images` in your own overlay. All components use `ghcr.io/tym83/amae`.
+Configure external-dns credentials/domain filters and other operator inputs as
+shown under Operators; installing a controller does not provision those inputs.
+
+Helm runs once in `amaenetes`, reads HelmReleases across namespaces and manages
+only namespaces granted the chart role. To grant an existing namespace `shop`,
+create `deploy/overlays/shop/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../default
+components:
+  - ../../components/helm-target
+patches:
+  - target:
+      kind: RoleBinding
+      name: amaenetes-helm
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: shop
+images:
+  - name: ghcr.io/tym83/amae
+    newTag: YOUR_TAG
+```
+
+Apply it with `kubectl apply -k deploy/overlays/shop`. The component's namespace
+parameter is the RoleBinding's `metadata.namespace` (placeholder `helm-target`);
+the patch above sets it to `shop`. Keep the subject namespace `amaenetes`.
+For more targets, add another RoleBinding with the same roleRef and subject in
+each target namespace. Do not set a global `namespace:` on the full overlay:
+that would also move controllers and the kube-system lease Role.
+
+`deploy/` is the source of truth. `kube/deploy.yaml`, `kube/default-scheduler.yaml`
+and `kube/operators/*.yaml` are compatibility manifests generated with
+`python3 tools/render-deploy.py`, which uses `kubectl kustomize`. Regenerate them
+after editing deploy files, including the shared image tag; CI tests check for
+drift. The core compatibility manifest now creates `amaenetes` too. Operator
+manifests still require the core manifest; the Helm manifest grants no target
+namespace automatically. `python3 tools/render-deploy.py --check` checks drift
+without writing files.
+
+
 `amaenetes.amae` is a scheduler written in Amae. It hears the cluster
 from standard input, one line per pod or node:
 
@@ -864,7 +932,15 @@ runs kube-scheduler: `kube/default-scheduler.yaml` makes it answer
 `schedulerName: default-scheduler` and hold kube-scheduler's own Lease
 `kube-system/kube-scheduler` (120 seconds), so kube-scheduler stays a
 candidate that never leads while Amaenetes lives. The Lease is handed over
-once by hand, as the manifest says.
+once by hand, using an `amaenetes-default` pod name and the current UTC time
+in RFC 3339 format with microseconds:
+
+```sh
+kubectl -n kube-system patch lease kube-scheduler --type=merge \
+  -p '{"spec":{"holderIdentity":"<amaenetes-default pod>","renewTime":"<current UTC time>"}}'
+```
+
+kube-scheduler then stops leading and returns as a candidate.
 
 A pod with nowhere to live may preempt, as in kube-scheduler: it asks the node
 where the going of pods of lower priority would make room to let go of the
@@ -952,7 +1028,6 @@ Its Deployment is `amaenetes-mediator` in namespace `amaenetes`. All are compile
 the image `ghcr.io/tym83/amae`, which CI builds from every commit to main:
 
 ```
-kubectl --context <ctx> create namespace amaenetes
 kubectl --context <ctx> apply -f kube/deploy.yaml
 kubectl --context <ctx> -n amaenetes logs -f deploy/scheduler
 ```

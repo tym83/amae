@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: helm
+  namespace: amaenetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-helm
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amaenetes-helm
+  namespace: amaenetes
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: amaenetes-helm
+  template:
+    metadata:
+      labels:
+        app: amaenetes-helm
+    spec:
+      serviceAccountName: helm
+      containers:
+      - name: helm
+        image: ghcr.io/tym83/amae:latest
+        imagePullPolicy: Always
+        command:
+        - /opt/amae/bin/helm-controller
+        - --patience=0
+        env:
+        - name: KUBECONFIG
+          value: /etc/amaenetes/config
+        - name: KUBE_CONTEXT
+          value: in-cluster
+        - name: HOME
+          value: /tmp
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/amaenetes
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: amaenetes-kubeconfig
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-helm-reader
+rules:
+- apiGroups:
+  - helm.amae.io
+  resources:
+  - helmreleases
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amaenetes-helm-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amaenetes-helm-reader
+subjects:
+- kind: ServiceAccount
+  name: helm
+  namespace: amaenetes

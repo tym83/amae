@@ -416,7 +416,38 @@ ritual commit_status
     give back 0
 end
 
+# Require the chart role before even adding a finalizer. A read-only namespace
+# remains observable; its warning Event explains why no Helm call was made.
+ritual may_manage object
+    let ns = object["metadata"]["namespace"]
+    let allowed = 0
+    endure
+        allowed = 1
+        let verbs = ["get", "list", "watch", "create", "update", "patch", "delete"]
+        let i = 1
+        while i <= length of verbs
+            perform kubectl with "auth can-i " + verbs[i] + " '*' -n " + ns into answer
+            if answer != "yes"
+                perform helm_event with object, "Warning", "AccessDenied", "No chart permissions in namespace " + ns
+                give back 0
+            end
+            recall ns allowed object verbs i
+            i = i + 1
+        end
+    when it hurts as pain
+        allowed = 0
+    end
+    if not allowed
+        perform helm_event with object, "Warning", "AccessDenied", "No chart permissions in namespace " + ns
+    end
+    give back allowed
+end
+
 ritual reconcile_hr listed
+    perform may_manage with listed into allowed
+    if not allowed
+        give back 0
+    end
     let meta = listed["metadata"]
     perform kubectl with "get helmreleases.helm.amae.io " + meta["name"] + " -n " + meta["namespace"] + " -o json" into raw
     note "object raw" = raw
@@ -467,11 +498,7 @@ ritual reconcile_hr listed
 end
 
 ritual helm_once
-    let scope = "-A"
-    if world "HELM_NAMESPACE" != ""
-        scope = "-n " + world "HELM_NAMESPACE"
-    end
-    perform kubectl with "get helmreleases.helm.amae.io " + scope + " -o json" into raw
+    perform kubectl with "get helmreleases.helm.amae.io -A -o json" into raw
     let items = (meaning of raw)["items"]
     let i = 1
     while i <= length of items
@@ -486,7 +513,7 @@ ritual helm_once
     give back 1
 end
 
-# One controller process per target namespace. Recreate avoids overlapping
+# One controller process for all bound namespaces. Recreate avoids overlapping
 # Deployment rollouts; a short lease cannot protect a long blocking Helm call.
 soul helm
     note "look" = 0

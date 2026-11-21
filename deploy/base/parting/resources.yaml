@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: parting
+  namespace: amaenetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-parting
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - pods/eviction
+  verbs:
+  - create
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amaenetes-parting
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amaenetes-parting
+subjects:
+- kind: ServiceAccount
+  name: parting
+  namespace: amaenetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parting
+  namespace: amaenetes
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: amaenetes-parting
+  template:
+    metadata:
+      labels:
+        app: amaenetes-parting
+    spec:
+      serviceAccountName: parting
+      containers:
+      - name: parting
+        image: ghcr.io/tym83/amae:latest
+        imagePullPolicy: Always
+        command:
+        - /opt/amae/bin/parting
+        - --patience=0
+        env:
+        - name: KUBECONFIG
+          value: /etc/amaenetes/config
+        - name: KUBE_CONTEXT
+          value: in-cluster
+        - name: PARTING_INTERVAL
+          value: '5'
+        - name: HOME
+          value: /tmp
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/amaenetes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: amaenetes-kubeconfig
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: amaenetes-parting-lease
+  namespace: amaenetes
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  resourceNames:
+  - parting
+  verbs:
+  - get
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: amaenetes-parting-lease
+  namespace: amaenetes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: amaenetes-parting-lease
+subjects:
+- kind: ServiceAccount
+  name: parting
+  namespace: amaenetes

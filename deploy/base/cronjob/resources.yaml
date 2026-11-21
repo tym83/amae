@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cronjob
+  namespace: amaenetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-cronjob
+rules:
+- apiGroups:
+  - batch.tutorial.kubebuilder.io
+  resources:
+  - cronjobs
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - batch.tutorial.kubebuilder.io
+  resources:
+  - cronjobs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - batch.tutorial.kubebuilder.io
+  resources:
+  - cronjobs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - create
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  resourceNames:
+  - cronjob
+  verbs:
+  - get
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amaenetes-cronjob
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amaenetes-cronjob
+subjects:
+- kind: ServiceAccount
+  name: cronjob
+  namespace: amaenetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amaenetes-cronjob
+  namespace: amaenetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: amaenetes-cronjob
+  template:
+    metadata:
+      labels:
+        app: amaenetes-cronjob
+    spec:
+      serviceAccountName: cronjob
+      containers:
+      - name: cronjob
+        image: ghcr.io/tym83/amae:latest
+        imagePullPolicy: Always
+        command:
+        - /opt/amae/bin/cronjob
+        - --patience=0
+        env:
+        - name: KUBECONFIG
+          value: /etc/amaenetes/config
+        - name: KUBE_CONTEXT
+          value: in-cluster
+        - name: CRONJOB_INTERVAL
+          value: '10'
+        - name: HOME
+          value: /tmp
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/amaenetes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: amaenetes-kubeconfig

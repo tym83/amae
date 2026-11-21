@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mediator
+  namespace: amaenetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-mediator
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - statefulsets
+  - daemonsets
+  verbs:
+  - get
+  - list
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - services
+  - configmaps
+  verbs:
+  - get
+  - list
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - amae.io
+  resources:
+  - relationships
+  - relationships/status
+  verbs:
+  - get
+  - list
+  - create
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amaenetes-mediator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amaenetes-mediator
+subjects:
+- kind: ServiceAccount
+  name: mediator
+  namespace: amaenetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amaenetes-mediator
+  namespace: amaenetes
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: amaenetes-mediator
+  template:
+    metadata:
+      labels:
+        app: amaenetes-mediator
+    spec:
+      serviceAccountName: mediator
+      containers:
+      - name: mediator
+        image: ghcr.io/tym83/amae:latest
+        imagePullPolicy: Always
+        command:
+        - /opt/amae/bin/mediator
+        - --patience=0
+        env:
+        - name: KUBECONFIG
+          value: /etc/amaenetes/config
+        - name: KUBE_CONTEXT
+          value: in-cluster
+        - name: MEDIATOR_INTERVAL
+          value: '10'
+        - name: HOME
+          value: /tmp
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/amaenetes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: amaenetes-kubeconfig

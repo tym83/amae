@@ -1,0 +1,94 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: amaenetes-default-lease
+  namespace: kube-system
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  resourceNames:
+  - kube-scheduler
+  verbs:
+  - get
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: amaenetes-default-lease
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: amaenetes-default-lease
+subjects:
+- kind: ServiceAccount
+  name: scheduler
+  namespace: amaenetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amaenetes-default
+  namespace: amaenetes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: amaenetes-default
+  template:
+    metadata:
+      labels:
+        app: amaenetes-default
+    spec:
+      schedulerName: amaenetes
+      serviceAccountName: scheduler
+      priorityClassName: system-cluster-critical
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: amaenetes-default
+      containers:
+      - name: scheduler
+        image: ghcr.io/tym83/amae:latest
+        imagePullPolicy: Always
+        command:
+        - /opt/amae/bin/amaenetes
+        - --patience=0
+        env:
+        - name: KUBECONFIG
+          value: /etc/amaenetes/config
+        - name: KUBE_CONTEXT
+          value: in-cluster
+        - name: AMAENETES_NAME
+          value: default-scheduler
+        - name: AMAENETES_INTERVAL
+          value: '2'
+        - name: AMAENETES_LEASE
+          value: kube-system/kube-scheduler
+        - name: AMAENETES_LEASE_SECONDS
+          value: '120'
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: HOME
+          value: /tmp
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/amaenetes
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: amaenetes-kubeconfig
