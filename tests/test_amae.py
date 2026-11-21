@@ -2474,9 +2474,9 @@ class Parting(unittest.TestCase):
 
 
 class Documentation(unittest.TestCase):
-    """Every program in the tutorial prints what the tutorial says it prints."""
+    """Documentation programs compile and print their documented output."""
 
-    def check(self, name):
+    def check(self, name, minimum=17):
         """A block followed by its output is a program; a block that is not
         is a file a program learns from, named in its first comment."""
         with open(os.path.join(ROOT, "docs", name)) as f:
@@ -2509,7 +2509,13 @@ class Documentation(unittest.TestCase):
                 self.assertEqual(res.returncode, 0, body[:40] + res.stderr)
                 self.assertEqual(res.stdout.splitlines(), blocks[j][1].splitlines(), body[:40])
                 checked += 1
-        self.assertGreaterEqual(checked, 17)
+        self.assertGreaterEqual(checked, minimum)
+
+    def test_paradigm_programs(self):
+        self.check("paradigm.md", minimum=2)
+
+    def test_translated_paradigm_programs(self):
+        self.check("paradigm.ru.md", minimum=2)
 
     def test_tutorial_programs(self):
         self.check("tutorial.md")

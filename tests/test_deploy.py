@@ -16,6 +16,21 @@ def field(doc, name):
 
 @unittest.skipUnless(shutil.which('kubectl'), 'kubectl is absent')
 class Deploy(unittest.TestCase):
+    def test_paradigm_commands_match_manifests(self):
+        text = (ROOT / 'docs/paradigm.md').read_text()
+        commands = re.findall(r'^kubectl (.+)$', text, re.M)
+        self.assertEqual(len(commands), 3)
+        apply, logs, get = commands
+        overlay = re.fullmatch(r'apply -k (deploy/overlays/\S+)', apply)[1]
+        docs = render(ROOT / overlay).split('---\n')
+        ns, name = re.fullmatch(r'-n (\S+) logs deployment/(\S+)', logs).groups()
+        self.assertTrue(any('\nkind: Deployment\n' in d
+                            and field(d, 'name') == name
+                            and field(d, 'namespace') == ns for d in docs))
+        resource = re.fullmatch(r'get (\S+) -A', get)[1]
+        self.assertTrue(any('\nkind: CustomResourceDefinition\n' in d
+                            and field(d, 'name') == resource for d in docs))
+
     def test_every_overlay(self):
         docker = (ROOT / 'Dockerfile').read_text()
         image = re.search(r'newTag: (.+)', (ROOT / 'deploy/images/kustomization.yaml').read_text())[1]

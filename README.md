@@ -32,6 +32,8 @@ end
 
 ## Documentation
 
+- [Reconciling relationships](docs/paradigm.md): the Amae and Amaenetes
+  paradigm for engineers familiar with Kubernetes controllers.
 - [Learning Amae](docs/tutorial.md): a tutorial in fourteen chapters, from
   one soul to a Kubernetes operator; every program in it is tested.
 - [Amae reference](docs/reference.md): every statement and expression, and
