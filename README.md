@@ -507,6 +507,85 @@ kubectl --context <ctx> apply -f kube/operators/external-dns.yaml
 KUBE_CONTEXT=<ctx> EXTERNAL_DNS_DOMAIN_FILTER=example.com build/external-dns --patience=0
 ```
 
+### ACME certificates
+
+`operators/acme.amae` implements the ACME issuance path with namespaced
+`Issuer`, `Certificate`, `Order` and `Challenge` resources in `acme.amae.io/v1`.
+The [manifest](kube/operators/acme.yaml) installs CRDs with status subresources,
+RBAC and the `amaenetes-acme` Deployment; it requires the `amaenetes` namespace
+and kubeconfig ConfigMap from `kube/deploy.yaml`. `make kube` and the Dockerfile
+build `/opt/amae/bin/acme`. The runtime image explicitly installs and checks
+OpenSSL, curl and jq.
+
+```yaml
+apiVersion: acme.amae.io/v1
+kind: Issuer
+metadata: {name: ca, namespace: demo}
+spec:
+  acme:
+    server: https://acme.example/directory
+    email: admin@example.com
+    privateKeySecretRef: {name: ca-account}
+    solvers: [{http01: {standalone: true}}]
+    # skipTLSVerify: true  # Local Pebble only.
+---
+apiVersion: acme.amae.io/v1
+kind: Certificate
+metadata: {name: site, namespace: demo}
+spec:
+  secretName: site-tls
+  dnsNames: [site.example.com]
+  issuerRef: {name: ca}
+  renewBefore: 720h
+```
+
+This is an ingress-less HTTP-01 solver: each Certificate owns a BusyBox HTTP
+Deployment, Service on port 80 and token ConfigMap named
+`acme-<first 23 characters of Certificate UID>`. **Arrange DNS and routing so
+all requested names reach that Service on port 80 from the CA.** Cluster DNS
+names work with an in-cluster Pebble. The controller does not provision public
+DNS, ingress or a load balancer. Wildcards and DNS-01 are not supported.
+A token-set hash rolls the solver Pod; its readiness probe checks a challenge
+file, avoiding stale ConfigMap projections during renewal.
+
+Protocol decisions and reconciliation are Amae rituals; OpenSSL, curl and jq
+handle binary encodings, RSA signatures, HTTP and typed JSON through POSIX sh.
+Account keys use RS256 (RSA/65537); JWK thumbprints use RFC 7638 canonical JSON.
+There is no ECDSA DER conversion because this implementation uses RSA.
+The account Secret persists the key, directory and account URL; `newAccount`
+also recovers an existing account by key. Signed requests use `jwk` initially,
+then `kid`, single-use nonces, bounded `badNonce` retries and empty payloads
+for POST-as-GET. Certificate keys persist in the destination `kubernetes.io/tls` Secret with
+`tls.key` and an initially empty `tls.crt`, filled with the downloaded chain.
+The Secret type stays unchanged (Kubernetes makes it immutable). The downloaded leaf is checked against the key and DNS names. An included,
+verified self-signed root becomes `ca.crt`; normally ACME omits the root.
+
+Orders and Challenges are owned by their Certificate. Their status records
+presentation, validation, finalization and failure; Certificate status exposes
+Ready, notBefore, notAfter, renewalTime and retryAt. Each transition emits an
+Event, with repeated observations suppressed in a note. Failed Event delivery
+is queued in a note and retried independently of issuance while the controller
+runs. Idempotent Kubernetes reads and declarative writes retry up to three times
+before entering failure backoff. Pending work and
+exponential failure backoff (60, 120, 240 seconds, capped at 3600) survive
+controller restarts. Renewal starts at `notAfter - renewBefore` (default 30 days;
+a whole number with `s`, `m`, `h` or `d` suffix). Choose a renewal interval
+shorter than the CA's certificate lifetime. Secret loss triggers a new issuance.
+An unchanged, unexpired Certificate generates no ACME traffic or status writes.
+Old Orders and Challenges remain inspectable until their owner is deleted.
+
+The `amaenetes/acme` Lease elects the leader and is renewed during protocol
+exchanges. `KUBECTL` and `KUBE_CONTEXT` work as for the other operators.
+`ACME_NAMESPACE` limits reconciliation; `ACME_NO_LEASE=1` is only for a single
+local controller (used on the isolated stand without touching cluster leases).
+Defaults: `ACME_HTTP_TIMEOUT=20`, `ACME_INTERVAL=5`,
+`ACME_PRESENT_DELAY=10`, `ACME_POLL_BASE=2`,
+`ACME_POLL_CAP=30`, `ACME_ORDER_TIMEOUT=1800`, `ACME_RETRY_BASE=60`,
+`ACME_RETRY_CAP=3600`, all in seconds. Test controls: `ACME_LOOKS` bounds looks;
+`ACME_NOW` names a file containing Unix seconds. `tests/test_acme.py:LiveACME`
+runs the compiled controller with fake kubectl and a local ACME peer that checks
+RSA signatures, nonce reuse, POST-as-GET and HTTP-01 key authorization.
+
 ## The compiler written in Amae
 
 `compiler.amae` is the compiler, and it is the only implementation of the
