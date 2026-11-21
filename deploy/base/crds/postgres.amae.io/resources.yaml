@@ -1,0 +1,147 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clusters.postgres.amae.io
+spec:
+  group: postgres.amae.io
+  scope: Namespaced
+  names:
+    plural: clusters
+    singular: cluster
+    kind: Cluster
+    shortNames:
+    - apg
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Primary
+      type: string
+      jsonPath: .status.currentPrimary
+    - name: Target
+      type: string
+      jsonPath: .status.targetPrimary
+    - name: Phase
+      type: string
+      jsonPath: .status.phase
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+    schema:
+      openAPIV3Schema:
+        type: object
+        required:
+        - spec
+        properties:
+          spec:
+            type: object
+            required:
+            - instances
+            - image
+            properties:
+              instances:
+                type: integer
+                minimum: 2
+                maximum: 3
+              image:
+                type: string
+                pattern: ^postgres:17\.[0-9]+-bookworm(@sha256:[a-f0-9]{64})?$
+              storage:
+                type: string
+                enum:
+                - emptyDir
+                default: emptyDir
+          status:
+            type: object
+            properties:
+              phase:
+                type: string
+              phaseStartedAt:
+                type: string
+                format: date-time
+              currentPrimary:
+                type: string
+              targetPrimary:
+                type: string
+              targetUID:
+                type: string
+              targetLSN:
+                type: string
+              oldPrimary:
+                type: string
+              requestedPrimary:
+                type: string
+              operation:
+                type: string
+              barrierLSN:
+                type: string
+              fenceConfirmed:
+                type: integer
+                enum:
+                - 0
+                - 1
+              unhealthySince:
+                type: integer
+                format: int64
+              instances:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - name
+                  - role
+                  - ready
+                  - lag
+                  properties:
+                    name:
+                      type: string
+                    uid:
+                      type: string
+                    role:
+                      type: string
+                    ready:
+                      type: integer
+                      enum:
+                      - 0
+                      - 1
+                    lag:
+                      type: integer
+                      format: int64
+                    receivedLSN:
+                      type: string
+                    replayedLSN:
+                      type: string
+                    flushLSN:
+                      type: string
+              conditions:
+                type: array
+                x-kubernetes-list-type: map
+                x-kubernetes-list-map-keys:
+                - type
+                items:
+                  type: object
+                  required:
+                  - type
+                  - status
+                  - reason
+                  - message
+                  - lastTransitionTime
+                  properties:
+                    type:
+                      type: string
+                    status:
+                      type: string
+                      enum:
+                      - 'True'
+                      - 'False'
+                      - Unknown
+                    reason:
+                      type: string
+                    message:
+                      type: string
+                    lastTransitionTime:
+                      type: string
+                      format: date-time

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: amaenetes-kubeconfig
+  namespace: amaenetes
+data:
+  config: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - name: here
+        cluster:
+          server: https://kubernetes.default.svc
+          certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    users:
+      - name: me
+        user:
+          tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    contexts:
+      - name: in-cluster
+        context: {cluster: here, user: me}
+    current-context: in-cluster

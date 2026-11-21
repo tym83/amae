@@ -37,6 +37,24 @@ deterministic
 
 learn "kube.amae"
 
+# Live actions require ownership, including after a long cluster observation.
+ritual parting_leader
+    let who = world "HOSTNAME"
+    if who == ""
+        who = "parting"
+    end
+    perform hold_lease with "amaenetes", "parting", who, 30 into held
+    give back held == who
+end
+
+ritual parting_event key, kind_, reason, message
+    endure
+        perform tell_event with note ("object " + key), kind_, reason, message, "parting"
+    when it hurts as pain
+        cry "parting event: " + pain
+    end
+end
+
 # Doing what should change: told to the world on standard input, done in the
 # cluster when the operator looks after one.
 ritual act what
@@ -52,11 +70,16 @@ ritual act what
         give back 0
     end
     endure
+        perform parting_leader into held
+        if not held
+            give back 0
+        end
         if word 1 of what == "cordon"
             perform kubectl with "cordon " + word 2 of what into said
         end
         if word 1 of what == "evict"
             perform evict with word 2 of what into said
+            perform parting_event with word 2 of what, "Normal", "Evicted", "Evicted for node draining"
         end
         if word 1 of what == "annotate"
             perform kubectl with "annotate node " + word 3 of what + " " + word 4 of what + " --overwrite" into said
@@ -64,6 +87,9 @@ ritual act what
         say "> " + what
     when it hurts as pain
         say "failed: " + what + ": " + pain
+        if word 1 of what == "evict"
+            perform parting_event with word 2 of what, "Warning", "EvictionFailed", pain
+        end
     end
 end
 
@@ -314,6 +340,7 @@ ritual look_at_cluster
         end
         if stage != "Succeeded" and stage != "Failed" and not theirs
             let ns = p["metadata"]["namespace"]
+            note ("object " + ns + "/" + p["metadata"]["name"]) = p
             perform field with p["spec"], "nodeName", "-" into where
             perform field with p["metadata"], "deletionTimestamp", "" into dying
             perform condition_true with p, "Ready" into up
@@ -368,7 +395,10 @@ soul operator
         note "ticking" = heard == "tick"
         note "ticks" = note "ticks" + note "ticking"
         endure
-            perform look_at_cluster
+            perform parting_leader into held
+            if held
+                perform look_at_cluster
+            end
         when it hurts as pain
             cry "parting: " + pain
         end

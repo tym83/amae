@@ -1634,7 +1634,17 @@ def save():
         f.write(" ".join(args) + "\n")
 if "--watch-only" in args:
     sys.exit(0)
-if args[:2] == ["get", "nodes"]:
+if args[:2] == ["-n", "amaenetes"] and args[2:4] == ["get", "leases.coordination.k8s.io"]:
+    print(json.dumps(state['lease']) if 'lease' in state else '')
+elif args[:2] in (["create", "--raw"], ["replace", "--raw"]) and '/leases' in args[2]:
+    state['lease'] = json.load(sys.stdin)
+    with open(state_file, 'w') as f:
+        json.dump(state, f)
+elif args[:2] == ["create", "--raw"] and args[2].endswith('/events'):
+    state.setdefault('events', []).append(json.load(sys.stdin))
+    with open(state_file, 'w') as f:
+        json.dump(state, f)
+elif args[:2] == ["get", "nodes"]:
     print(json.dumps({"items": state["nodes"]}))
 elif args[:2] == ["get", "pods"]:
     print(json.dumps({"items": state["pods"]}))
@@ -2342,6 +2352,9 @@ class LiveParting(unittest.TestCase):
         self.assertEqual(done[-1], "annotate node w2 amaenetes.io/left=true --overwrite")
         self.assertIn("w2 has left; it let go of 2 pods", life.lines)
         self.assertEqual({p["spec"]["nodeName"] for p in after["pods"]}, {"w1"})
+        self.assertEqual(after['lease']['metadata']['name'], 'parting')
+        self.assertEqual(after['lease']['metadata']['namespace'], 'amaenetes')
+        self.assertEqual([e['reason'] for e in after['events']], ['Evicted', 'Evicted'])
 
 
 class Parting(unittest.TestCase):

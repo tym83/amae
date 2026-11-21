@@ -60,7 +60,11 @@ args = sys.argv[1:]
 if who == 'kubectl':
     assert args[:2] == ['--context', 'imagined'], args
     args = args[2:]
-    if args[:2] == ['get', 'helmreleases.helm.amae.io']:
+    if args[:2] == ['auth', 'can-i']:
+        ns = args[args.index('-n') + 1]
+        print('no' if ns in state.get('denied_namespaces', []) else 'yes')
+        sys.exit(1 if ns in state.get('denied_namespaces', []) else 0)
+    elif args[:2] == ['get', 'helmreleases.helm.amae.io']:
         if '-A' in args or args[2] == '-n':
             n = state.get('hr_polls', 0)
             state['hr_polls'] = n + 1
@@ -308,6 +312,19 @@ class LiveHelm(unittest.TestCase):
                 print(life.err, sp.read_text())
             self.assertEqual(life.code, 0, life.err)
             return json.loads(sp.read_text())
+
+    def test_bound_namespaces_and_denied_namespace(self):
+        objects = [hr() for _ in range(3)]
+        for obj, ns in zip(objects, ('one', 'two', 'denied')):
+            obj['metadata']['namespace'] = ns
+            obj['metadata']['uid'] = ns + '-web'
+        state = self.reconcile(objects, denied_namespaces=['denied'],
+                               env={'HELM_NAMESPACE': 'obsolete-filter'})
+        self.assertEqual({c['ns'] for c in state['helm_calls']}, {'one', 'two'})
+        self.assertNotIn('finalizers', state['helmreleases'][2]['metadata'])
+        self.assertNotIn('status', state['helmreleases'][2])
+        self.assertTrue(any(e['reason'] == 'AccessDenied' and
+                            e['metadata']['namespace'] == 'denied' for e in state['events']))
 
     @staticmethod
     def ops(s, op):

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: amaenetes-helm
+  namespace: helm-target
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amaenetes-helm
+subjects:
+- kind: ServiceAccount
+  name: helm
+  namespace: amaenetes

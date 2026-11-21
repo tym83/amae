@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: counsel
+  namespace: amaenetes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: amaenetes-counsel
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - nodes
+  - namespaces
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - list
+- apiGroups:
+  - amae.io
+  resources:
+  - relationships
+  verbs:
+  - get
+  - list
+  - create
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - pods/eviction
+  verbs:
+  - create
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amaenetes-counsel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: amaenetes-counsel
+subjects:
+- kind: ServiceAccount
+  name: counsel
+  namespace: amaenetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counsel
+  namespace: amaenetes
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: amaenetes-counsel
+  template:
+    metadata:
+      labels:
+        app: amaenetes-counsel
+    spec:
+      serviceAccountName: counsel
+      containers:
+      - name: counsel
+        image: ghcr.io/tym83/amae:latest
+        imagePullPolicy: Always
+        command:
+        - /opt/amae/bin/counsel
+        - --patience=0
+        env:
+        - name: KUBECONFIG
+          value: /etc/amaenetes/config
+        - name: KUBE_CONTEXT
+          value: in-cluster
+        - name: COUNSEL_INTERVAL
+          value: '10'
+        - name: COUNSEL_DIVORCE
+          value: '1'
+        - name: HOME
+          value: /tmp
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/amaenetes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: amaenetes-kubeconfig
