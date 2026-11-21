@@ -52,7 +52,7 @@ rules:
     verbs: [create]
   - apiGroups: [""]
     resources: [events]
-    verbs: [create]
+    verbs: [create, patch]
   # Trust in nodes, from the relationships counsel keeps.
   - apiGroups: [amae.io]
     resources: [relationships]
@@ -304,8 +304,12 @@ rules:
     verbs: [get, list, create, update]
   # Divorce: a pod parts from its node by eviction, and is told why.
   - apiGroups: [""]
-    resources: [pods/eviction, events]
+    resources: [pods/eviction]
     verbs: [create]
+  # Aggregation patches the Event first told, the way the kubelet counts.
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create, patch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -369,7 +373,7 @@ rules:
     verbs: [get, list, patch]
   - apiGroups: [""]
     resources: [events]
-    verbs: [create]
+    verbs: [create, patch]
   - apiGroups: [amae.io]
     resources: [relationships, relationships/status]
     verbs: [get, list, create, patch, update]

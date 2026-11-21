@@ -1294,6 +1294,7 @@ class LiveScheduler(unittest.TestCase):
                         f'  "create --raw "*/leases) cat > {d}/lease.json ;;\n'
                         f'  "replace --raw "*/leases/*) cat > {d}/lease.json ;;\n'
                         f'  "patch pod "*) echo "$3 $(cat)" >> {d}/patched ;;\n'
+                        f'  "patch events "*) echo "$3 $(cat)" >> {d}/event_patches ;;\n'
                         f'  "create --raw "*) body=$(cat); echo "$3 $body" >> {d}/asked; {consume}{steal}sleep {bind_delay} ;;\n'
                         '  *) exit 1 ;;\n'
                         'esac\n')
@@ -1320,6 +1321,10 @@ class LiveScheduler(unittest.TestCase):
             if os.path.exists(os.path.join(d, "patched")):
                 with open(os.path.join(d, "patched")) as f:
                     self.patched = [line.split(" ", 1) for line in f]
+            self.event_patches = []
+            if os.path.exists(os.path.join(d, "event_patches")):
+                with open(os.path.join(d, "event_patches")) as f:
+                    self.event_patches = [line.split(" ", 1) for line in f]
             self.lease = None
             if os.path.exists(os.path.join(d, "lease.json")):
                 with open(os.path.join(d, "lease.json")) as f:
@@ -1489,7 +1494,20 @@ end
         self.assertEqual(life.code, 0, life.err)
         self.assertEqual(asked, [])
         self.assertEqual(self.gets, ["a"])
-        self.assertEqual(sum(e["reason"] == "Refused" for e in self.events), 8)
+        # Eight pods refused alike tell one Event, patched to count 8, not
+        # eight; waiting on the next look tells one more, the same way.
+        refused = [e for e in self.events if e["reason"] == "Refused"]
+        waiting = [e for e in self.events if e["reason"] == "FailedScheduling"]
+        self.assertEqual((len(refused), len(waiting)), (1, 1))
+        by_target = {}
+        for name, body in self.event_patches:
+            by_target.setdefault(name, []).append(json.loads(body))
+        self.assertEqual(set(by_target),
+                         {refused[0]["metadata"]["name"], waiting[0]["metadata"]["name"]})
+        for patches in by_target.values():
+            self.assertEqual([p["count"] for p in patches], list(range(2, 9)))
+            for p in patches:
+                self.assertRegex(p["lastTimestamp"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
 
     def test_binding_needs_no_more_rights_than_binding(self):
         """kubectl create -f validates against the CRD list, which a scheduler
@@ -2502,6 +2520,10 @@ path = os.environ["FAKE_STATE"]
 args = sys.argv[1:]
 assert args[:2] == ["--context", "imagined"], args
 args = args[2:]
+ns = None
+if args and args[0] == "-n":
+    ns = args[1]
+    args = args[2:]
 with open(path) as f:
     state = json.load(f)
 def save():
@@ -2520,6 +2542,16 @@ elif args[0] == "get":
         state["objects"] = snapshot
     save()
     print(json.dumps({"items": state["objects"]}))
+elif args[:2] == ["patch", "events"]:
+    body = json.load(sys.stdin)
+    state.setdefault("event_patches", []).append({"name": args[2], "body": body})
+    event = next((e for e in state.get("events", []) if e["metadata"]["name"] == args[2]
+                  and e["metadata"].get("namespace") == ns), None)
+    if event is None:
+        save()
+        sys.exit('Error from server (NotFound): events "%s" not found' % args[2])
+    event.update(body)
+    save()
 elif args[0] == "patch":
     body = json.load(sys.stdin)
     state.setdefault("attempts", []).append({"args": args, "body": body, "look": state["looks"]})
@@ -2631,7 +2663,10 @@ class LiveMediator(unittest.TestCase):
         state = self.mediate(self.swaps(agreement="spec.replicas=hpa") +
                              [None, [self.obj("gitops", 8, agreement="spec.replicas=hpa")]])
         self.assertEqual(self.reasons(state).count("Agreed"), 1)
-        self.assertEqual(self.reasons(state).count("Restored"), 2)
+        # Restored is told twice and aggregated: one Event, patched to count 2.
+        self.assertEqual(self.reasons(state).count("Restored"), 1)
+        restored = next(e for e in state["events"] if e["reason"] == "Restored")
+        self.assertEqual(restored["count"], 2)
         self.assertEqual(self.relationship(state)["status"]["resolution"], "consent")
         self.assertEqual(self.relationship(state)["status"]["owner"], "hpa")
         for patch in state["patches"]:
@@ -2717,7 +2752,14 @@ class LiveMediator(unittest.TestCase):
             label, = patch["body"]["metadata"]["labels"].items()
             self.assertTrue(label[0].startswith("example.io/key."))
             self.assertEqual(label[1], "elder")
-        self.assertEqual(self.reasons(state).count("Conflict"), 39)
+        # The three objects carry one uid in this fixture, so each telling
+        # told alike three times lands on one Event patched to count 3:
+        # 13 paths (12 label keys and the node selector) quarrel each once.
+        conflicts = [e for e in state["events"] if e["reason"] == "Conflict"]
+        self.assertEqual(self.reasons(state).count("Conflict"), 13)
+        self.assertEqual({e["count"] for e in conflicts}, {3})
+        # Every Event is told three times: two merge patches each.
+        self.assertEqual(len(state["event_patches"]), 2 * len(state["events"]))
 
     def test_ignored_annotations_and_associative_lists(self):
         snapshots = self.swaps() * 2
@@ -2949,6 +2991,18 @@ elif a[0] in ('create', 'replace'):
         s.setdefault('actions', []).append('create:' + body['metadata']['name'])
     else:
         raise AssertionError(body)
+elif a[0] == '-n' and a[2:4] == ['patch', 'events']:
+    body = json.load(sys.stdin)
+    name = a[4]
+    s.setdefault('event_patches', []).append({'name': name, 'body': body})
+    event = next((e for e in s.get('events', []) if e['metadata']['name'] == name and
+                  e['metadata']['namespace'] == a[1]), None)
+    if event is None:
+        json.dump(s, open(p, 'w'))
+        print('Error from server (NotFound): events "%s" not found' % name, file=sys.stderr)
+        sys.exit(1)
+    event.update(body)
+    json.dump(s, open(p, 'w'))
 elif a[0] == 'patch':
     assert '--subresource=status' in a, a
     body = json.load(sys.stdin)
@@ -3221,6 +3275,112 @@ end
                 s = self.reconcile(parent)
                 self.assertFalse(s.get('creates'))
                 self.assertEqual(s['events'][0]['reason'], 'InvalidSchedule')
+
+
+EVENTS_FAKE_KUBECTL = r'''#!/usr/bin/env python3
+"""A kubectl that keeps Events, applying merge patches to them; fail_patch_at
+makes the numbered patch answer NotFound, as an expired Event would."""
+import json, os, sys
+p = os.environ["FAKE_STATE"]
+s = json.load(open(p))
+a = sys.argv[1:]
+assert a[:2] == ["--context", "imagined"], a
+a = a[2:]
+ns = ""
+if a[0] == "-n":
+    ns = a[1]
+    a = a[2:]
+if a[:2] == ["create", "--raw"] and a[2].endswith("/events"):
+    body = json.load(sys.stdin)
+    s.setdefault("events", []).append(body)
+    json.dump(s, open(p, "w"))
+    print(json.dumps(body))
+elif a[:2] == ["patch", "events"]:
+    body = json.load(sys.stdin)
+    name = a[2]
+    s.setdefault("patches", []).append({"name": name, "body": body})
+    if s.get("fail_patch_at") == len(s["patches"]):
+        json.dump(s, open(p, "w"))
+        print('Error from server (NotFound): events "%s" not found' % name, file=sys.stderr)
+        sys.exit(1)
+    event = next((e for e in s.get("events", []) if e["metadata"]["name"] == name
+                  and e["metadata"]["namespace"] == ns), None)
+    if event is None:
+        json.dump(s, open(p, "w"))
+        print('Error from server (NotFound): events "%s" not found' % name, file=sys.stderr)
+        sys.exit(1)
+    event.update(body)
+    json.dump(s, open(p, "w"))
+else:
+    sys.exit("fake kubectl cannot " + " ".join(a))
+'''
+
+
+class LiveEvents(unittest.TestCase):
+    """tell_event through a kubectl that keeps Events: a telling just like an
+    earlier one patches the Event first created, it does not create another."""
+
+    SOURCE = '''written by "tests"
+learn "kube.amae"
+soul teller
+    hear world into line
+    let pod = meaning of line
+    perform tell_event with pod, "Normal", "Scheduled", "assigned to a", "tester"
+    perform tell_event with pod, "Normal", "Scheduled", "assigned to a", "tester"
+    perform tell_event with pod, "Normal", "Scheduled", "assigned to b", "tester"
+    perform tell_event with pod, "Normal", "Scheduled", "assigned to b", "tester"
+    perform tell_event with pod, "Normal", "Scheduled", "assigned to b", "tester"
+end
+'''
+
+    def tell(self, fail_patch_at=None):
+        with tempfile.TemporaryDirectory() as d:
+            fake = os.path.join(d, "kubectl")
+            with open(fake, "w") as f:
+                f.write(EVENTS_FAKE_KUBECTL)
+            os.chmod(fake, 0o755)
+            state = os.path.join(d, "state.json")
+            with open(state, "w") as f:
+                json.dump({"fail_patch_at": fail_patch_at} if fail_patch_at else {}, f)
+            pod = {"metadata": {"name": "web", "namespace": "ns", "uid": "uid-web"},
+                   "spec": {}, "status": {}}
+            life = run(self.SOURCE, given=json.dumps(pod) + "\n",
+                       env={"KUBECTL": fake, "KUBE_CONTEXT": "imagined", "FAKE_STATE": state})
+            self.assertEqual(life.code, 0, life.err)
+            self.assertEqual(life.err, "")
+            with open(state) as f:
+                return json.load(f)
+
+    def test_a_repeat_patches_the_event_first_created(self):
+        state = self.tell()
+        first, second = state["events"]
+        # Same pod, type, reason and component: a new message is a new Event,
+        # a repeated telling patches the one first created, count one more.
+        self.assertEqual(len(state["events"]), 2)
+        self.assertEqual(first["count"], 2)
+        self.assertEqual(second["count"], 3)
+        self.assertEqual(len(state["patches"]), 3)
+        for patch, count, target in [(state["patches"][0], 2, first),
+                                     (state["patches"][1], 2, second),
+                                     (state["patches"][2], 3, second)]:
+            self.assertEqual(patch["name"], target["metadata"]["name"])
+            self.assertEqual(patch["body"]["count"], count)
+            self.assertRegex(patch["body"]["lastTimestamp"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+
+    def test_a_patch_that_finds_nothing_creates_a_new_event(self):
+        state = self.tell(fail_patch_at=2)
+        first, second, third = state["events"]
+        # The second telling of "assigned to b" found its Event gone: a new
+        # one was created and remembered, and the third telling patched it.
+        self.assertEqual(first["count"], 2)
+        self.assertEqual(second["count"], 1)
+        self.assertEqual(third["count"], 2)
+        self.assertNotEqual(second["metadata"]["name"], third["metadata"]["name"])
+        self.assertEqual(len(state["patches"]), 3)
+        self.assertEqual(state["patches"][1]["name"], second["metadata"]["name"])
+        self.assertEqual(state["patches"][1]["body"]["count"], 2)
+        self.assertEqual(state["patches"][2]["name"], third["metadata"]["name"])
+        self.assertEqual(state["patches"][2]["body"]["count"], 2)
 
 
 if __name__ == "__main__":

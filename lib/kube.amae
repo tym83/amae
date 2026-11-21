@@ -731,19 +731,88 @@ end
 
 # ---------------------------------------------------- events and leases
 
-# Telling what happened to a pod as an Event, where kubectl describe and
-# kubectl get events show it. `kind_` is "Normal" or "Warning".
-ritual tell_event pod, kind_, reason, message, component
+# What has been told as Events lately: note "event names" maps the telling
+# (pod uid, type, reason, message, component) to the Event first created
+# for it. Entries quiet for ten minutes are pruned; the next telling of one
+# starts a new Event, the way the kubelet's expiring cache makes it repeat
+# what it said. Kept in its own ritual so the long walk over the map never
+# lets what the teller still needs fade beside it.
+ritual prune_events
     let at = now
-    perform stamp_of with at into stamp
+    let told = {}
+    endure
+        told = note "event names"
+    when it hurts as pain
+        give back 0
+    end
+    let stale = keys of told
+    let i = 1
+    while i <= length of stale
+        if at - told[stale[i]]["at"] > 600
+            remove stale[i] from told
+        end
+        recall told stale at i
+        i = i + 1
+    end
+    note "event names" = told
+    give back 1
+end
+
+# Telling what happened to a pod as an Event, where kubectl describe and
+# kubectl get events show it. `kind_` is "Normal" or "Warning". The kubelet
+# does not repeat itself: an Event just like one told in the last ten
+# minutes — same pod (uid), type, reason, message and component — is not
+# created again; the Event first created is patched instead, its count one
+# more and its lastTimestamp now. A patch that finds no Event there
+# (expired, or taken away) starts a new one, remembered in its place.
+ritual tell_event pod, kind_, reason, message, component
+    perform prune_events
+    let at = now
     let ns = pod["metadata"]["namespace"]
     let name = pod["metadata"]["name"]
     perform field with pod["metadata"], "uid", "" into uid
+    let key = uid + " " + kind_ + " " + reason + " " + message + " " + component
+    let told = {}
+    endure
+        told = note "event names"
+    when it hurts as pain
+        told = {}
+    end
+    let entry = {}
+    if place of key in told > 0
+        entry = told[key]
+        if at - entry["at"] <= 600
+            perform stamp_of with now into stamp
+            let more = entry["count"] + 1
+            let patch = {"count": more, "lastTimestamp": stamp}
+            let updated = 0
+            endure
+                perform kubectl_telling with "-n " + ns + " patch events " + entry["name"] + " --type=merge --patch-file=/dev/stdin", json of patch into said
+                updated = 1
+            when it hurts as pain
+                updated = 0
+            end
+            if updated
+                entry["at"] = at
+                entry["count"] = more
+                told[key] = entry
+                note "event names" = told
+                give back said
+            end
+        end
+    end
+    # First telling, a quiet match waking up, or a patch that found nothing.
+    recall key message reason kind_ component ns name uid at
+    perform stamp_of with now into stamp
     perform field with pod, "apiVersion", "v1" into version
     perform field with pod, "kind", "Pod" into object_kind
     let involved = {"apiVersion": version, "kind": object_kind, "namespace": ns, "name": name, "uid": uid}
-    let body = {"apiVersion": "v1", "kind": "Event", "metadata": {"name": name + "." + whole of (at * 1000000), "namespace": ns}, "involvedObject": involved, "reason": reason, "message": message, "type": kind_, "source": {"component": component}, "reportingComponent": component, "firstTimestamp": stamp, "lastTimestamp": stamp, "count": 1}
+    let event_name = name + "." + whole of (at * 1000000)
+    let body = {"apiVersion": "v1", "kind": "Event", "metadata": {"name": event_name, "namespace": ns}, "involvedObject": involved, "reason": reason, "message": message, "type": kind_, "source": {"component": component}, "reportingComponent": component, "firstTimestamp": stamp, "lastTimestamp": stamp, "count": 1}
     perform kubectl_telling with "create --raw /api/v1/namespaces/" + ns + "/events -f -", json of body into said
+    entry = {"name": event_name, "at": at, "count": 1}
+    told[key] = entry
+    note "event names" = told
     give back said
 end
 
