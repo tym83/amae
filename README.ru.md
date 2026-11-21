@@ -536,6 +536,114 @@ kubectl --context <ctx> apply -f kube/operators/external-dns.yaml
 KUBE_CONTEXT=<ctx> EXTERNAL_DNS_DOMAIN_FILTER=example.com build/external-dns --patience=0
 ```
 
+### Helm releases and fluxcd/pkg#934
+
+`operators/helm.amae` ведёт HelmRelease `helm.amae.io/v1` через настоящий Helm:
+`upgrade --install --wait`, `status -o json`, `get values`, `rollback`, `uninstall`.
+Chart задаётся как `{repository, name, version}`, `{oci, version?}` либо `{path}`
+для каталога, доступного контроллеру. `values` остаётся исходным JSON, включая
+boolean/null. `interval` и `timeout` — целые секунды, по умолчанию 30 и 300.
+Число remediation retries для install/upgrade — от 0 до 10: не более `1 + retries`
+попыток за согласование. После каждой ошибки установки, включая последнюю,
+выполняется uninstall; после ошибки обновления — rollback к ревизии, выбранной
+до начала попыток. Исчерпание попыток записывает `Ready=False` с причиной
+`InstallStalled` или `UpgradeStalled`, даже если rollback вернул работающую старую
+версию: запрошенный spec не применён. `Released` описывает запрошенную операцию,
+а `Remediated` — результат удаления/отката.
+
+Остановка сохраняется после перезапуска процесса. Изменение spec или значения
+аннотации `reconcile.fluxcd.io/requestedAt` разрешает ещё одну ограниченную серию
+попыток; повтор того же значения ничего не сбрасывает. Значение хранится в
+`lastHandledReconcileAt`. Finalizer `finalizers.helm.amae.io` выполняет uninstall
+при удалении объекта и сохраняется при ошибке uninstall. Статус содержит
+`observedGeneration`, `lastAttemptedRevision`, до десяти наблюдавшихся ревизий
+в `history`, число неуспешных серий `failures` (сбрасывается при успехе) и
+накопительные счётчики попыток `installFailures` / `upgradeFailures`.
+
+[Манифест](kube/operators/helm.yaml) устанавливает CRD, ServiceAccount,
+ClusterRole, RoleBinding внутри namespace и Deployment `amaenetes-helm` с
+бинарником `/opt/amae/bin/helm-controller`. Он рассчитан на `helm-e2e`: сначала
+создайте namespace либо замените все его упоминания вместе. Широкие права Helm
+на ресурсы chart ограничены RoleBinding этим namespace, включая `create, patch`
+для Events. Ресурсы chart уровня кластера не поддерживаются. На namespace должен
+работать ровно один контроллер. Стратегия `Recreate` исключает перекрытие при
+обновлении Deployment; распределённой блокировки долгих операций Helm нет.
+`make kube` собирает бинарник; Dockerfile проверяет наличие `helm`, `jq` и `curl`
+в runtime-образе `alpine/k8s`.
+
+```yaml
+apiVersion: helm.amae.io/v1
+kind: HelmRelease
+metadata: {name: hello, namespace: helm-e2e}
+spec:
+  chart: {oci: 'oci://registry.example.com/charts/hello', version: '0.1.0'}
+  values: {greeting: hello}
+  interval: 30
+  timeout: 60
+  install: {remediation: {retries: 1}}
+  upgrade: {remediation: {retries: 1}}
+```
+
+Для локального запуска задайте `KUBECONFIG`, `KUBE_CONTEXT`, `HELM_NAMESPACE` и
+запустите `build/helm-controller --patience=0`. `HELM_LOOKS=1` ограничивает запуск
+одним обзором; `HELM_INTERVAL` задаёт период опроса, по умолчанию 10 секунд.
+`HELM` и `KUBECTL` заменяют CLI в детерминированных тестах. Без `HELM_NAMESPACE`
+контроллер читает все namespace и требует соответствующих прав. Стендовый скрипт
+`tests/helm_stand.py --stand-root <checkout-with-.stand> --output <evidence-dir>`
+использует локальный [chart hello](tests/charts/hello), оставляет ресурсы для
+проверки, не разворачивает CI-образ и не выполняет очистку.
+
+Исходный [fluxcd/pkg#934](https://github.com/fluxcd/pkg/issues/934) касается
+**GitRepository**, а не Helm: resourceVersion 2292287 уже сообщает о новом
+артефакте в Ready/ArtifactInStorage, но `status.artifact` ещё описывает старый;
+2292288 завершает обновление. В закреплённом коммите
+[`e270089eb56404fcf3822b96bad2f423e9f45862`](https://github.com/fluxcd/pkg/tree/e270089eb56404fcf3822b96bad2f423e9f45862):
+
+- [`runtime/patch/patch.go:223–235`](https://github.com/fluxcd/pkg/blob/e270089eb56404fcf3822b96bad2f423e9f45862/runtime/patch/patch.go#L223-L235)
+  последовательно записывает conditions, metadata/spec и остальной status.
+  Ошибки собираются вместе; ошибка одного вызова не отменяет следующие.
+- [`patch.go:251–260`](https://github.com/fluxcd/pkg/blob/e270089eb56404fcf3822b96bad2f423e9f45862/runtime/patch/patch.go#L251-L260)
+  использует `MergeFrom(beforeObject)` для остального status без optimistic lock;
+  [`utils.go:91–99`](https://github.com/fluxcd/pkg/blob/e270089eb56404fcf3822b96bad2f423e9f45862/runtime/patch/utils.go#L91-L99)
+  исключает conditions из этого патча.
+- [`patch.go:290–344`](https://github.com/fluxcd/pkg/blob/e270089eb56404fcf3822b96bad2f423e9f45862/runtime/patch/patch.go#L290-L344)
+  вычисляет diff conditions относительно исходного снимка, пропускает нулевой
+  diff и применяет его к свежему чтению с `MergeFromWithOptimisticLock`, делая
+  до пяти попыток при конфликте. Блокировка защищает только этот патч.
+- [`runtime/patch/serial.go:44–60`](https://github.com/fluxcd/pkg/blob/e270089eb56404fcf3822b96bad2f423e9f45862/runtime/patch/serial.go#L44-L60)
+  обновляет снимок SerialPatcher только после успеха Helper, но не делает
+  раздельные записи атомарными.
+
+[Тесты](tests/test_helm.py) моделируют этот порядок на Python для одного
+принадлежащего контроллеру условия Ready и неизменных metadata/spec. Они **не**
+запускают Go helper и не выдают модель за зарегистрированный инцидент
+helm-controller. Шаги: (1) чтение снимка успешного релиза; (2) запись Ready=False
+после ошибки; (3) конкурентный автор возвращает устаревший Ready=True;
+(4) безусловный патч остальных полей записывает ошибку и ревизию, оставляя
+неверный Ready. Отдельно моделируются промежуточная ревизия исходного issue и
+отказ каждого патча; ошибки возвращаются вызывающему коду. Та же конкурентная
+запись Ready внедряется между чтением и replace скомпилированного Amae-контроллера
+через fake kubectl/helm. Первая запись получает конфликт; новое наблюдение
+записывает Ready=False вместе с данными об ошибке. Ещё один тест меняет сам Helm
+при конфликте и проверяет использование нового наблюдения вместо старого успеха.
+
+Amae делает **не более одной успешной записи status за согласование**: целиком
+заменяет `/status`, передавая `metadata.resourceVersion` свежего чтения CR.
+Каждая из максимум пяти попыток заново читает CR и Helm и пересчитывает
+conditions/history; изменение UID, generation, удаления или request token
+отменяет старый результат. Так исключается разделение conditions/rest **в
+собственных записях контроллера**. Это не общая транзакция Helm и Kubernetes:
+если все записи не удались, старый status может устареть; изменение Helm после
+наблюдения или чужая запись после фиксации также могут его обесценить. Старые
+элементы history сохраняются как история, без независимой проверки. Остановленный
+контроллер не исправляет непрерывно чужие записи status.
+
+`requestedAt` разрешает ограниченный повтор, а не создаёт искусственный Ready;
+это не следует приписывать #934 как предложенное upstream-исправление. Комментарии
+issue обсуждают предикаты наблюдения источников и согласование по текущему
+состоянию, но не назначают эту аннотацию исправлением. Цельная запись status
+устраняет показанное разделение, а аннотация отдельно управляет remediation.
+
 ## Компилятор, написанный на Amae
 
 `compiler.amae` и есть компилятор, и другой реализации у языка нет. Он

@@ -11,9 +11,10 @@ RUN make && mkdir -p /out \
  && bin/tc kube/mediator.amae -o /out/mediator \
  && bin/tc operators/cronjob.amae -o /out/cronjob \
  && bin/tc operators/external-dns.amae -o /out/external-dns \
+ && bin/tc operators/helm.amae -o /out/helm-controller \
  && cp build/tc-core /out/tc-core
 
 FROM alpine/k8s:1.35.9
-RUN command -v curl && command -v jq
+RUN command -v curl && command -v jq && command -v helm
 COPY --from=build /out /opt/amae/bin
 ENV HOME=/tmp
