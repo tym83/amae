@@ -1,0 +1,4 @@
+apiVersion: v2
+name: hello
+version: 0.1.0
+description: Small chart for the Amae Helm controller stand scenarios

@@ -1,0 +1,509 @@
+# Helm CLI controller. One successful status replacement per reconcile.
+# Retries re-read the CR and Helm; a generation/UID change aborts the old result.
+# Helm and Kubernetes are separate systems, so this is not a transaction over both.
+written by "amae"
+deterministic
+learn "kube.amae"
+
+# The helm CLI, asked the way kubectl is; KUBECONFIG and KUBE_CONTEXT, when
+# set, are handed over so tests and out-of-cluster runs keep working.
+ritual helm_ask args
+    let tool = world "HELM"
+    if tool == ""
+        tool = "helm"
+    end
+    let globals = ""
+    if world "KUBECONFIG" != ""
+        globals = " --kubeconfig '" + world "KUBECONFIG" + "'"
+    end
+    if world "KUBE_CONTEXT" != ""
+        globals = globals + " --kube-context '" + world "KUBE_CONTEXT" + "'"
+    end
+    ask world tool + globals + " " + args into said
+    give back said
+end
+
+ritual helm_event object, kind_, reason, message
+    endure
+        perform tell_event with object, kind_, reason, message, "helm"
+    when it hurts as pain
+        cry "helm event: " + pain
+    end
+end
+
+# The first n characters of a text; condition and event messages stay short.
+ritual shorten text, n
+    ask world "jq -r '.[0] | .[0:" + n + "]'" telling json of [text] into out
+    give back out
+end
+
+# What follows the last slash, for OCI refs, paths and history chart names.
+ritual base_name text
+    let n = length of text
+    let i = n
+    while i >= 1
+        if part i i of text == "/"
+            give back part (i + 1) n of text
+        end
+        recall text n
+        i = i - 1
+    end
+    give back text
+end
+
+# The chart reference, its repository and version, and a name for history.
+ritual chart_parts chart_spec
+    let ref = ""
+    let repo = ""
+    let name = ""
+    let version = ""
+    perform field with chart_spec, "version", "" into version
+    perform field with chart_spec, "oci", "" into oci
+    if oci != ""
+        ref = oci
+        perform base_name with oci into name
+    else
+        perform field with chart_spec, "path", "" into path_
+        if path_ != ""
+            ref = path_
+            perform base_name with path_ into name
+        else
+            perform field with chart_spec, "repository", "" into repo
+            perform field with chart_spec, "name", "" into name
+            ref = name
+        end
+    end
+    give back {"ref": ref, "repo": repo, "name": name, "version": version}
+end
+
+# The full status document for the single write. Counters and conditions come
+# from this reconcile's outcome; history grows from the old; a condition keeps
+# its lastTransitionTime while its status is unchanged.
+ritual compose_status old, outcome, generation, stamp
+    let status = {}
+    status["observedGeneration"] = generation
+    status["lastHandledReconcileAt"] = outcome["requested"]
+    status["lastAttemptedRevision"] = outcome["attempted"]
+    status["failures"] = outcome["failures"]
+    status["installFailures"] = outcome["installFailures"]
+    status["upgradeFailures"] = outcome["upgradeFailures"]
+    let hist = []
+    if length of outcome["history"] > 0
+        put outcome["history"] into hist
+    end
+    perform field with old, "history", [] into prev
+    let i = 1
+    while i <= length of prev
+        if length of hist == 0 or prev[i]["revision"] != hist[1]["revision"]
+            put prev[i] into hist
+        end
+        recall old outcome generation stamp status hist prev i
+        i = i + 1
+    end
+    while length of hist > 10
+        remove length of hist from hist
+        recall old outcome generation stamp status hist
+    end
+    status["history"] = hist
+    let conds = []
+    let wanted = outcome["conditions"]
+    perform field with old, "conditions", [] into ocs
+    i = 1
+    while i <= length of wanted
+        let c = {}
+        c["type"] = wanted[i]["type"]
+        c["status"] = wanted[i]["status"]
+        c["reason"] = wanted[i]["reason"]
+        perform field with wanted[i], "message", "" into msg
+        c["message"] = msg
+        c["observedGeneration"] = generation
+        c["lastTransitionTime"] = stamp
+        let j = 1
+        while j <= length of ocs
+            if ocs[j]["type"] == c["type"] and ocs[j]["status"] == c["status"]
+                perform field with ocs[j], "lastTransitionTime", stamp into kept
+                c["lastTransitionTime"] = kept
+            end
+            recall old outcome generation stamp status conds wanted ocs c i j
+            j = j + 1
+        end
+        put c into conds
+        recall old outcome generation stamp status conds wanted ocs i
+        i = i + 1
+    end
+    status["conditions"] = conds
+    give back status
+end
+
+# Quote chart references and other external arguments without interpreting them.
+ritual helm_quote value
+    ask world "jq -r '.[0] | @sh'" telling json of [value] into quoted
+    give back quoted
+end
+
+# The raw object is kept separately so booleans/null in values survive Amae JSON.
+ritual desired_values
+    ask world "jq -c '.spec.values // {}'" telling note "object raw" into value
+    give back value
+end
+
+ritual read_release ns, name
+    let result = {"exists": 0, "revision": 0, "state": "absent", "version": ""}
+    endure
+        perform helm_ask with "status " + name + " -n " + ns + " -o json" into raw
+        ask world "jq -c '{exists:1, revision:.version, state:.info.status, version:.chart.metadata.version, chart:.chart.metadata.name}'" telling raw into normalized
+        result = meaning of normalized
+    when it hurts as pain
+        ask world "jq -r 'contains(\"release: not found\")'" telling json of pain into absent
+        if absent != "true"
+            cry pain
+            give back {"exists": -1, "state": "unknown", "revision": 0, "version": ""}
+        end
+    end
+    give back result
+end
+
+ritual values_match ns, name
+    perform desired_values into want
+    perform helm_ask with "get values " + name + " -n " + ns + " -o json" into have
+    ask world "jq -r '.[0] == (.[1] // {})'" telling "[" + want + "," + have + "]" into same
+    give back same == "true"
+end
+
+ritual do_upgrade
+    let w = note "work"
+    perform chart_parts with w["object"]["spec"]["chart"] into parts
+    perform helm_quote with parts["ref"] into ref
+    let args = "upgrade --install " + w["name"] + " " + ref
+    if parts["repo"] != ""
+        perform helm_quote with parts["repo"] into repo
+        args = args + " --repo " + repo
+    end
+    if parts["version"] != ""
+        perform helm_quote with parts["version"] into ver
+        args = args + " --version " + ver
+    end
+    # A private temporary file; no chart values in command arguments.
+    ask world "mktemp /tmp/amae-helm-values.XXXXXX" into path_
+    perform desired_values into want
+    write want to file path_
+    let err = ""
+    endure
+        perform helm_ask with args + " -n " + w["ns"] + " -f " + path_ + " --wait --timeout " + w["timeout"] + "s" into said
+    when it hurts as pain
+        err = pain
+    end
+    ask world "rm -f " + path_ into removed
+    give back err
+end
+
+# Optimistic-lock metadata updates preserve other controllers' finalizers.
+ritual finalizer object, removing
+    let meta = object["metadata"]
+    perform field with meta, "finalizers", [] into fin
+    let kept = []
+    let i = 1
+    while i <= length of fin
+        if fin[i] != "finalizers.helm.amae.io"
+            put fin[i] into kept
+        end
+        recall object removing meta fin kept i
+        i = i + 1
+    end
+    if removing == 0
+        if place of "finalizers.helm.amae.io" in fin > 0
+            give back 1
+        end
+        put "finalizers.helm.amae.io" into kept
+    end
+    let body = {"metadata": {"resourceVersion": meta["resourceVersion"], "finalizers": kept}}
+    perform kubectl_telling with "patch helmreleases.helm.amae.io " + meta["name"] + " -n " + meta["namespace"] + " --type=merge --patch-file=/dev/stdin", json of body into said
+    give back 1
+end
+
+ritual finalize_hr object
+    let meta = object["metadata"]
+    perform field with meta, "finalizers", [] into fin
+    if place of "finalizers.helm.amae.io" in fin == 0
+        give back 0
+    end
+    # Fail closed: an API/Helm failure must never remove the finalizer.
+    perform helm_ask with "uninstall " + meta["name"] + " -n " + meta["namespace"] + " --ignore-not-found --wait --timeout 60s" into said
+    perform kubectl with "get helmreleases.helm.amae.io " + meta["name"] + " -n " + meta["namespace"] + " -o json" into raw
+    perform finalizer with meaning of raw, 1
+    perform helm_event with object, "Normal", "Uninstalled", "uninstalled release " + meta["name"]
+    give back 1
+end
+
+# All long-lived operation state is in a note. A retry never depends on faded
+# outer variables, and each retry is followed by remediation, even the last.
+ritual attempt_release
+    perform do_upgrade into err
+    let w = note "work"
+    w["acted"] = 1
+    if err == ""
+        w["success"] = 1
+        note "work" = w
+        give back 1
+    end
+    perform shorten with err, 300 into msg
+    w["error"] = msg
+    w["attempts"] = w["attempts"] + 1
+    w[w["counter"]] = w[w["counter"]] + 1
+    note "work" = w
+    let remedied = 0
+    endure
+        if w["mode"] == "Install"
+            perform helm_ask with "uninstall " + w["name"] + " -n " + w["ns"] + " --ignore-not-found --wait --timeout " + w["timeout"] + "s" into said
+        else
+            if w["rollback"] > 0
+                perform helm_ask with "rollback " + w["name"] + " " + w["rollback"] + " -n " + w["ns"] + " --wait --timeout " + w["timeout"] + "s" into said
+            else
+                give back 0
+            end
+        end
+        remedied = 1
+    when it hurts as pain
+        cry "helm remediation: " + pain
+    end
+    w = note "work"
+    w["remediated"] = remedied
+    note "work" = w
+    give back 0
+end
+
+ritual operate object
+    let meta = object["metadata"]
+    perform field with object, "status", {} into old
+    perform field with object["spec"], "timeout", 300 into timeout
+    perform read_release with meta["namespace"], meta["name"] into current
+    if current["exists"] == -1
+        give back 0
+    end
+    let mode = "Install"
+    let counter = "installFailures"
+    if current["exists"] == 1
+        mode = "Upgrade"
+        counter = "upgradeFailures"
+    end
+    ask world "jq -c '{retries:(if .mode == \"Install\" then .object.spec.install.remediation.retries else .object.spec.upgrade.remediation.retries end // 0), failures:(.object.status.failures // 0), installFailures:(.object.status.installFailures // 0), upgradeFailures:(.object.status.upgradeFailures // 0)}'" telling json of {"mode": mode, "object": object} into raw
+    let w = meaning of raw
+    w["object"] = object
+    w["ns"] = meta["namespace"]
+    w["name"] = meta["name"]
+    w["mode"] = mode
+    w["counter"] = counter
+    w["timeout"] = timeout
+    w["rollback"] = current["revision"]
+    w["attempts"] = 0
+    w["success"] = 0
+    w["acted"] = 0
+    w["remediated"] = 0
+    w["error"] = ""
+    note "work" = w
+    # A failed/pending revision is not a safe rollback target.
+    if mode == "Upgrade" and current["state"] != "deployed"
+        perform helm_ask with "history " + meta["name"] + " -n " + meta["namespace"] + " -o json" into history_
+        ask world "jq '[.[] | select(.status == \"deployed\" or .status == \"superseded\") | .revision] | max // 0'" telling history_ into target
+        w = note "work"
+        w["rollback"] = number of target
+        note "work" = w
+    end
+    # A healthy unchanged release is observed, not upgraded at every interval.
+    recall object old current meta
+    perform field with old, "observedGeneration", 0 into observed
+    perform annotation with object, "reconcile.fluxcd.io/requestedAt" into requested
+    perform field with old, "lastHandledReconcileAt", "" into handled
+    if current["state"] == "deployed" and observed == meta["generation"] and requested == handled
+        perform values_match with meta["namespace"], meta["name"] into same
+        perform chart_parts with object["spec"]["chart"] into parts
+        if same and (parts["version"] == "" or parts["version"] == current["version"])
+            w = note "work"
+            w["success"] = 1
+            note "work" = w
+            give back 1
+        end
+    end
+    w = note "work"
+    while w["success"] == 0 and w["attempts"] <= w["retries"]
+        perform attempt_release
+        w = note "work"
+    end
+    give back 1
+end
+
+# Recompute the complete status from a fresh CR and a fresh Helm observation.
+# Operation facts (attempt counters, remediation) stay local to this reconcile;
+# a conflict does not repeat the Helm mutation or trust another writer's Ready.
+ritual observed_outcome fresh
+    let w = note "work"
+    perform read_release with w["ns"], w["name"] into current
+    let reason = w["mode"] + "Stalled"
+    let ready_s = "False"
+    let message = w["error"]
+    let failures = w["failures"] + 1
+    if w["success"] == 1
+        reason = "ReleaseNotReady"
+        if current["state"] == "deployed"
+            perform values_match with w["ns"], w["name"] into same
+            perform chart_parts with fresh["spec"]["chart"] into parts
+            if same and (parts["version"] == "" or parts["version"] == current["version"])
+                ready_s = "True"
+                reason = w["mode"] + "Succeeded"
+                failures = 0
+            end
+        end
+        message = "Helm reports " + current["state"] + " (revision " + current["revision"] + ")"
+    end
+    let rem_reason = "NotRequired"
+    let rem_status = "False"
+    if w["attempts"] > 0
+        rem_reason = "RemediationFailed"
+        if w["remediated"] == 1
+            rem_status = "True"
+            rem_reason = "RolledBack"
+            if w["mode"] == "Install"
+                rem_reason = "RetriedAfterUninstall"
+            end
+        end
+    end
+    recall fresh current w reason ready_s message failures
+    perform chart_parts with fresh["spec"]["chart"] into parts
+    let attempted = parts["version"]
+    if attempted == ""
+        attempted = current["version"]
+    end
+    let hist = {}
+    if current["exists"] == 1
+        hist = {"revision": current["revision"], "chart": current["chart"] + "-" + current["version"], "status": current["state"]}
+    end
+    perform annotation with fresh, "reconcile.fluxcd.io/requestedAt" into requested
+    let conds = [{"type": "Ready", "status": ready_s, "reason": reason, "message": message}, {"type": "Released", "status": ready_s, "reason": reason, "message": message}, {"type": "Remediated", "status": rem_status, "reason": rem_reason, "message": ""}]
+    give back {"requested": requested, "attempted": attempted, "failures": failures, "installFailures": w["installFailures"], "upgradeFailures": w["upgradeFailures"], "history": hist, "conditions": conds}
+end
+
+ritual commit_status
+    let tries = 0
+    while tries < 5
+        let w = note "work"
+        perform kubectl with "get helmreleases.helm.amae.io " + w["name"] + " -n " + w["ns"] + " -o json" into raw
+        let fresh = meaning of raw
+        let meta = fresh["metadata"]
+        perform field with meta, "deletionTimestamp", "" into dying
+        perform annotation with fresh, "reconcile.fluxcd.io/requestedAt" into requested
+        perform annotation with w["object"], "reconcile.fluxcd.io/requestedAt" into original_request
+        if dying != "" or meta["uid"] != w["object"]["metadata"]["uid"] or meta["generation"] != w["object"]["metadata"]["generation"] or requested != original_request
+            give back 0
+        end
+        perform observed_outcome with fresh into outcome
+        perform field with fresh, "status", {} into old
+        perform stamp_of with now into stamp
+        perform compose_status with old, outcome, meta["generation"], stamp into status
+        ask world "jq -r '.[0] == .[1]'" telling json of [old, status] into same
+        if same == "true"
+            give back 1
+        end
+        let body = {"apiVersion": "helm.amae.io/v1", "kind": "HelmRelease", "metadata": {"name": w["name"], "namespace": w["ns"], "resourceVersion": meta["resourceVersion"]}, "status": status}
+        endure
+            perform kubectl_telling with "replace --raw /apis/helm.amae.io/v1/namespaces/" + w["ns"] + "/helmreleases/" + w["name"] + "/status -f -", json of body into said
+            give back 1
+        when it hurts as pain
+            cry "helm status retry: " + pain
+        end
+        recall tries
+        tries = tries + 1
+    end
+    give back 0
+end
+
+ritual reconcile_hr listed
+    let meta = listed["metadata"]
+    perform kubectl with "get helmreleases.helm.amae.io " + meta["name"] + " -n " + meta["namespace"] + " -o json" into raw
+    note "object raw" = raw
+    let object = meaning of raw
+    meta = object["metadata"]
+    perform field with meta, "deletionTimestamp", "" into dying
+    if dying != ""
+        perform finalize_hr with object
+        give back 0
+    end
+    perform finalizer with object, 0
+    # Persist the request token alongside the stall, so restarts do not reset it.
+    ask world "jq -r '(.status.observedGeneration == .metadata.generation) and ((.status.lastHandledReconcileAt // \"\") == (.metadata.annotations[\"reconcile.fluxcd.io/requestedAt\"] // \"\")) and any(.status.conditions[]?; .type == \"Ready\" and (.reason == \"InstallStalled\" or .reason == \"UpgradeStalled\"))'" telling raw into stalled
+    if stalled == "true"
+        give back 0
+    end
+    let key = meta["uid"]
+    perform annotation with object, "reconcile.fluxcd.io/requestedAt" into requested
+    let seen = {}
+    endure
+        seen = note ("seen " + key)
+    when it hurts as pain
+        seen = {"gen": -1, "requested": "", "next": 0}
+    end
+    if seen["gen"] == meta["generation"] and seen["requested"] == requested and now < seen["next"]
+        give back 0
+    end
+    perform operate with object into ran
+    if ran == 0
+        give back 0
+    end
+    perform commit_status into wrote
+    if wrote == 1
+        perform field with object["spec"], "interval", 30 into every
+        note ("seen " + key) = {"gen": meta["generation"], "requested": requested, "next": now + every}
+        let w = note "work"
+        if w["acted"] == 1
+            let kind_ = "Normal"
+            let reason = w["mode"] + "Succeeded"
+            if w["success"] == 0
+                kind_ = "Warning"
+                reason = w["mode"] + "Stalled"
+            end
+            perform helm_event with object, kind_, reason, "Helm reconciliation completed: " + reason
+        end
+    end
+    give back wrote
+end
+
+ritual helm_once
+    let scope = "-A"
+    if world "HELM_NAMESPACE" != ""
+        scope = "-n " + world "HELM_NAMESPACE"
+    end
+    perform kubectl with "get helmreleases.helm.amae.io " + scope + " -o json" into raw
+    let items = (meaning of raw)["items"]
+    let i = 1
+    while i <= length of items
+        endure
+            perform reconcile_hr with items[i]
+        when it hurts as pain
+            cry "helm reconcile: " + pain
+        end
+        recall items i
+        i = i + 1
+    end
+    give back 1
+end
+
+# One controller process per target namespace. Recreate avoids overlapping
+# Deployment rollouts; a short lease cannot protect a long blocking Helm call.
+soul helm
+    note "look" = 0
+    mark looking
+    endure
+        perform helm_once
+    when it hurts as pain
+        cry "helm: " + pain
+    end
+    note "look" = note "look" + 1
+    if world "HELM_LOOKS" != "" and note "look" >= number of world "HELM_LOOKS"
+        goodbye
+    end
+    let nap = 10
+    if world "HELM_INTERVAL" != ""
+        nap = number of world "HELM_INTERVAL"
+    end
+    wait nap seconds
+    return to looking
+end

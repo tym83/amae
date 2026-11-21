@@ -13,10 +13,11 @@ RUN make && mkdir -p /out \
  && bin/tc operators/external-dns.amae -o /out/external-dns \
  && bin/tc operators/acme.amae -o /out/acme \
  && bin/tc operators/postgres.amae -o /out/postgres \
+ && bin/tc operators/helm.amae -o /out/helm-controller \
  && cp build/tc-core /out/tc-core
 
 FROM alpine/k8s:1.35.9
 RUN apk add --no-cache openssl curl jq \
- && openssl version && curl --version && jq --version
+ && openssl version && curl --version && jq --version && command -v helm
 COPY --from=build /out /opt/amae/bin
 ENV HOME=/tmp
