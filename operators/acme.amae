@@ -253,8 +253,9 @@ ritual acme_csr pem, names
     give back raw
 end
 
+# OpenSSL prints GMT dates; numeric fields avoid libc strptime locale/%Z differences.
 ritual acme_dates chain
-    ask world "set -eu\nexport TZ=UTC\nd=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\ncat > \"$d/cert\"\nopenssl x509 -in \"$d/cert\" -noout -dates > \"$d/dates\"\njq -Rsc 'split(\"\\n\") | map(select(length>0) | split(\"=\")[1] | strptime(\"%b %e %H:%M:%S %Y %Z\") | mktime) | {start:.[0],finish:.[1]}' < \"$d/dates\" " telling chain into raw
+    ask world "set -eu\nexport TZ=UTC\nd=$(mktemp -d); trap 'rm -rf \"$d\"' EXIT HUP INT TERM\ncat > \"$d/cert\"\nopenssl x509 -in \"$d/cert\" -noout -dates > \"$d/dates\"\njq -Rsc 'split(\"\\n\") | map(select(length>0) | split(\"=\")[1] | capture(\"^(?<month>[A-Z][a-z]{2}) +(?<day>[0-9]{1,2}) (?<hour>[0-9]{2}):(?<minute>[0-9]{2}):(?<second>[0-9]{2}) (?<year>[0-9]{4}) GMT$\") | .month as $month | [( .year | tonumber), ([\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"] | index($month)), (.day | tonumber), (.hour | tonumber), (.minute | tonumber), (.second | tonumber), 0, 0] | mktime) | {start:.[0],finish:.[1]}' < \"$d/dates\" " telling chain into raw
     give back raw
 end
 

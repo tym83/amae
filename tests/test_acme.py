@@ -10,6 +10,7 @@ import http.server
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import tempfile
 import threading
@@ -208,6 +209,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.reply((s.directory/('cert-'+ident+'.pem')).read_text()+(s.directory/'ca.pem').read_text(),pem=True)
         else:
             raise AssertionError(self.path)
+
+class CertificateDates(unittest.TestCase):
+    def test_one_and_two_digit_days(self):
+        # Exercise the actual jq filter embedded in the controller's shell command.
+        source = (ROOT/'operators/acme.amae').read_text()
+        ritual = source.split('ritual acme_dates chain\n', 1)[1]
+        command, _ = json.JSONDecoder().raw_decode(ritual.split('ask world ', 1)[1])
+        words = shlex.split(command)
+        date_filter = words[words.index('jq') + 2]
+        for month, name in enumerate(('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'), 1):
+            for zone in ('UTC', 'America/Chicago'):
+                with self.subTest(month=name, timezone=zone):
+                    dates = (f'notBefore={name}  1 00:00:00 2026 GMT\n'
+                             f'notAfter={name} 21 18:45:20 2026 GMT\n')
+                    result = subprocess.run(['jq', '-Rsc', date_filter], input=dates,
+                                            capture_output=True, text=True, check=True,
+                                            env=dict(os.environ, TZ=zone))
+                    self.assertEqual(json.loads(result.stdout), {
+                        'start': datetime.datetime(2026, month, 1,
+                                                  tzinfo=datetime.timezone.utc).timestamp(),
+                        'finish': datetime.datetime(2026, month, 21, 18, 45, 20,
+                                                   tzinfo=datetime.timezone.utc).timestamp(),
+                    })
+
 
 class LiveACME(unittest.TestCase):
     @classmethod
