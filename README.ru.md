@@ -468,6 +468,74 @@ API Amae оставляет заданные в этой реализации `a
 из учебного примера. Это сравнение размера исходников, а не утверждение об
 идентичной инфраструктуре или производительности.
 
+### external-dns
+
+`operators/external-dns.amae` согласует Services и Ingresses с
+[HTTP API PowerDNS Authoritative](https://doc.powerdns.com/authoritative/http-api/zone.html).
+Каждый обход получает источники и записи провайдера, строит и печатает план,
+затем отправляет один PATCH на изменённую зону. Для неизменной зоны PATCH не нужен.
+LoadBalancer Services используют аннотацию
+`external-dns.alpha.kubernetes.io/hostname` с именами через запятую; Ingresses
+также используют `spec.rules[].host`. Цели берутся из
+`status.loadBalancer.ingress`: IP дают A/AAAA, имена — CNAME. Аннотированные
+ClusterIP и NodePort Services публикуют cluster IP только при
+`EXTERNAL_DNS_PUBLISH_INTERNAL=1` (или `true`). Аннотация
+`external-dns.alpha.kubernetes.io/ttl` задаёт секунды (по умолчанию 300).
+Выбирается самая длинная подходящая зона провайдера.
+
+Используется [новый TXT-формат external-dns](https://kubernetes-sigs.github.io/external-dns/v0.16.1/docs/registry/txt/)
+без дополнительных аффиксов: `a-<name>`, `aaaa-<name>`, `cname-<name>` со значением
+`"heritage=external-dns,external-dns/owner=<id>,external-dns/resource=service/<ns>/<name>"`
+(либо `ingress/<ns>/<name>`). Обновлять и удалять можно только записи этого
+владельца; записи без регистрации и неоднозначные TXT отклоняются. Чужой владелец
+даёт Warning Event `Refused`: `<name> belongs to <other owner>`.
+При споре источников за имя побеждает самый старый по creation timestamp;
+равенство разрешается путём ресурса и UID, проигравший получает `Refused`.
+Несовместимые цели CNAME также отклоняются. Успешные изменения дают Events
+`Created`, `Updated`, `Deleted`. Notes подавляют одинаковые повторные Events
+до изменения условия; после перезапуска notes сбрасываются. Для Events удаления
+после перезапуска источник восстанавливается из TXT.
+
+Настройки:
+
+| Переменная окружения | Значение по умолчанию / смысл |
+|---|---|
+| `PDNS_API_URL`, `PDNS_API_KEY` | Обязательные базовый URL API и ключ |
+| `PDNS_SERVER_ID` | `localhost` |
+| `EXTERNAL_DNS_DOMAIN_FILTER` | Пусто = все зоны; DNS-суффиксы через запятую, с учётом границ меток |
+| `EXTERNAL_DNS_OWNER_ID` | `amaenetes`; уникальный стабильный ID установки |
+| `EXTERNAL_DNS_POLICY` | `sync`; `upsert-only` сохраняет записи удалённых источников |
+| `EXTERNAL_DNS_INTERVAL` | `30` секунд; lease обновляется не реже чем раз в 10 секунд между обходами и перед записью |
+| `EXTERNAL_DNS_NAMESPACE` | Пусто = все namespaces; ограничивает источники и владение при удалении одним namespace |
+| `EXTERNAL_DNS_LEASE_NAMESPACE` | `amaenetes`; имя Lease всегда `external-dns` |
+| `EXTERNAL_DNS_SINGLE_INSTANCE` | `1` отключает все обращения к Lease для локального запуска одного экземпляра; нельзя включать у конкурирующих реплик |
+| `EXTERNAL_DNS_LOOKS` | Не задано = постоянная работа; ограничивает число опросов в тестах |
+
+`make kube` и Dockerfile собирают `/opt/amae/bin/external-dns`. Образ содержит
+`curl` и `jq` (проверяются при сборке). JSON провайдера и логические значения PATCH
+остаются исходным JSON при обработке jq. `KUBECTL`, `KUBE_CONTEXT`, `KUBECONFIG`
+работают как у остальных операторов; `PDNS_CURL` заменяет curl для тестов.
+Ошибки API печатаются, операции повторяются при следующих обходах; ошибка
+получения источников никогда не превращается в пустое желаемое состояние.
+Контроллер использует существующие зоны; создание зон, другие провайдеры,
+миграция старого TXT и настройка TXT-аффиксов не реализованы. При фиксированном
+TXT-префиксе apex-имена, чей TXT выходит за границы зоны, требуют родительской
+зоны и этим контроллером не поддерживаются.
+
+[Манифест](kube/operators/external-dns.yaml) содержит ServiceAccount, права чтения
+источников и создания Events, namespaced RBAC для lease и Deployment
+`amaenetes-external-dns`. Нужны namespace и ConfigMap с kubeconfig из
+`kube/deploy.yaml`. Укажите URL API и фильтр доменов в манифесте, а Secret создайте
+отдельно (не добавляйте ключ API в git):
+
+```sh
+kubectl --context <ctx> -n amaenetes create secret generic amaenetes-external-dns \
+  --from-file=api-key=/secure/path/pdns-api-key
+kubectl --context <ctx> apply -f kube/operators/external-dns.yaml
+# Или запустите локально, экспортировав PDNS_API_URL и PDNS_API_KEY:
+KUBE_CONTEXT=<ctx> EXTERNAL_DNS_DOMAIN_FILTER=example.com build/external-dns --patience=0
+```
+
 ## Компилятор, написанный на Amae
 
 `compiler.amae` и есть компилятор, и другой реализации у языка нет. Он
