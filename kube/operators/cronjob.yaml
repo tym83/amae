@@ -74,7 +74,7 @@ rules:
     verbs: [get, list, create, delete]
   - apiGroups: [""]
     resources: [events]
-    verbs: [create]
+    verbs: [create, patch]
   - apiGroups: [coordination.k8s.io]
     resources: [leases]
     verbs: [create]
