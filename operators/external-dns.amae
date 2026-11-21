@@ -1,0 +1,288 @@
+# PowerDNS controller; embedded jq reshapes whole JSON documents without shell pipelines.
+written by "amae"
+deterministic
+learn "kube.amae"
+
+ritual dns_json filter_, input_
+    ask world "jq -c '" + filter_ + "'" telling json of input_ into raw
+    give back meaning of raw
+end
+
+ritual dns_api method_, path_, body
+    let tool = world "PDNS_CURL"
+    if tool == ""
+        tool = "curl"
+    end
+    # Environment expansion stays quoted; the API key never enters logs or source.
+    let command_ = tool + " --fail --silent --show-error --connect-timeout 5 --max-time 15 -H \"X-API-Key: $PDNS_API_KEY\" -H 'Content-Type: application/json' -X " + method_
+    let server = world "PDNS_SERVER_ID"
+    if server == ""
+        server = "localhost"
+    end
+    perform dns_json with "@uri", server into server
+    perform dns_json with "@uri", path_ into encoded
+    if path_ != ""
+        encoded = "/" + encoded
+    end
+    command_ = command_ + " \"${PDNS_API_URL%/}/api/v1/servers/" + server + "/zones" + encoded + "\""
+    if method_ == "PATCH"
+        command_ = command_ + " --data-binary @-"
+    end
+    ask world command_ telling body into raw
+    give back raw
+end
+
+# Explicit local single-instance mode avoids all Lease API operations.
+ritual dns_leader
+    if world "EXTERNAL_DNS_SINGLE_INSTANCE" == "1"
+        give back note "identity"
+    end
+    perform hold_lease with note "lease namespace", "external-dns", note "identity", 60 into holder
+    give back holder
+end
+
+ritual dns_event entry
+    let object = entry["object"]
+    let key_ = object["kind"] + "/" + object["metadata"]["namespace"] + "/" + object["metadata"]["name"] + "/" + entry["reason"] + "/" + entry["name"]
+    let said = note "said"
+    perform field with said, key_, "" into previous
+    perform field with object["metadata"], "uid", "" into uid
+    let signature = json of [uid, entry["message"]]
+    if previous != signature
+        let kind_ = "Normal"
+        if entry["reason"] == "Refused"
+            kind_ = "Warning"
+        end
+        perform tell_event with object, kind_, entry["reason"], entry["message"], "external-dns"
+    end
+    let fresh = note "fresh"
+    fresh[key_] = signature
+    note "fresh" = fresh
+end
+
+ritual dns_sources input_
+    let filter_ = "def fqdn: ascii_downcase | sub(\"[.]+$\"; \"\") + \".\"; "
+    filter_ = filter_ + "def csv: split(\",\") | map(gsub(\"^\\\\s+|\\\\s+$\"; \"\") | select(length > 0) | fqdn); "
+    filter_ = filter_ + "def within($n; $z): $n == $z or ($n | endswith(\".\" + $z)); "
+    filter_ = filter_ + ". as $x | "
+    filter_ = filter_ + "($x.filters | csv) as $filters | "
+    filter_ = filter_ + "[$x.zones | fromjson | .[] | {id, name: (.name | fqdn)}] as $zones | "
+    filter_ = filter_ + "[($x.services | fromjson | .items[] | .kind = \"Service\" | .apiVersion = \"v1\"), "
+    filter_ = filter_ + "($x.ingresses | fromjson | .items[] | .kind = \"Ingress\" | .apiVersion = \"networking.k8s.io/v1\") | "
+    filter_ = filter_ + "select(.metadata.deletionTimestamp == null) | . as $o | "
+    filter_ = filter_ + "(.metadata.annotations // {}) as $a | "
+    filter_ = filter_ + "($a[\"external-dns.alpha.kubernetes.io/hostname\"] // \"\" | csv) as $annotated | "
+    filter_ = filter_ + "(if .kind == \"Ingress\" then [ .spec.rules[]?.host | select(. != null) | fqdn ] + $annotated "
+    filter_ = filter_ + "else $annotated end | unique) as $names | "
+    filter_ = filter_ + "select(.kind == \"Ingress\" or .spec.type == \"LoadBalancer\" or "
+    filter_ = filter_ + "($x.internal == 1 and ([\"ClusterIP\", \"NodePort\"] | index($o.spec.type // \"ClusterIP\")) != null)) | "
+    filter_ = filter_ + "(if .kind == \"Service\" and .spec.type != \"LoadBalancer\" then "
+    filter_ = filter_ + "[.spec.clusterIPs[]?] + [.spec.clusterIP // empty] | unique | map(select(. != \"None\")) "
+    recall input_
+    filter_ = filter_ + "else [.status.loadBalancer.ingress[]? | .ip // .hostname // empty] end) as $targets | "
+    filter_ = filter_ + "(try ($a[\"external-dns.alpha.kubernetes.io/ttl\"] // \"300\" | tonumber) catch 300) as $ttl | "
+    filter_ = filter_ + "$names[] as $name | "
+    filter_ = filter_ + "select(($filters|length) == 0 or any($filters[]; within($name; .))) | "
+    filter_ = filter_ + "([$zones[] | select(within($name; .name))] | sort_by(.name | length) | last) as $zone | "
+    filter_ = filter_ + "select($zone != null and ($targets|length) > 0) | "
+    filter_ = filter_ + "{name: $name, zone: $zone.id, object: ($o | {apiVersion, kind, metadata}), "
+    filter_ = filter_ + "resource: (($o.kind | ascii_downcase) + \"/\" + $o.metadata.namespace + \"/\" + $o.metadata.name), "
+    filter_ = filter_ + "ttl: (if $ttl >= 1 and $ttl <= 2147483647 then ($ttl | floor) else 300 end), "
+    filter_ = filter_ + "targets: [$targets[] | if contains(\":\") then {type:\"AAAA\", content:ascii_downcase} "
+    filter_ = filter_ + "elif test(\"^[0-9]+\\\\.[0-9]+\\\\.[0-9]+\\\\.[0-9]+$\") then {type:\"A\", content:.} "
+    filter_ = filter_ + "else {type:\"CNAME\", content:fqdn} end] | unique} ] | "
+    filter_ = filter_ + "sort_by(.object.metadata.creationTimestamp, .resource, .object.metadata.uid) | "
+    filter_ = filter_ + "{zones:$zones, candidates:.} "
+    perform dns_json with filter_, input_ into result
+    give back result
+end
+
+ritual dns_plan input_
+    let filter_ = "def key: .name + \"/\" + .type; "
+    filter_ = filter_ + "def txtname: (.type | ascii_downcase) + \"-\" + .name; "
+    filter_ = filter_ + "def within($n; $z): $n == $z or ($n | endswith(\".\" + $z)); "
+    recall input_
+    filter_ = filter_ + "def ownership: "
+    filter_ = filter_ + "[ .records[]?.content | try (fromjson | split(\",\") | "
+    filter_ = filter_ + "map(split(\"=\") | {(.[0]): (.[1:] | join(\"=\"))}) | add | "
+    filter_ = filter_ + "select(.heritage == \"external-dns\")) catch empty ]; "
+    filter_ = filter_ + "def normalized: if . == null then null else {name,type,ttl,records:([.records[] | {content,disabled:(.disabled == true or .disabled == 1)}] | sort_by(.content))} end; "
+    filter_ = filter_ + "def event($o;$r;$m;$n): {object:$o, reason:$r, message:$m, name:$n}; "
+    filter_ = filter_ + ". as $x | ($x.current | fromjson | .rrsets) as $rr | "
+    filter_ = filter_ + "($x.filters | split(\",\") | map(gsub(\"^\\\\s+|\\\\s+$\"; \"\") | select(length>0) | ascii_downcase | sub(\"[.]+$\";\"\") + \".\")) as $filters | "
+    filter_ = filter_ + "[$rr[] | select(.type == \"TXT\") | . as $t | ownership as $own | "
+    filter_ = filter_ + "select(($own|length) == 1 and (.records|length) == 1) | "
+    filter_ = filter_ + "select(.name | test(\"^(a|aaaa|cname)-\")) | "
+    filter_ = filter_ + "{name:(.name | sub(\"^(a|aaaa|cname)-\";\"\")), "
+    filter_ = filter_ + "type:(.name | capture(\"^(?<t>a|aaaa|cname)-\").t | ascii_upcase), txt:$t, "
+    filter_ = filter_ + "owner:$own[0][\"external-dns/owner\"], resource:($own[0][\"external-dns/resource\"] // \"\")}] as $registry | "
+    filter_ = filter_ + "[$x.candidates[] | select(.zone == $x.zone.id)] | group_by(.name) | "
+    filter_ = filter_ + "(reduce .[] as $group ({desired:[], events:[], blocked:[]}; "
+    recall input_
+    filter_ = filter_ + "($group | sort_by(.object.metadata.creationTimestamp, .resource, .object.metadata.uid)) as $g | "
+    filter_ = filter_ + "$g[0] as $d | "
+    filter_ = filter_ + ".events += [$g[1:][] | event(.object;\"Refused\";(.name + \" is claimed by \" + $d.resource);.name)] | "
+    filter_ = filter_ + "([$rr[] | select(.type == \"TXT\" and "
+    filter_ = filter_ + "(.name == (\"a-\"+$d.name) or .name == (\"aaaa-\"+$d.name) or .name == (\"cname-\"+$d.name))) | "
+    filter_ = filter_ + "ownership[] | .[\"external-dns/owner\"] | select(. != $x.owner)] | first) as $foreign | "
+    filter_ = filter_ + "([$rr[] | select(.name == $d.name) | select(.type != \"TXT\") | "
+    filter_ = filter_ + ". as $r | select(any($registry[]; .name == $r.name and .type == $r.type and .owner == $x.owner) | not)] | length) as $unowned | "
+    filter_ = filter_ + "([$rr[] | select(.type == \"TXT\" and (.name == (\"a-\"+$d.name) or .name == (\"aaaa-\"+$d.name) or .name == (\"cname-\"+$d.name))) | "
+    filter_ = filter_ + ". as $t | select(any($registry[]; .txt == $t and .owner == $x.owner)|not)] | length) as $unsafe | "
+    filter_ = filter_ + "if $foreign != null or $unowned > 0 or $unsafe > 0 then "
+    filter_ = filter_ + ".blocked += [$d.name] | "
+    filter_ = filter_ + ".events += [event($d.object;\"Refused\";($d.name + \" belongs to \" + ($foreign // \"an unmanaged owner\"));$d.name)] "
+    filter_ = filter_ + "elif ([$d.targets[] | select(.type == \"CNAME\")]|length) > 0 and ($d.targets|length) > 1 then "
+    filter_ = filter_ + ".blocked += [$d.name] | .events += [event($d.object;\"Refused\";($d.name + \" has incompatible CNAME targets\");$d.name)] "
+    filter_ = filter_ + "else .desired += [$d.targets | group_by(.type)[] | {name:$d.name, type:.[0].type, "
+    recall input_
+    filter_ = filter_ + "ttl:$d.ttl, records:map({content,disabled:false}), object:$d.object, resource:$d.resource}] "
+    filter_ = filter_ + "end)) as $selection | "
+    filter_ = filter_ + "($selection.desired | map(. as $d | . + {txt:{name:txtname, type:\"TXT\", ttl:.ttl, "
+    filter_ = filter_ + "records:[{content: (\"heritage=external-dns,external-dns/owner=\" + $x.owner + \",external-dns/resource=\" + .resource | tojson), disabled:false}]}})) as $desired | "
+    filter_ = filter_ + "reduce $desired[] as $d ({rrsets:[],events:$selection.events}; "
+    filter_ = filter_ + "([$rr[] | select(key == ($d|key))] | first) as $old | "
+    filter_ = filter_ + "([$rr[] | select(.name == $d.txt.name and .type == \"TXT\")] | first) as $oldtxt | "
+    filter_ = filter_ + "if ($old|normalized) != ($d|normalized) or ($oldtxt|normalized) != ($d.txt|normalized) then "
+    filter_ = filter_ + ".rrsets += [($d|{name,type,ttl,records}) + {changetype:\"REPLACE\"}, $d.txt + {changetype:\"REPLACE\"}] | "
+    filter_ = filter_ + ".events += [event($d.object;(if $old == null then \"Created\" else \"Updated\" end); "
+    filter_ = filter_ + "($d.name + \" \" + $d.type + \" -> \" + ([$d.records[].content]|join(\",\")));$d.name)] "
+    filter_ = filter_ + "else . end) | "
+    filter_ = filter_ + "if $x.policy == \"sync\" then "
+    filter_ = filter_ + "reduce $registry[] as $r (.; "
+    filter_ = filter_ + "if $r.owner == $x.owner and "
+    filter_ = filter_ + "(($filters|length) == 0 or any($filters[]; within($r.name;.))) and "
+    recall input_
+    filter_ = filter_ + "($x.namespace == \"\" or ($r.resource|split(\"/\")[1]) == $x.namespace) and "
+    filter_ = filter_ + "($selection.blocked | index($r.name)) == null and "
+    filter_ = filter_ + "(any($desired[]; .name == $r.name and .type == $r.type)|not) then "
+    filter_ = filter_ + "($r.resource | split(\"/\")) as $parts | "
+    filter_ = filter_ + "($x.known[$r.resource] // {apiVersion:(if $parts[0] == \"ingress\" then \"networking.k8s.io/v1\" else \"v1\" end), "
+    filter_ = filter_ + "kind:(if $parts[0] == \"ingress\" then \"Ingress\" else \"Service\" end), "
+    filter_ = filter_ + "metadata:{namespace:$parts[1],name:$parts[2]}}) as $obj | "
+    filter_ = filter_ + "if ($parts|length) == 3 and ($parts[0] == \"service\" or $parts[0] == \"ingress\") then "
+    filter_ = filter_ + ".rrsets += [{name:$r.name,type:$r.type,changetype:\"DELETE\"}, {name:$r.txt.name,type:\"TXT\",changetype:\"DELETE\"}] | "
+    filter_ = filter_ + ".events += [event($obj;\"Deleted\";($r.name + \" \" + $r.type);$r.name)] "
+    filter_ = filter_ + "else . end "
+    filter_ = filter_ + "else . end) "
+    filter_ = filter_ + "else . end | "
+    filter_ = filter_ + ".rrsets |= sort_by(if .changetype == \"DELETE\" then 0 else 1 end) | {patch:({rrsets} | tojson), count:(.rrsets|length), events} "
+    perform dns_json with filter_, input_ into result
+    give back result
+end
+
+ritual dns_once
+    let scope = "-A"
+    if world "EXTERNAL_DNS_NAMESPACE" != ""
+        scope = "-n " + world "EXTERNAL_DNS_NAMESPACE"
+    end
+    perform kubectl with "get services " + scope + " -o json" into services
+    perform kubectl with "get ingresses.networking.k8s.io " + scope + " -o json" into ingresses
+    perform dns_api with "GET", "", "" into zones
+    let internal = world "EXTERNAL_DNS_PUBLISH_INTERNAL" == "1" or world "EXTERNAL_DNS_PUBLISH_INTERNAL" == "true"
+    perform dns_sources with {"services":services, "ingresses":ingresses, "zones":zones, "internal":internal, "filters":world "EXTERNAL_DNS_DOMAIN_FILTER"} into sources
+    note "sources" = sources
+    let known = note "known"
+    note "current objects" = {}
+    let candidates = sources["candidates"]
+    let i = 1
+    while i <= length of candidates
+        known[candidates[i]["resource"]] = candidates[i]["object"]
+        let objects = note "current objects"
+        objects[candidates[i]["resource"]] = candidates[i]["object"]
+        note "current objects" = objects
+        recall known candidates
+        i = i + 1
+    end
+    note "known" = known
+    note "fresh" = {}
+    let zones_ = (note "sources")["zones"]
+    i = 1
+    while i <= length of zones_
+        let zone = zones_[i]
+        endure
+            perform dns_api with "GET", zone["id"], "" into current
+            let sources_ = note "sources"
+            perform dns_plan with {"current":current, "zone":zone, "candidates":sources_["candidates"], "owner":note "owner", "policy":note "policy", "known":note "known", "filters":world "EXTERNAL_DNS_DOMAIN_FILTER", "namespace":world "EXTERNAL_DNS_NAMESPACE"} into plan
+            say "external-dns plan " + zone["name"] + " " + plan["patch"]
+            if plan["count"] > 0
+                # Recheck leadership immediately before the bounded provider write.
+                perform dns_leader into holder
+                if holder == note "identity"
+                    perform dns_api with "PATCH", zone["id"], plan["patch"]
+                else
+                    give back 0
+                end
+            end
+            let events = plan["events"]
+            let j = 1
+            while j <= length of events
+                endure
+                    perform dns_event with events[j]
+                when it hurts as pain
+                    cry "external-dns event: " + pain
+                end
+                recall events zones_ i
+                j = j + 1
+            end
+        when it hurts as pain
+            cry "external-dns zone: " + pain
+        end
+        recall zones_
+        i = i + 1
+    end
+    note "said" = note "fresh"
+    note "known" = note "current objects"
+end
+
+soul external_dns
+    note "owner" = world "EXTERNAL_DNS_OWNER_ID"
+    if note "owner" == ""
+        note "owner" = "amaenetes"
+    end
+    note "policy" = world "EXTERNAL_DNS_POLICY"
+    if note "policy" == ""
+        note "policy" = "sync"
+    end
+    if note "policy" != "sync" and note "policy" != "upsert-only"
+        cry "EXTERNAL_DNS_POLICY must be sync or upsert-only"
+        goodbye with 1
+    end
+    if world "PDNS_API_URL" == "" or world "PDNS_API_KEY" == ""
+        cry "PDNS_API_URL and PDNS_API_KEY are required"
+        goodbye with 1
+    end
+    note "every" = 30
+    if world "EXTERNAL_DNS_INTERVAL" != ""
+        note "every" = number of world "EXTERNAL_DNS_INTERVAL"
+    end
+    note "lease namespace" = "amaenetes"
+    if world "EXTERNAL_DNS_LEASE_NAMESPACE" != ""
+        note "lease namespace" = world "EXTERNAL_DNS_LEASE_NAMESPACE"
+    end
+    note "identity" = world "HOSTNAME" + "-" + whole of (now * 1000000)
+    note "known" = {}
+    note "said" = {}
+    note "look" = 0
+    note "next" = 0
+    mark looking
+    endure
+        perform dns_leader into holder
+        if holder == note "identity" and now >= note "next"
+            perform dns_once
+            note "next" = now + note "every"
+        end
+    when it hurts as pain
+        cry "external-dns: " + pain
+    end
+    note "look" = note "look" + 1
+    if world "EXTERNAL_DNS_LOOKS" != "" and note "look" >= number of world "EXTERNAL_DNS_LOOKS"
+        goodbye
+    end
+    note "sleep" = note "every"
+    if note "sleep" > 10
+        note "sleep" = 10
+    end
+    wait note "sleep" seconds
+    return to looking
+end

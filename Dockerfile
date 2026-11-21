@@ -10,6 +10,7 @@ RUN make && mkdir -p /out \
  && bin/tc kube/counsel.amae -o /out/counsel \
  && bin/tc kube/mediator.amae -o /out/mediator \
  && bin/tc operators/cronjob.amae -o /out/cronjob \
+ && bin/tc operators/external-dns.amae -o /out/external-dns \
  && bin/tc operators/acme.amae -o /out/acme \
  && cp build/tc-core /out/tc-core
 
